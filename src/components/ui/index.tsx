@@ -14,12 +14,19 @@ export function Card({
   children,
   className = '',
   as: Tag = 'div',
+  id,
 }: {
   children: ReactNode;
   className?: string;
   as?: 'div' | 'article' | 'section' | 'li';
+  /** Sayfa ici baglantilarin hedefi olabilmesi icin. */
+  id?: string;
 }) {
-  return <Tag className={`card ${className}`}>{children}</Tag>;
+  return (
+    <Tag id={id} className={`card ${className}`}>
+      {children}
+    </Tag>
+  );
 }
 
 export function Avatar({

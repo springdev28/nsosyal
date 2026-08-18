@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { chromium } from 'playwright';
 
-import { ALL_CLIPS, DEMO_IMAGES } from '../src/lib/seed/media';
+import { ALL_CLIPS, DEMO_IMAGES, type DemoClip, type DemoImage } from '../src/lib/seed/media';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VIDEO_DIR = join(ROOT, 'public', 'demo', 'video');
@@ -31,7 +31,7 @@ const HEIGHT = 960;
 /** Kayit suresi. Klibin "gercek" suresi kart uzerinde metin olarak yazar. */
 const RECORD_MS = 3200;
 
-const escapeXml = (value) =>
+const escapeXml = (value: string) =>
   value
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -40,7 +40,7 @@ const escapeXml = (value) =>
     .replaceAll("'", '&apos;');
 
 /** Kart HTML'i - hem video kaydinda hem posterde ayni gorsel dil. */
-function cardHtml(clip) {
+function cardHtml(clip: DemoClip) {
   const seconds = `${clip.durationSec} sn`;
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><style>
@@ -91,7 +91,7 @@ function cardHtml(clip) {
 }
 
 /** Poster: videonun ilk karesine benzeyen statik SVG. */
-function posterSvg(clip) {
+function posterSvg(clip: DemoClip) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" width="${WIDTH}" height="${HEIGHT}" role="img" aria-label="${escapeXml(clip.title)}">
   <defs>
     <radialGradient id="g1" cx="30%" cy="25%" r="65%">
@@ -123,7 +123,7 @@ function posterSvg(clip) {
 }
 
 /** Gonderi gorselleri: soyut, hafif ve tamamen sentetik SVG kartlar. */
-function imageSvg(image) {
+function imageSvg(image: DemoImage) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="${escapeXml(
     image.alt,
   )}">
