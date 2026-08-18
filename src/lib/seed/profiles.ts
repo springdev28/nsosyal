@@ -1,0 +1,372 @@
+import type { Profile } from '@/types/domain';
+import { uid } from './ids';
+import { topicId } from './topics';
+
+/**
+ * Sentetik demo profilleri (PROJECT_SPEC 15.1).
+ *
+ * Hicbiri gercek bir kisiyi veya kurumu temsil etmez; her kaydin `demo: true`
+ * isareti vardir ve arayuzde "Demo hesabi" rozetiyle gosterilir.
+ */
+
+export const profileId = (username: string) => uid('profile', username);
+
+interface SeedProfileInput {
+  username: string;
+  displayName: string;
+  bio: string;
+  avatarEmoji: string;
+  avatarTone: string;
+  kind?: Profile['kind'];
+  role?: Profile['role'];
+  verified?: boolean;
+  provinceCode?: string | null;
+  districtCode?: string | null;
+  locationVisibility?: Profile['locationVisibility'];
+  topics: Parameters<typeof topicId>[0][];
+  intentMode?: Profile['intentMode'];
+  followerCount: number;
+  daysAgo: number;
+}
+
+function build(input: SeedProfileInput, now: Date): Profile {
+  return {
+    id: profileId(input.username),
+    username: input.username,
+    displayName: input.displayName,
+    bio: input.bio,
+    avatarEmoji: input.avatarEmoji,
+    avatarTone: input.avatarTone,
+    kind: input.kind ?? 'person',
+    role: input.role ?? 'user',
+    verified: input.verified ?? false,
+    provinceCode: input.provinceCode ?? null,
+    districtCode: input.districtCode ?? null,
+    locationVisibility: input.locationVisibility ?? 'hidden',
+    topicIds: input.topics.map(topicId),
+    intentMode: input.intentMode ?? 'sosyallesme',
+    createdAt: new Date(now.getTime() - input.daysAgo * 86_400_000).toISOString(),
+    demo: true,
+    followerCount: input.followerCount,
+  };
+}
+
+/** Demo giris ekraninda tek tikla secilebilen hesaplar (PROJECT_SPEC 15.2). */
+export const DEMO_ACCOUNT_USERNAMES = {
+  user: 'elif.demo',
+  creator: 'baran.demo',
+  organization: 'egeteknopark.demo',
+  moderator: 'moderator.demo',
+} as const;
+
+const PEOPLE: SeedProfileInput[] = [
+  {
+    username: 'elif.demo',
+    displayName: 'Elif Yıldırım',
+    bio: 'Üniversite 3. sınıf, havacılık kulübünde gönüllü. Çoğunlukla izliyorum, ara sıra çok konuşuyorum.',
+    avatarEmoji: '🛩️',
+    avatarTone: '#0f7d72',
+    provinceCode: '35',
+    districtCode: '35-07',
+    locationVisibility: 'district',
+    topics: ['havacilik-uzay', 'robotik', 'tasarim-urun'],
+    intentMode: 'sosyallesme',
+    followerCount: 84,
+    daysAgo: 420,
+  },
+  {
+    username: 'baran.demo',
+    displayName: 'Baran Koç',
+    bio: 'Rüzgâr ölçer yapıyorum, bozuyorum, tekrar yapıyorum. Bitmemiş proje paylaşmayı seviyorum.',
+    avatarEmoji: '🌬️',
+    avatarTone: '#1d4ed8',
+    provinceCode: '35',
+    districtCode: '35-21',
+    locationVisibility: 'district',
+    topics: ['surdurulebilirlik', 'robotik', 'tasarim-urun'],
+    intentMode: 'uret',
+    followerCount: 213,
+    daysAgo: 380,
+  },
+  {
+    username: 'moderator.demo',
+    displayName: 'Deniz Aksoy',
+    bio: 'nSosyal topluluk moderatörü. Başvuruları inceler, raporlara bakar.',
+    avatarEmoji: '🛡️',
+    avatarTone: '#7c3aed',
+    role: 'moderator',
+    verified: true,
+    provinceCode: '06',
+    locationVisibility: 'province',
+    topics: ['siber-guvenlik', 'yapay-zeka'],
+    intentMode: 'kesfet',
+    followerCount: 640,
+    daysAgo: 700,
+  },
+  {
+    username: 'zeynep.bio',
+    displayName: 'Zeynep Arslan',
+    bio: 'Moleküler biyoloji yüksek lisans. Laboratuvarda başarısız denemelerin arşivcisiyim.',
+    avatarEmoji: '🧬',
+    avatarTone: '#be123c',
+    provinceCode: '34',
+    locationVisibility: 'province',
+    topics: ['biyoteknoloji', 'surdurulebilirlik'],
+    intentMode: 'ogren',
+    followerCount: 412,
+    daysAgo: 500,
+  },
+  {
+    username: 'mert.kod',
+    displayName: 'Mert Şahin',
+    bio: 'Gömülü sistemler. Lehim kokusu ve derleyici hatası.',
+    avatarEmoji: '🤖',
+    avatarTone: '#15803d',
+    provinceCode: '06',
+    locationVisibility: 'province',
+    topics: ['robotik', 'oyun-gelistirme'],
+    intentMode: 'uret',
+    followerCount: 96,
+    daysAgo: 260,
+  },
+  {
+    username: 'ayse.veri',
+    displayName: 'Ayşe Demirtaş',
+    bio: 'Veri bilimi, Türkçe NLP ve açık veri. Grafik çizmeyi sevmem ama çiziyorum.',
+    avatarEmoji: '📊',
+    avatarTone: '#b45309',
+    provinceCode: '34',
+    locationVisibility: 'province',
+    topics: ['yapay-zeka', 'tasarim-urun'],
+    intentMode: 'ogren',
+    followerCount: 1180,
+    daysAgo: 620,
+  },
+  {
+    username: 'kaan.roket',
+    displayName: 'Kaan Erdoğan',
+    bio: 'Model roket takımı kaptanı. İtki eğrisi paylaşmaktan mutlu olurum.',
+    avatarEmoji: '🚀',
+    avatarTone: '#0f7d72',
+    provinceCode: '35',
+    districtCode: '35-07',
+    locationVisibility: 'district',
+    topics: ['havacilik-uzay', 'robotik'],
+    intentMode: 'uret',
+    followerCount: 58,
+    daysAgo: 95,
+  },
+  {
+    username: 'selin.oyun',
+    displayName: 'Selin Kaya',
+    bio: 'Oyun tasarımcısı. Game jam bağımlısı, pixel art amatörü.',
+    avatarEmoji: '🎮',
+    avatarTone: '#7c3aed',
+    provinceCode: '35',
+    districtCode: '35-17',
+    locationVisibility: 'district',
+    topics: ['oyun-gelistirme', 'tasarim-urun'],
+    intentMode: 'sosyallesme',
+    followerCount: 47,
+    daysAgo: 70,
+  },
+  {
+    username: 'emre.guvenlik',
+    displayName: 'Emre Yalçın',
+    bio: 'CTF, tersine mühendislik ve çok fazla kahve.',
+    avatarEmoji: '🛡️',
+    avatarTone: '#1c2b44',
+    provinceCode: '34',
+    locationVisibility: 'province',
+    topics: ['siber-guvenlik', 'yapay-zeka'],
+    intentMode: 'kesfet',
+    followerCount: 730,
+    daysAgo: 540,
+  },
+  {
+    username: 'nazli.tasarim',
+    displayName: 'Nazlı Öztürk',
+    bio: 'Erişilebilirlik odaklı arayüz tasarımı. Ekran okuyucuyla test etmeyen tasarım tasarım değildir.',
+    avatarEmoji: '🎨',
+    avatarTone: '#be123c',
+    provinceCode: '35',
+    districtCode: '35-21',
+    locationVisibility: 'district',
+    topics: ['tasarim-urun', 'yapay-zeka'],
+    intentMode: 'ogren',
+    followerCount: 305,
+    daysAgo: 310,
+  },
+  {
+    username: 'onur.enerji',
+    displayName: 'Onur Çetin',
+    bio: 'Enerji mühendisi. Çatıya panel koymayı herkese tavsiye ederim.',
+    avatarEmoji: '☀️',
+    avatarTone: '#f97a07',
+    provinceCode: '35',
+    districtCode: '35-30',
+    locationVisibility: 'district',
+    topics: ['surdurulebilirlik', 'robotik'],
+    intentMode: 'uret',
+    followerCount: 162,
+    daysAgo: 200,
+  },
+  {
+    username: 'irem.lise',
+    displayName: 'İrem Toprak',
+    bio: 'Lise son sınıf. Biyoteknoloji okumak istiyorum, şimdilik çok soru soruyorum.',
+    avatarEmoji: '🔬',
+    avatarTone: '#15803d',
+    provinceCode: '35',
+    districtCode: '35-25',
+    locationVisibility: 'district',
+    topics: ['biyoteknoloji', 'surdurulebilirlik'],
+    intentMode: 'ogren',
+    followerCount: 19,
+    daysAgo: 24,
+  },
+  {
+    username: 'burak.uav',
+    displayName: 'Burak Tunç',
+    bio: 'İHA otopilot yazılımı. Uçtu, düştü, tekrar uçtu.',
+    avatarEmoji: '🛸',
+    avatarTone: '#1d4ed8',
+    provinceCode: '06',
+    locationVisibility: 'province',
+    topics: ['havacilik-uzay', 'yapay-zeka'],
+    intentMode: 'uret',
+    followerCount: 388,
+    daysAgo: 450,
+  },
+  {
+    username: 'ece.uzay',
+    displayName: 'Ece Balaban',
+    bio: 'Astrofizik öğrencisi. Gece gökyüzü fotoğrafı ve çok fazla veri.',
+    avatarEmoji: '🌌',
+    avatarTone: '#7c3aed',
+    locationVisibility: 'online_only',
+    topics: ['havacilik-uzay', 'yapay-zeka'],
+    intentMode: 'kesfet',
+    followerCount: 91,
+    daysAgo: 130,
+  },
+  {
+    username: 'tolga.mizah',
+    displayName: 'Tolga Nar',
+    bio: 'Mühendislik mizahı ve haftalık felaket hikâyeleri. Ciddi işler de yapıyorum, söz.',
+    avatarEmoji: '😄',
+    avatarTone: '#f97a07',
+    provinceCode: '34',
+    locationVisibility: 'province',
+    topics: ['robotik', 'oyun-gelistirme', 'yapay-zeka'],
+    intentMode: 'sosyallesme',
+    followerCount: 2140,
+    daysAgo: 660,
+  },
+];
+
+const ORGANIZATIONS: SeedProfileInput[] = [
+  {
+    username: 'egeteknopark.demo',
+    displayName: 'Ege Teknopark (Demo)',
+    bio: 'Demo kurum hesabı. Atölye, hızlandırma programı ve etkinlik duyuruları.',
+    avatarEmoji: '🏛️',
+    avatarTone: '#0f7d72',
+    kind: 'organization',
+    role: 'organization',
+    verified: true,
+    provinceCode: '35',
+    districtCode: '35-07',
+    locationVisibility: 'district',
+    topics: ['tasarim-urun', 'surdurulebilirlik', 'yapay-zeka'],
+    intentMode: 'uret',
+    followerCount: 3400,
+    daysAgo: 900,
+  },
+  {
+    username: 'anadoluuzay.demo',
+    displayName: 'Anadolu Uzay Kulübü (Demo)',
+    bio: 'Demo kurum hesabı. Öğrenci uzay ve roket topluluğu.',
+    avatarEmoji: '🛰️',
+    avatarTone: '#1d4ed8',
+    kind: 'organization',
+    role: 'organization',
+    verified: true,
+    provinceCode: '06',
+    locationVisibility: 'province',
+    topics: ['havacilik-uzay'],
+    intentMode: 'uret',
+    followerCount: 2210,
+    daysAgo: 830,
+  },
+  {
+    username: 'biyolab.demo',
+    displayName: 'BiyoLab Girişim (Demo)',
+    bio: 'Demo kurum hesabı. Biyoteknoloji laboratuvar ekipmanı ve eğitim.',
+    avatarEmoji: '🧪',
+    avatarTone: '#be123c',
+    kind: 'organization',
+    role: 'organization',
+    verified: true,
+    provinceCode: '34',
+    locationVisibility: 'province',
+    topics: ['biyoteknoloji'],
+    intentMode: 'uret',
+    followerCount: 980,
+    daysAgo: 500,
+  },
+  {
+    username: 'kodkultur.demo',
+    displayName: 'Kod Kültür Derneği (Demo)',
+    bio: 'Demo kurum hesabı. Açık kaynak, siber güvenlik ve topluluk etkinlikleri.',
+    avatarEmoji: '⌨️',
+    avatarTone: '#1c2b44',
+    kind: 'organization',
+    role: 'organization',
+    verified: true,
+    provinceCode: '35',
+    districtCode: '35-21',
+    locationVisibility: 'district',
+    topics: ['siber-guvenlik', 'oyun-gelistirme'],
+    intentMode: 'kesfet',
+    followerCount: 1520,
+    daysAgo: 610,
+  },
+  {
+    username: 'yesilcati.demo',
+    displayName: 'Yeşil Çatı Kooperatifi (Demo)',
+    bio: 'Demo kurum hesabı. Yerel yenilenebilir enerji ve iklim projeleri.',
+    avatarEmoji: '🌿',
+    avatarTone: '#15803d',
+    kind: 'organization',
+    role: 'organization',
+    verified: false,
+    provinceCode: '35',
+    districtCode: '35-30',
+    locationVisibility: 'district',
+    topics: ['surdurulebilirlik'],
+    intentMode: 'uret',
+    followerCount: 460,
+    daysAgo: 240,
+  },
+];
+
+/** Platform yoneticisi - gazete yayini ve ilan onayi icin (PROJECT_SPEC 10.3). */
+const ADMIN: SeedProfileInput = {
+  username: 'admin.demo',
+  displayName: 'nSosyal Yayın Kurulu (Demo)',
+  bio: 'Demo yönetici hesabı. nGazete sayılarını yayımlar, ilan başvurularını karara bağlar.',
+  avatarEmoji: '📰',
+  avatarTone: '#b45309',
+  role: 'admin',
+  verified: true,
+  locationVisibility: 'online_only',
+  topics: ['tasarim-urun'],
+  intentMode: 'kesfet',
+  followerCount: 5120,
+  daysAgo: 900,
+};
+
+export function buildProfiles(now: Date): Profile[] {
+  return [...PEOPLE, ...ORGANIZATIONS, ADMIN].map((input) => build(input, now));
+}
