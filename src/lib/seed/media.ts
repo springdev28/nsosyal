@@ -240,7 +240,7 @@ export const FEED_CLIPS: DemoClip[] = [
       'Hata mesajını hangi alana bağlamam gerektiğini çözemedim. Ekran okuyucu kullanan varsa bu formu bir dener mi?',
   },
   {
-    key: 'feed-roket-ateşleme',
+    key: 'feed-roket-atesleme',
     title: 'Standda ilk ateşleme',
     subtitle: 'Demo · 26 sn',
     tone: '#0f7d72',

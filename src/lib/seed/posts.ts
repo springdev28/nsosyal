@@ -283,7 +283,7 @@ const POSTS: PostInput[] = [
     provinceCode: '35',
     districtCode: '35-07',
     project: 'model-roket-itki',
-    video: { key: 'feed-roket-ateşleme', kind: 'demo' },
+    video: { key: 'feed-roket-atesleme', kind: 'demo' },
     hoursAgo: 26,
     likes: 476,
     comments: 52,
