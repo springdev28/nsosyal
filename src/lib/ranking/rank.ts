@@ -186,11 +186,19 @@ export function explainRanking(
   weights: RankingSignals,
   ctx: RankingContext,
 ): RankingReason | null {
-  const contributions = (Object.keys(signals) as (keyof RankingSignals)[])
-    .map((key) => ({ key, value: signals[key] * weights[key] }))
+  // PROJECT_SPEC 12.3 aciklanabilir gerekce olarak yalnizca su sinyalleri sayar.
+  // Tazelik ve niyet modu disarida: ikisi de bu icerige ozgu bir sey anlatmaz,
+  // neredeyse her kartta gorunur ve aciklamayi gurultuye cevirirdi.
+  const EXPLAINABLE: (keyof RankingSignals)[] = [
+    'topicMatch',
+    'followedSource',
+    'communityMatch',
+    'locationMatch',
+    'explorationBonus',
+  ];
+
+  const contributions = EXPLAINABLE.map((key) => ({ key, value: signals[key] * weights[key] }))
     .filter((entry) => entry.value > 0)
-    // Tazelik tek basina bir oneri gerekcesi degildir; kullaniciya bir sey anlatmaz.
-    .filter((entry) => entry.key !== 'recency')
     .sort((a, b) => b.value - a.value);
 
   const top = contributions[0];
@@ -215,8 +223,6 @@ export function explainRanking(
     }
     case 'explorationBonus':
       return { key: top.key, label: 'Yeni bir üreticiyi keşfetmen için' };
-    case 'intentMatch':
-      return { key: top.key, label: `Akış modun "${intentLabel(ctx.viewer.intentMode)}" olduğu için` };
     default:
       return null;
   }

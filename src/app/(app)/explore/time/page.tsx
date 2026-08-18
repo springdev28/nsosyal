@@ -5,6 +5,7 @@ import { DiscoveryFilterBar, buildFilterHref, parseFilters } from '@/components/
 import { EventCard } from '@/components/discovery/EventCard';
 import { PostCard } from '@/components/feed/PostCard';
 import { Card, EmptyState, InfoNote, SectionHeader } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatDate, formatRelative, isWithin, resolvePreset } from '@/lib/time';
@@ -93,7 +94,7 @@ export default async function TimePage({
 
       <DiscoveryFilterBar base={base} state={filters} topics={topics} />
 
-      <InfoNote icon="🕰️">
+      <InfoNote icon="clock">
         Saatler Europe/Istanbul’a göre gösterilir. “Gelecek” görünümü gelecekte paylaşılacak gönderileri tahmin
         etmez; gerçekleşecek etkinlikleri, son başvuru tarihlerini ve planlanmış demoları gösterir.
       </InfoNote>
@@ -105,7 +106,7 @@ export default async function TimePage({
         />
         {events.length === 0 ? (
           <EmptyState
-            icon="🗓️"
+            icon="calendar"
             title="Bu aralıkta etkinlik yok"
             description="Tarih aralığını genişletebilir veya çevrim içi etkinlikleri dahil edebilirsin."
             action={
@@ -168,9 +169,7 @@ export default async function TimePage({
             {milestones.slice(0, 8).map(({ project, update }) => (
               <li key={update.id}>
                 <Card className="flex flex-wrap items-start gap-3 p-3">
-                  <span aria-hidden="true" className="text-xl">
-                    {project.emoji}
-                  </span>
+                  <CoverBadge seed={project.slug} glyph={project.emoji} size={40} />
                   <span className="min-w-0 flex-1">
                     <Link href={`/projects/${project.slug}`} className="font-medium hover:underline">
                       {project.title}

@@ -100,7 +100,7 @@ export function SettingsForm({
       <Card className="space-y-4 p-4">
         <h2 className="text-lg font-semibold">Konum ve gizlilik</h2>
 
-        <InfoNote icon="🔒">
+        <InfoNote icon="lock">
           Kesin adres ve canlı konum hiçbir zaman toplanmaz. Haritada bireysel kullanıcılar koordinatla
           gösterilmez. Konumunu istediğin an kaldırabilirsin.
         </InfoNote>

@@ -29,7 +29,7 @@ export function ResourceCard({ view, highlighted = false }: { view: ResourceView
         <Badge tone="neutral">{LEVEL_LABEL[resource.level]}</Badge>
         <Badge tone="neutral">{resource.estimatedMinutes} dk</Badge>
         {verified ? (
-          <Badge tone="success" icon={<span aria-hidden="true">✓</span>}>
+          <Badge tone="success" icon="check">
             Moderatör doğrulamalı
           </Badge>
         ) : (
@@ -48,7 +48,7 @@ export function ResourceCard({ view, highlighted = false }: { view: ResourceView
 
       <div className="mt-auto pt-3 text-sm text-fg-subtle">
         <Link href={`/communities/${community.slug}`} className="hover:underline">
-          <span aria-hidden="true">{community.emoji}</span> {community.name}
+          {community.name}
         </Link>
         <span aria-hidden="true"> · </span>
         <Link href={`/profile/${author.username}`} className="hover:underline">

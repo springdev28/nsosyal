@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge } from '@/components/ui';
+import { Badge, Icon } from '@/components/ui';
 
 /**
  * Gunun ilk oturumunda acilan gazete kapagi (PROJECT_SPEC 6.6 / 7.9).
@@ -20,7 +20,6 @@ export function NewspaperAutoOpen({
   issueDate,
   title,
   standfirst,
-  coverEmoji,
   leadTitle,
   sponsoredCount,
   closeDelaySeconds,
@@ -28,7 +27,6 @@ export function NewspaperAutoOpen({
   issueDate: string;
   title: string;
   standfirst: string;
-  coverEmoji: string;
   leadTitle: string;
   sponsoredCount: number;
   closeDelaySeconds: number;
@@ -119,9 +117,12 @@ export function NewspaperAutoOpen({
         className="card max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-b-none p-5 sm:rounded-[var(--radius-card)]"
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span aria-hidden="true" className="text-2xl">
-              {coverEmoji}
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent"
+            >
+              <Icon name="newspaper" size={22} />
             </span>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">Günün sayısı</p>
@@ -136,9 +137,13 @@ export function NewspaperAutoOpen({
             type="button"
             onClick={dismiss}
             disabled={remaining > 0}
-            className="inline-flex h-11 min-w-11 items-center justify-center rounded-full border border-line px-3 text-sm font-semibold disabled:opacity-50"
+            className="inline-flex h-11 min-w-11 items-center justify-center rounded-full text-sm font-semibold ring-1 ring-[var(--border)] transition-colors hover:bg-bg-hover disabled:opacity-50"
           >
-            {remaining > 0 ? <span aria-hidden="true">{remaining}</span> : <span aria-hidden="true">✕</span>}
+            {remaining > 0 ? (
+              <span aria-hidden="true">{remaining}</span>
+            ) : (
+              <Icon name="close" size={18} aria-hidden="true" />
+            )}
             <span className="sr-only">{remaining > 0 ? `${remaining} saniye sonra kapatılabilir` : 'Kapat'}</span>
           </button>
         </div>
@@ -148,7 +153,7 @@ export function NewspaperAutoOpen({
         </p>
 
         {leadTitle ? (
-          <p className="mt-4 rounded-xl border border-line bg-bg-sunken p-3 font-serif text-lg leading-snug">
+          <p className="mt-4 rounded-2xl bg-bg-sunken p-3.5 font-serif text-lg leading-snug ring-1 ring-[var(--border)]">
             {leadTitle}
           </p>
         ) : null}
@@ -165,7 +170,7 @@ export function NewspaperAutoOpen({
           <Link
             href="/newspaper"
             onClick={dismiss}
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-accent px-4 font-semibold text-accent-fg"
+            className="btn-gradient inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4"
           >
             Gazeteyi aç
           </Link>
@@ -173,7 +178,7 @@ export function NewspaperAutoOpen({
             type="button"
             onClick={dismiss}
             disabled={remaining > 0}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 font-semibold disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-full px-4 font-semibold ring-1 ring-[var(--border)] transition-colors hover:bg-bg-hover disabled:opacity-50"
           >
             Sonra
           </button>

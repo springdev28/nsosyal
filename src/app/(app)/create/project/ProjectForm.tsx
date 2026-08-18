@@ -112,7 +112,7 @@ export function ProjectForm({
                 className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:font-semibold has-[:checked]:text-accent"
               >
                 <input type="checkbox" name="topics" value={topic.id} className="sr-only" />
-                <span aria-hidden="true">{topic.emoji}</span>
+                
                 {topic.name}
               </label>
             ))}
@@ -168,7 +168,7 @@ export function ProjectForm({
 
       <Card className="space-y-4 p-4">
         <h2 className="font-semibold">Pitch videosu (isteğe bağlı)</h2>
-        <InfoNote icon="🎬">
+        <InfoNote icon="video">
           En fazla {MAX_VIDEO_SECONDS} saniye, 50 MB, MP4 veya WebM. Prototipte videolar dönüştürülmez; küçük
           bir dosya yükle.
         </InfoNote>
@@ -228,7 +228,6 @@ export function ProjectForm({
                   className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:font-semibold has-[:checked]:text-accent"
                 >
                   <input type="checkbox" name="communities" value={community.id} className="sr-only" />
-                  <span aria-hidden="true">{community.emoji}</span>
                   {community.name}
                 </label>
               ))}

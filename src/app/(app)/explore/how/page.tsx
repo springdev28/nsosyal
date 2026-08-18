@@ -75,7 +75,7 @@ export default async function HowPage({
         description="Toplulukların kendi deneyimlerinden ürettiği kısa rehberler, kontrol listeleri ve derlemeler."
       />
 
-      <InfoNote icon="🧭">
+      <InfoNote icon="route">
         Burası bir kurs platformu değil. Kaynaklar topluluk katkısıdır; moderatör doğrulaması yalnızca yetkili
         bir işlemle verilir ve kartta açıkça görünür. Şu an {verifiedCount} kaynak doğrulanmış.
       </InfoNote>
@@ -126,7 +126,7 @@ export default async function HowPage({
           </FilterChip>
           {topics.map((entry) => (
             <FilterChip key={entry.id} href={href({ topic: entry.slug })} active={topic?.id === entry.id}>
-              <span aria-hidden="true">{entry.emoji}</span> {entry.name}
+              {entry.name}
             </FilterChip>
           ))}
         </ChipRow>
@@ -134,7 +134,7 @@ export default async function HowPage({
 
       {resources.length === 0 ? (
         <EmptyState
-          icon="🧭"
+          icon="route"
           title="Bu filtrede kaynak yok"
           description="Seviye veya tür filtresini gevşetebilirsin. Kaynaklar topluluk sayfalarındaki Kaynaklar sekmesinden de eklenir."
           action={

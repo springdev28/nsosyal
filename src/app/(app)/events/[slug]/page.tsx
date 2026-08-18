@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { cancelReminder, createReminder } from '@/actions/social';
-import { Badge, Card, InfoNote, SectionHeader } from '@/components/ui';
+import { Badge, Card, InfoNote, SectionHeader, Icon } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatDate, formatEventRange, formatRelative, formatWeekday } from '@/lib/time';
@@ -36,16 +37,13 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/explore/time" className="text-fg-muted hover:underline">
-          ← Ne zaman
+        <Link href="/explore/time" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Ne zaman
         </Link>
       </p>
 
       <Card className="p-4 sm:p-6">
         <div className="flex flex-wrap items-start gap-3">
-          <span aria-hidden="true" className="text-4xl">
-            {event.emoji}
-          </span>
+          <CoverBadge seed={event.slug} glyph={event.emoji} size={64} />
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight">{event.title}</h1>
             <p className="mt-1 text-fg-muted">{event.description}</p>
@@ -115,7 +113,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                   type="submit"
                   className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-success/50 bg-success-soft px-4 text-sm font-semibold text-success"
                 >
-                  <span aria-hidden="true">✓</span> Hatırlatma kurulu · kaldır
+                  <Icon name="check" size={15} /> Hatırlatma kurulu · kaldır
                 </button>
               </form>
             ) : (
@@ -152,9 +150,6 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <section aria-labelledby="event-community">
           <SectionHeader title={<span id="event-community">Düzenleyen topluluk</span>} />
           <Link href={`/communities/${view.community.slug}`} className="card block p-4 hover:border-accent">
-            <span aria-hidden="true" className="mr-1">
-              {view.community.emoji}
-            </span>
             <span className="font-medium">{view.community.name}</span>
           </Link>
         </section>
@@ -168,14 +163,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 href={`/explore?topic=${topic.slug}`}
                 className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-fg-muted hover:border-line-strong"
               >
-                <span aria-hidden="true">{topic.emoji}</span> {topic.name}
+                {topic.name}
               </Link>
             </li>
           ))}
         </ul>
       ) : null}
 
-      <InfoNote icon="📋">
+      <InfoNote icon="info">
         Bu etkinlik sentetik demo verisidir. Gerçek bir organizasyonu, mekânı veya tarihi temsil etmez.
       </InfoNote>
     </div>

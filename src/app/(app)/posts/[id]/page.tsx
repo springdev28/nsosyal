@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { PostCard } from '@/components/feed/PostCard';
 import { CommentForm } from '@/components/feed/CommentForm';
-import { Avatar, Card, EmptyState, SectionHeader } from '@/components/ui';
+import { Avatar, Card, EmptyState, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatRelative } from '@/lib/time';
@@ -25,8 +25,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/feed" className="text-fg-muted hover:underline">
-          ← Ana akış
+        <Link href="/feed" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Ana akış
         </Link>
       </p>
 
@@ -40,7 +39,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         {comments.length === 0 ? (
           <div className="mt-3">
             <EmptyState
-              icon="💬"
+              icon="message"
               title="Henüz yorum yok"
               description="İlk yorumu sen yazabilirsin. Soru sormak da bir yorumdur."
             />

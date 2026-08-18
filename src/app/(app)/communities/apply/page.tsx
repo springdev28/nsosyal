@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Badge, Card, SectionHeader } from '@/components/ui';
+import { Badge, Card, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { DISTRICTS, PROVINCES } from '@/lib/geo';
@@ -29,8 +29,7 @@ export default async function ApplyPage() {
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/communities" className="text-fg-muted hover:underline">
-          ← Topluluklar
+        <Link href="/communities" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Topluluklar
         </Link>
       </p>
 

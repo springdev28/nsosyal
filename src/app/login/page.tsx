@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { signInAsDemoAccount, startOnboarding } from '@/actions/auth';
-import { Avatar, Badge, Button, Card, ErrorNote, InfoNote } from '@/components/ui';
+import { Avatar, Badge, Button, Card, ErrorNote, InfoNote, Icon } from '@/components/ui';
 import { DEMO_ACCOUNTS } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 
@@ -66,9 +66,7 @@ export default async function LoginPage({
                       <span className="mt-0.5 block text-sm text-fg-muted">{account.description}</span>
                       <span className="mt-1 block text-xs text-fg-subtle">Gösterir: {account.showcase}</span>
                     </span>
-                    <span aria-hidden="true" className="text-fg-subtle">
-                      →
-                    </span>
+                    <Icon name="chevronRight" size={16} className="text-fg-subtle" />
                   </button>
                 </form>
               </li>
@@ -90,7 +88,7 @@ export default async function LoginPage({
         </form>
       </Card>
 
-      <InfoNote icon="🔐">
+      <InfoNote icon="lock">
         Bu prototipte parola doğrulaması yoktur; oturum yalnızca seçilen demo hesabını tutar. Gerçek kimlik
         doğrulama Supabase Auth ile yapılacaktır (bkz. <code>docs/architecture.md</code>).
       </InfoNote>

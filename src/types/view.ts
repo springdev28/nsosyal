@@ -6,6 +6,7 @@
  * (demo store / Supabase) arayuz aynen calisir.
  */
 
+import type { IconName } from '@/components/ui/Icon';
 import type {
   AdRequest,
   AppEvent,
@@ -34,7 +35,8 @@ export interface ContextChip {
   dimension: Dimension;
   label: string;
   href: string | null;
-  icon: string;
+  /** Uygulama ikon setinden bir ad (emoji degil). */
+  icon: IconName;
 }
 
 export interface ProfileSummary {

@@ -2,21 +2,23 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { markNotificationsRead } from '@/actions/social';
-import { Badge, Card, EmptyState, SectionHeader } from '@/components/ui';
+import { Badge, Card, EmptyState, Icon, SectionHeader, type IconName } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatEventRange, formatRelative } from '@/lib/time';
 
 export const metadata: Metadata = { title: 'Bildirimler' };
 
-const TYPE_ICON: Record<string, string> = {
-  event_reminder: '🔔',
-  community_application: '🛡️',
-  community_joined: '👥',
-  comment: '💬',
-  moderation: '⚖️',
-  newspaper: '📰',
-  ad_request: '📢',
+/** Bildirim turune gore ikon. */
+const TYPE_ICON: Record<string, IconName> = {
+  event_reminder: 'bell',
+  community_application: 'shield',
+  community_joined: 'users',
+  comment: 'message',
+  moderation: 'check',
+  newspaper: 'newspaper',
+  ad_request: 'megaphone',
 };
 
 /** Uygulama ici bildirim merkezi (PROJECT_SPEC 6.1 ekran 21). */
@@ -58,9 +60,7 @@ export default async function NotificationsPage() {
             {reminders.map((entry) => (
               <li key={entry.reminder.id}>
                 <Card className="flex flex-wrap items-center gap-3 p-3">
-                  <span aria-hidden="true" className="text-xl">
-                    {entry.event.emoji}
-                  </span>
+                  <CoverBadge seed={entry.event.slug} glyph={entry.event.emoji} size={40} />
                   <span className="min-w-0 flex-1">
                     <Link href={`/events/${entry.event.slug}`} className="font-medium hover:underline">
                       {entry.event.title}
@@ -87,7 +87,7 @@ export default async function NotificationsPage() {
 
         {notifications.length === 0 ? (
           <EmptyState
-            icon="🔔"
+            icon="bell"
             title="Bildirim yok"
             description="Bir etkinliğe hatırlatma kurduğunda veya bir topluluğa katıldığında burada görünür."
             action={
@@ -103,8 +103,8 @@ export default async function NotificationsPage() {
               const content = (
                 <>
                   <div className="flex items-start gap-3">
-                    <span aria-hidden="true" className="text-xl">
-                      {TYPE_ICON[notification.type] ?? '•'}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-sunken text-accent">
+                      <Icon name={TYPE_ICON[notification.type] ?? 'info'} size={17} />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">

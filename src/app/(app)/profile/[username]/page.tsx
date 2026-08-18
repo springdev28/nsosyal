@@ -137,7 +137,7 @@ export default async function ProfilePage({
                     href={`/explore?topic=${topic.slug}`}
                     className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-fg-muted hover:border-line-strong"
                   >
-                    <span aria-hidden="true">{topic.emoji}</span> {topic.name}
+                    {topic.name}
                   </Link>
                 </li>
               );
@@ -166,7 +166,7 @@ export default async function ProfilePage({
 
       {tab === 'gonderiler' ? (
         posts.length === 0 ? (
-          <EmptyState icon="💬" title="Henüz gönderi yok" description="Paylaşımlar burada listelenir." />
+          <EmptyState icon="message" title="Henüz gönderi yok" description="Paylaşımlar burada listelenir." />
         ) : (
           <ol className="space-y-3">
             {posts.map((view) => (
@@ -180,14 +180,14 @@ export default async function ProfilePage({
 
       {tab === 'projeler' ? (
         projects.length === 0 ? (
-          <EmptyState icon="🧪" title="Henüz proje yok" description="Oluşturulan projeler burada listelenir." />
+          <EmptyState icon="beaker" title="Henüz proje yok" description="Oluşturulan projeler burada listelenir." />
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {projects.map((project) => (
               <li key={project.id}>
                 <Card className="h-full p-4">
                   <Link href={`/projects/${project.slug}`} className="font-semibold hover:underline">
-                    <span aria-hidden="true">{project.emoji}</span> {project.title}
+                    {project.title}
                   </Link>
                   <p className="mt-1 text-sm text-fg-muted">{project.summary}</p>
                 </Card>
@@ -200,7 +200,7 @@ export default async function ProfilePage({
       {tab === 'neden' ? (
         whyStories.length === 0 ? (
           <EmptyState
-            icon="💭"
+            icon="spark"
             title="Henüz Neden hikâyesi yok"
             description="Bir alana ya da projeye nasıl yöneldiğini anlatan hikâyeler burada görünür."
           />
@@ -223,15 +223,12 @@ export default async function ProfilePage({
 
       {tab === 'topluluklar' ? (
         communities.length === 0 ? (
-          <EmptyState icon="👥" title="Üye olunan topluluk yok" description="Katılınan topluluklar burada görünür." />
+          <EmptyState icon="users" title="Üye olunan topluluk yok" description="Katılınan topluluklar burada görünür." />
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {communities.map((community) => (
               <li key={community.id}>
                 <Link href={`/communities/${community.slug}`} className="card block p-3 hover:border-accent">
-                  <span aria-hidden="true" className="mr-1">
-                    {community.emoji}
-                  </span>
                   <span className="font-medium">{community.name}</span>
                 </Link>
               </li>
@@ -243,7 +240,7 @@ export default async function ProfilePage({
       {tab === 'kaydedilenler' && isSelf ? (
         saved.length === 0 ? (
           <EmptyState
-            icon="🔖"
+            icon="bookmark"
             title="Kaydedilen gönderi yok"
             description="Akıştaki kartlarda Kaydet düğmesini kullanabilirsin."
           />

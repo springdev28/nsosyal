@@ -22,7 +22,7 @@ export default async function AboutPage() {
         description="Bağlamsal sosyal keşif katmanı prototipi. Tüm içerik sentetik demo verisidir."
       />
 
-      <InfoNote icon="🧪">
+      <InfoNote icon="beaker">
         Bu bir yarışma prototipidir. Profiller, kurumlar, projeler, etkinlikler ve gazete içerikleri
         tamamen kurgusaldır; gerçek bir kişiyi, kurumu veya olayı temsil etmez.
       </InfoNote>

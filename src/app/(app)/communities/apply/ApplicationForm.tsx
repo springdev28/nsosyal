@@ -72,7 +72,7 @@ export function ApplicationForm({
           />
           {similar.length > 0 ? (
             <div className="mt-2">
-              <InfoNote icon="⚠️">
+              <InfoNote icon="info">
                 Benzer isimli topluluk(lar) zaten var: <strong>{similar.join(', ')}</strong>. Kapsamın farklıysa
                 başvurabilirsin; moderatör bu farkı görmek isteyecek.
               </InfoNote>
@@ -231,7 +231,7 @@ export function ApplicationForm({
         </div>
       </Card>
 
-      <InfoNote icon="🛡️">
+      <InfoNote icon="shield">
         Başvurun doğrudan topluluk açmaz. Moderatör inceler; onaylanırsa topluluk açılır ve sen ilk yöneticisi
         olursun. Reddedilirse gerekçeyi bildirimlerde görürsün.
       </InfoNote>

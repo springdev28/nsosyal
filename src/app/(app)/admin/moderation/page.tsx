@@ -40,14 +40,14 @@ export default async function ModerationPage() {
         description="Topluluklar doğrudan açılmaz. Onaylanan başvuru topluluğu oluşturur ve başvuranı yönetici yapar."
       />
 
-      <InfoNote icon="🔎">
+      <InfoNote icon="search">
         Benzer isimli aktif topluluklar her başvurunun altında listelenir; bu, aynı alanın tekrar tekrar
         açılmasını önlemek içindir.
       </InfoNote>
 
       {pending.length === 0 ? (
         <EmptyState
-          icon="✅"
+          icon="check"
           title="Bekleyen başvuru yok"
           description="Yeni başvurular geldiğinde burada ve bildirimlerinde görünür."
         />

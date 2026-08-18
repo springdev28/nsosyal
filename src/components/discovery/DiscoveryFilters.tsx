@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { ChipRow, FilterChip } from '@/components/ui';
+import { ChipRow, FilterChip, Icon } from '@/components/ui';
 import { DISTRICTS, PROVINCES } from '@/lib/geo';
 import { PRESET_LABELS, type TimePreset } from '@/lib/time';
 import type { Topic } from '@/types/domain';
@@ -110,7 +110,7 @@ export function DiscoveryFilterBar({
               href={buildFilterHref(base, state, { topic: entry.slug })}
               active={state.topic === entry.slug}
             >
-              <span aria-hidden="true">{entry.emoji}</span> {entry.name}
+              {entry.name}
             </FilterChip>
           ))}
         </FilterGroup>
@@ -194,7 +194,7 @@ function ActiveFilter({ label, href }: { label: string; href: string }) {
       className="inline-flex items-center gap-1 rounded-full border border-line bg-bg-sunken px-2 py-0.5 hover:border-line-strong"
     >
       {label}
-      <span aria-hidden="true">✕</span>
+      <Icon name="close" size={12} />
       <span className="sr-only">filtresini kaldır</span>
     </Link>
   );

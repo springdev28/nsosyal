@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { AppShell, type TrendingTopic } from '@/components/layout/AppShell';
 import { NewspaperAutoOpen } from '@/components/newspaper/NewspaperAutoOpen';
-import { AppShell } from '@/components/layout/AppShell';
 import {
   getViewer,
   hasCompletedOnboarding,
@@ -29,12 +29,25 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const alreadySeen = await hasSeenTodaysNewspaper(todayKey);
   const reducedMotion = await prefersReducedMotion();
 
+  // Sag paneldeki "Popüler" listesi: konuya bagli gonderi sayilari.
+  const posts = store.getFeed({ viewerId: null, limit: 500 });
+  const trending: TrendingTopic[] = store
+    .getTopics()
+    .map((topic) => ({
+      slug: topic.slug,
+      name: topic.name,
+      postCount: posts.filter((view) => view.post.topicIds.includes(topic.id)).length,
+    }))
+    .sort((a, b) => b.postCount - a.postCount)
+    .slice(0, 6);
+
   return (
     <>
       <AppShell
         viewer={viewer}
         unreadCount={store.unreadNotificationCount(viewer.id)}
         hasNewIssue={Boolean(issue) && !alreadySeen}
+        trending={trending}
       >
         {children}
       </AppShell>
@@ -44,7 +57,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           issueDate={issue.issue.issueDate}
           title={issue.issue.title}
           standfirst={issue.issue.standfirst}
-          coverEmoji={issue.issue.coverEmoji}
           leadTitle={issue.items[0]?.item.title ?? ''}
           sponsoredCount={issue.items.filter((entry) => entry.item.sponsored).length}
           /* Erisilebilirlik tercihi varsa bekleme uygulanmaz (PROJECT_SPEC 7.9). */

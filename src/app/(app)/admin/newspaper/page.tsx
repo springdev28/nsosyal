@@ -44,7 +44,7 @@ export default async function AdminNewspaperPage() {
         description="İlan başvurularını karara bağla ve onaylananları bir sayıya yerleştir."
       />
 
-      <InfoNote icon="🚧">
+      <InfoNote icon="info">
         Onaylanan ilan yalnızca gazete sayısına “Sponsorlu” kart olarak eklenir. Sıralama kodunda sponsorlu bir
         alan yoktur; ödeme hiçbir kullanıcının akışını değiştiremez.
       </InfoNote>
@@ -54,7 +54,7 @@ export default async function AdminNewspaperPage() {
 
         {pending.length === 0 ? (
           <EmptyState
-            icon="📰"
+            icon="newspaper"
             title="Bekleyen ilan başvurusu yok"
             description="Kurum hesapları başvuru gönderdiğinde burada listelenir."
           />
@@ -172,7 +172,7 @@ export default async function AdminNewspaperPage() {
                 className="card block p-3 hover:border-accent"
               >
                 <span className="font-medium">
-                  <span aria-hidden="true">{entry.issue.coverEmoji}</span>{' '}
+                  {' '}
                   {formatDate(`${entry.issue.issueDate}T09:00:00Z`)}
                 </span>
                 <span className="mt-0.5 block text-sm text-fg-subtle">

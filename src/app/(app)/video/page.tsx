@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { toggleLike, toggleSave } from '@/actions/social';
-import { Avatar, Badge, ChipRow, EmptyState, FilterChip, InfoNote } from '@/components/ui';
+import { Avatar, Badge, ChipRow, EmptyState, FilterChip, InfoNote, Icon } from '@/components/ui';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
@@ -49,8 +49,7 @@ export default async function VideoFeedPage({
         <Link
           href="/feed"
           className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-semibold hover:bg-bg-sunken"
-        >
-          ← Ana akış
+        ><Icon name="arrowLeft" size={15} />Ana akış
         </Link>
       </div>
 
@@ -66,13 +65,13 @@ export default async function VideoFeedPage({
         ))}
       </ChipRow>
 
-      <InfoNote icon="🎬">
+      <InfoNote icon="video">
         Videolar sentetik demo klipleridir. Ses kullanıcının kontrolündedir; her klibin metin karşılığı vardır.
       </InfoNote>
 
       {videos.length === 0 ? (
         <EmptyState
-          icon="🎬"
+          icon="video"
           title="Bu türde video yok"
           description="Başka bir tür seçebilir veya tüm videolara dönebilirsin."
           action={
@@ -126,7 +125,7 @@ export default async function VideoFeedPage({
                           href={`/projects/${view.project.slug}`}
                           className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent px-3 text-sm font-semibold text-accent-fg"
                         >
-                          <span aria-hidden="true">{view.project.emoji}</span> Projeyi incele
+                          Projeyi incele
                         </Link>
                       ) : null}
                       {view.community ? (
@@ -134,7 +133,7 @@ export default async function VideoFeedPage({
                           href={`/communities/${view.community.slug}`}
                           className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line px-3 text-sm font-semibold hover:bg-bg-sunken"
                         >
-                          <span aria-hidden="true">{view.community.emoji}</span> Topluluğa git
+                          Topluluğa git
                         </Link>
                       ) : null}
                       {view.whyStory ? (

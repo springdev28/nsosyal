@@ -30,7 +30,7 @@ export function AdRequestForm({
         </p>
       ) : null}
 
-      <InfoNote icon="💳">
+      <InfoNote icon="megaphone">
         Bu prototipte ödeme altyapısı yoktur. Başvurun “incelemede” durumunda kaydedilir; yönetici onayladığında
         seçtiğin sayıda “Sponsorlu” etiketiyle görünür.
       </InfoNote>

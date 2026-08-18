@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Badge, Card, InfoNote, SectionHeader } from '@/components/ui';
+import { Badge, Card, InfoNote, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatDate, formatRelative } from '@/lib/time';
@@ -34,8 +34,7 @@ export default async function AdvertisePage() {
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/newspaper" className="text-fg-muted hover:underline">
-          ← nGazete
+        <Link href="/newspaper" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />nGazete
         </Link>
       </p>
 
@@ -46,7 +45,7 @@ export default async function AdvertisePage() {
       />
 
       {!canAdvertise ? (
-        <InfoNote icon="🏛️">
+        <InfoNote icon="building">
           İlan başvurusunu yalnızca kurum hesapları gönderebilir. Demoda kurum akışını görmek için{' '}
           <Link href="/login" className="underline">
             Ege Teknopark demo hesabıyla

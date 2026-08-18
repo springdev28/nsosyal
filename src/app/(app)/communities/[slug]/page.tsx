@@ -6,7 +6,8 @@ import { joinCommunity, leaveCommunity } from '@/actions/social';
 import { EventCard } from '@/components/discovery/EventCard';
 import { ResourceCard } from '@/components/discovery/ResourceCard';
 import { PostCard } from '@/components/feed/PostCard';
-import { Avatar, Badge, Card, EmptyState, SectionHeader } from '@/components/ui';
+import { Avatar, Badge, Card, EmptyState, SectionHeader, Icon } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatDate } from '@/lib/time';
@@ -67,9 +68,7 @@ export default async function CommunityPage({
     <div className="space-y-4">
       <Card className="p-4">
         <div className="flex flex-wrap items-start gap-3">
-          <span aria-hidden="true" className="text-4xl">
-            {community.emoji}
-          </span>
+          <CoverBadge seed={community.slug} glyph={community.emoji} size={64} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">{community.name}</h1>
@@ -95,7 +94,7 @@ export default async function CommunityPage({
                 type="submit"
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-4 text-sm font-semibold hover:bg-bg-sunken"
               >
-                <span aria-hidden="true">✓</span> Üyesin
+                <Icon name="check" size={15} /> Üyesin
               </button>
             </form>
           ) : (
@@ -148,7 +147,7 @@ export default async function CommunityPage({
       {tab === 'akis' ? (
         posts.length === 0 ? (
           <EmptyState
-            icon="💬"
+            icon="message"
             title="Henüz gönderi yok"
             description="İlk sohbeti sen başlat. Soru sormak da bir başlangıçtır."
             action={
@@ -171,7 +170,7 @@ export default async function CommunityPage({
       {tab === 'kaynaklar' ? (
         resources.length === 0 ? (
           <EmptyState
-            icon="🧭"
+            icon="route"
             title="Bu toplulukta henüz kaynak yok"
             description="Nasıl kaynakları, topluluğun kendi deneyiminden çıkan kısa rehberlerdir."
             action={
@@ -194,7 +193,7 @@ export default async function CommunityPage({
       {tab === 'etkinlikler' ? (
         events.length === 0 ? (
           <EmptyState
-            icon="🗓️"
+            icon="calendar"
             title="Planlanmış etkinlik yok"
             description="Topluluk etkinlikleri burada listelenir ve hatırlatma kurabilirsin."
           />
@@ -212,7 +211,7 @@ export default async function CommunityPage({
       {tab === 'projeler' ? (
         projects.length === 0 ? (
           <EmptyState
-            icon="🧪"
+            icon="beaker"
             title="Bu topluluğa bağlı proje yok"
             description="Projeni oluştururken bu topluluğu seçersen burada görünür."
             action={
@@ -227,7 +226,7 @@ export default async function CommunityPage({
               <li key={project.id}>
                 <Card className="h-full p-4">
                   <Link href={`/projects/${project.slug}`} className="font-semibold hover:underline">
-                    <span aria-hidden="true">{project.emoji}</span> {project.title}
+                    {project.title}
                   </Link>
                   <p className="mt-1 text-sm text-fg-muted">{project.summary}</p>
                 </Card>

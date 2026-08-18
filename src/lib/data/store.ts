@@ -392,10 +392,11 @@ export class DemoStore {
     const whyStory = this.whyStorySummary(post.whyStoryId);
     const resource = this.resourceSummary(post.resourceId);
 
+    // Chip ikonlari uygulama ikon setinden gelir (emoji degil).
     const chips: ContextChip[] = [];
     const topic = topics[0];
     if (topic) {
-      chips.push({ dimension: 'ne', label: topic.name, href: `/explore?topic=${topic.slug}`, icon: topic.emoji });
+      chips.push({ dimension: 'ne', label: topic.name, href: `/explore?topic=${topic.slug}`, icon: 'tag' });
     }
     const place = districtName(post.districtCode) ?? provinceName(post.provinceCode);
     if (place) {
@@ -403,17 +404,17 @@ export class DemoStore {
         dimension: 'nerede',
         label: place,
         href: `/explore/map?province=${post.provinceCode}${post.districtCode ? `&district=${post.districtCode}` : ''}`,
-        icon: '📍',
+        icon: 'mapPin',
       });
     }
     if (event) {
-      chips.push({ dimension: 'nezaman', label: 'Etkinlik', href: `/events/${event.slug}`, icon: '🗓️' });
+      chips.push({ dimension: 'nezaman', label: 'Etkinlik', href: `/events/${event.slug}`, icon: 'calendar' });
     }
     if (resource) {
-      chips.push({ dimension: 'nasil', label: 'Kaynak', href: `/explore/how?resource=${resource.id}`, icon: '🧭' });
+      chips.push({ dimension: 'nasil', label: 'Kaynak', href: `/explore/how?resource=${resource.id}`, icon: 'route' });
     }
     if (whyStory) {
-      chips.push({ dimension: 'neden', label: 'Neden hikâyesi', href: `/explore/why/${whyStory.id}`, icon: '💭' });
+      chips.push({ dimension: 'neden', label: 'Neden hikâyesi', href: `/explore/why/${whyStory.id}`, icon: 'spark' });
     }
 
     return {

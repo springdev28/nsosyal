@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { DiscoveryFilterBar, parseFilters } from '@/components/discovery/DiscoveryFilters';
 import { EventCard } from '@/components/discovery/EventCard';
 import { Card, EmptyState, SectionHeader } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { resolvePreset } from '@/lib/time';
@@ -99,7 +100,7 @@ export default async function ExplorePage({
           {results.communities.length + results.events.length + results.projects.length + results.posts.length ===
           0 ? (
             <EmptyState
-              icon="🔍"
+              icon="search"
               title="Bu filtrelerde sonuç bulunamadı"
               description="Aramayı sadeleştir, tarihi genişlet veya konuyu kaldır."
               action={
@@ -126,7 +127,7 @@ export default async function ExplorePage({
                     <li key={view.community.id}>
                       <Card className="h-full p-4">
                         <Link href={`/communities/${view.community.slug}`} className="font-semibold hover:underline">
-                          <span aria-hidden="true">{view.community.emoji}</span> {view.community.name}
+                          {view.community.name}
                         </Link>
                         <p className="mt-1 text-sm text-fg-muted">{view.community.description}</p>
                       </Card>
@@ -141,7 +142,7 @@ export default async function ExplorePage({
                     <li key={project.id}>
                       <Card className="h-full p-4">
                         <Link href={`/projects/${project.slug}`} className="font-semibold hover:underline">
-                          <span aria-hidden="true">{project.emoji}</span> {project.title}
+                          {project.title}
                         </Link>
                         <p className="mt-1 text-sm text-fg-muted">{project.summary}</p>
                       </Card>
@@ -200,9 +201,7 @@ export default async function ExplorePage({
                 href={`/communities/${community.slug}`}
                 className="card flex h-full flex-col gap-1 p-3 transition-colors hover:border-accent"
               >
-                <span aria-hidden="true" className="text-2xl">
-                  {community.emoji}
-                </span>
+                <CoverBadge seed={community.slug} glyph={community.emoji} size={44} />
                 <span className="font-medium">{community.name}</span>
                 <span className="text-xs text-fg-subtle">
                   {community.memberCount.toLocaleString('tr-TR')} üye

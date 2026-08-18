@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Avatar, Badge, Card, DemoBadge, SectionHeader } from '@/components/ui';
+import { Avatar, Badge, Card, DemoBadge, SectionHeader, Icon } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { getStore } from '@/lib/data/store';
 import { formatDate } from '@/lib/time';
@@ -33,8 +34,7 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/explore/why" className="text-fg-muted hover:underline">
-          ← Neden panosu
+        <Link href="/explore/why" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Neden panosu
         </Link>
       </p>
 
@@ -76,7 +76,7 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
                   href={`/explore?topic=${topic.slug}`}
                   className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-fg-muted hover:border-line-strong"
                 >
-                  <span aria-hidden="true">{topic.emoji}</span> {topic.name}
+                  {topic.name}
                 </Link>
               </li>
             ))}
@@ -92,9 +92,7 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
           />
           <Card className="p-4">
             <div className="flex items-start gap-3">
-              <span aria-hidden="true" className="text-3xl">
-                {project.project.emoji}
-              </span>
+              <CoverBadge seed={project.project.slug} glyph={project.project.emoji} size={56} />
               <div className="min-w-0 flex-1">
                 <h3 className="text-lg font-semibold">
                   <Link href={`/projects/${project.project.slug}`} className="hover:underline">
@@ -134,9 +132,6 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
             href={`/communities/${linkedCommunity.slug}`}
             className="mt-2 inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
           >
-            <span aria-hidden="true" className="mr-1">
-              {linkedCommunity.emoji}
-            </span>
             {linkedCommunity.name} topluluğuna git
           </Link>
         </Card>

@@ -1,29 +1,35 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { Avatar } from '@/components/ui';
+import { Avatar, Icon } from '@/components/ui';
 import type { Profile } from '@/types/domain';
 
-import { MainNav, MobileNav, NAV_ITEMS } from './Nav';
+import { MainNav, MobileNav } from './Nav';
+
+export interface TrendingTopic {
+  slug: string;
+  name: string;
+  postCount: number;
+}
 
 /**
- * Uygulama kabugu (PROJECT_SPEC 8.2).
+ * Uygulama kabugu.
  *
- * Mobil (<768px): ust baslik + alt navigasyon, tam genislik icerik.
- * Tablet/masaustu: sol ana navigasyon, merkez icerik, istege bagli sag panel.
+ * nsosyal.com yerlesimi: sol gezinme, merkez icerik kolonu, sag panel (arama +
+ * Populer). Mobilde sag panel gizlenir, gezinme alta iner (PROJECT_SPEC 8.2).
  */
 export function AppShell({
   viewer,
   unreadCount,
   hasNewIssue,
+  trending,
   children,
-  aside,
 }: {
   viewer: Profile | null;
   unreadCount: number;
   hasNewIssue: boolean;
+  trending: TrendingTopic[];
   children: ReactNode;
-  aside?: ReactNode;
 }) {
   return (
     <div className="min-h-dvh bg-bg">
@@ -31,20 +37,40 @@ export function AppShell({
         İçeriğe atla
       </a>
 
-      <TopBar viewer={viewer} unreadCount={unreadCount} />
+      <MobileTopBar viewer={viewer} unreadCount={unreadCount} />
 
-      <div className="mx-auto flex w-full max-w-[1400px] gap-6 px-3 pb-24 pt-3 md:px-5 md:pb-6 lg:gap-8">
-        <MainNav hasNewIssue={hasNewIssue} viewer={viewer} />
+      <div className="mx-auto flex w-full max-w-[1380px] gap-5 px-3 pb-24 lg:px-6 lg:pb-6 xl:gap-7">
+        <MainNav viewer={viewer} unreadCount={unreadCount} hasNewIssue={hasNewIssue} />
 
-        <main id="main" className="min-w-0 flex-1 py-1">
+        <main id="main" className="min-w-0 flex-1 py-3 lg:max-w-[720px]">
           {children}
         </main>
 
-        {aside ? (
-          <aside className="hidden w-[320px] shrink-0 py-1 xl:block" aria-label="Bağlam paneli">
-            <div className="sticky top-[4.5rem] space-y-4">{aside}</div>
-          </aside>
-        ) : null}
+        <aside className="hidden w-[320px] shrink-0 xl:block" aria-label="Arama ve gündem">
+          <div className="rail space-y-4 py-3">
+            <div className="flex items-center gap-2">
+              <SearchBox />
+              {viewer ? (
+                <Link
+                  href={`/profile/${viewer.username}`}
+                  className="shrink-0 rounded-full"
+                  aria-label={`${viewer.displayName} profili`}
+                >
+                  <Avatar profile={viewer} size={40} />
+                </Link>
+              ) : null}
+            </div>
+
+            <TrendingCard trending={trending} />
+
+            <p className="px-1 text-xs leading-relaxed text-fg-subtle">
+              Yarışma prototipi · tüm hesaplar, gönderiler ve etkinlikler sentetik demo verisidir.{' '}
+              <Link href="/about" className="underline hover:text-fg-muted">
+                Hakkında
+              </Link>
+            </p>
+          </div>
+        </aside>
       </div>
 
       <MobileNav hasNewIssue={hasNewIssue} />
@@ -52,58 +78,114 @@ export function AppShell({
   );
 }
 
-function TopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadCount: number }) {
+function SearchBox() {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg-raised/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-3 px-3 py-2.5 md:px-5">
-        <Link href="/feed" className="flex items-center gap-2 font-bold tracking-tight">
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-fg"
-          >
-            5N
+    <form action="/explore" method="get" role="search" className="min-w-0 flex-1">
+      <label htmlFor="global-search" className="sr-only">
+        Ara
+      </label>
+      <div className="flex min-h-11 items-center gap-2 rounded-full bg-bg-raised px-4 ring-1 ring-[var(--accent-line)] focus-within:ring-2 focus-within:ring-accent">
+        <Icon name="search" size={17} className="shrink-0 text-fg-subtle" />
+        <input
+          id="global-search"
+          name="q"
+          type="search"
+          placeholder="Arama yap"
+          className="w-full min-w-0 bg-transparent py-2 outline-none"
+        />
+      </div>
+    </form>
+  );
+}
+
+function TrendingCard({ trending }: { trending: TrendingTopic[] }) {
+  return (
+    <section className="card p-4" aria-labelledby="trending-heading">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 id="trending-heading" className="text-[1.05rem] font-bold">
+          Popüler
+        </h2>
+        <Link
+          href="/explore"
+          className="inline-flex items-center gap-0.5 text-xs text-fg-muted hover:text-fg"
+        >
+          Tümünü gör
+          <Icon name="chevronRight" size={14} />
+        </Link>
+      </div>
+
+      <ul className="space-y-1">
+        {trending.map((topic) => (
+          <li key={topic.slug}>
+            <Link
+              href={`/explore?topic=${topic.slug}`}
+              className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-bg-hover"
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-lg font-bold text-accent"
+              >
+                #
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[0.95rem] font-semibold">{topic.name}</span>
+                <span className="block text-xs text-fg-subtle">
+                  {topic.postCount.toLocaleString('tr-TR')} gönderi
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Mobil ust bar: logo, arama ve profil. Masaustunde gizli. */
+function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadCount: number }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <Link href="/feed" className="flex items-center gap-2">
+          <span aria-hidden="true" className="text-gradient text-2xl font-black leading-none">
+            N
           </span>
-          <span className="hidden sm:inline">
+          <span className="text-base font-extrabold">
             nSosyal <span className="text-accent">5N</span>
           </span>
         </Link>
 
-        <p className="hidden truncate rounded-full border border-dashed border-line-strong px-2 py-0.5 text-xs text-fg-subtle lg:block">
-          Yarışma prototipi · tüm içerik sentetik demo verisidir
-        </p>
+        <div className="ml-auto flex items-center gap-1">
+          <Link
+            href="/explore"
+            aria-label="Ara"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-fg-muted hover:bg-bg-hover"
+          >
+            <Icon name="search" size={20} />
+          </Link>
 
-        <div className="ml-auto flex items-center gap-1.5">
           <Link
             href="/notifications"
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-bg-sunken"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-fg-muted hover:bg-bg-hover"
           >
-            <span aria-hidden="true" className="text-lg">
-              🔔
-            </span>
+            <Icon name="bell" size={20} />
             <span className="sr-only">
               Bildirimler{unreadCount > 0 ? `, ${unreadCount} okunmamış` : ''}
             </span>
             {unreadCount > 0 ? (
-              <span className="absolute right-1.5 top-1.5 min-w-4 rounded-full bg-danger px-1 text-[0.65rem] font-bold leading-4 text-white">
+              <span className="absolute right-1 top-1 min-w-[1rem] rounded-full bg-accent px-1 text-center text-[0.6rem] font-bold leading-4 text-accent-fg">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             ) : null}
           </Link>
 
           {viewer ? (
-            <Link
-              href={`/profile/${viewer.username}`}
-              className="inline-flex items-center gap-2 rounded-full py-1 pl-1 pr-3 hover:bg-bg-sunken"
-            >
-              <Avatar profile={viewer} size={32} />
-              <span className="hidden text-sm font-medium sm:inline">{viewer.displayName.split(' ')[0]}</span>
+            <Link href={`/profile/${viewer.username}`} aria-label="Profilim" className="ml-1">
+              <Avatar profile={viewer} size={34} />
             </Link>
           ) : (
-            <Link
-              href="/login"
-              className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
-            >
-              Giriş yap
+            <Link href="/login" className="btn-gradient rounded-full px-4 py-2 text-sm">
+              Giriş
             </Link>
           )}
         </div>
@@ -111,5 +193,3 @@ function TopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadCount: 
     </header>
   );
 }
-
-export { NAV_ITEMS };

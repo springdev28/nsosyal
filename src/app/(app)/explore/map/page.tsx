@@ -98,7 +98,7 @@ export default async function MapPage({
 
         {withResults.length === 0 ? (
           <EmptyState
-            icon="🗺️"
+            icon="mapPin"
             title="Bu filtrelerde hiçbir ilde sonuç yok"
             description="Tarih aralığını genişletebilir veya çevrim içi sonuçları dahil edebilirsin."
             action={
@@ -193,7 +193,7 @@ export default async function MapPage({
           {results ? <ResultPanel results={results} revalidate={currentPath} /> : null}
         </>
       ) : (
-        <InfoNote icon="👆">
+        <InfoNote icon="mapPin">
           Haritadan bir il seç ya da yukarıdaki listeden ilerle. Konum paylaşmıyor olman keşfi engellemez;
           yalnızca kendin yerel kişi sonuçlarında görünmezsin.
         </InfoNote>
@@ -225,7 +225,7 @@ function ResultPanel({
   if (total === 0) {
     return (
       <EmptyState
-        icon="🔍"
+        icon="search"
         title="Bu filtrelerde sonuç bulunamadı"
         description="Tarihi genişletebilir, konuyu kaldırabilir veya çevrim içi sonuçları dahil edebilirsin."
       />
@@ -255,7 +255,7 @@ function ResultPanel({
               <li key={view.community.id}>
                 <Card className="h-full p-4">
                   <Link href={`/communities/${view.community.slug}`} className="font-semibold hover:underline">
-                    <span aria-hidden="true">{view.community.emoji}</span> {view.community.name}
+                    {view.community.name}
                   </Link>
                   <p className="mt-1 text-sm text-fg-muted">{view.community.description}</p>
                   <p className="mt-2 text-xs text-fg-subtle">
@@ -308,7 +308,7 @@ function ResultPanel({
               <li key={project.id}>
                 <Card className="h-full p-4">
                   <Link href={`/projects/${project.slug}`} className="font-semibold hover:underline">
-                    <span aria-hidden="true">{project.emoji}</span> {project.title}
+                    {project.title}
                   </Link>
                   <p className="mt-1 text-sm text-fg-muted">{project.summary}</p>
                 </Card>

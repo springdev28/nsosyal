@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 import { Composer } from '@/components/feed/Composer';
 import { PostCard } from '@/components/feed/PostCard';
-import { Card, ChipRow, EmptyState, FilterChip, InfoNote, SectionHeader } from '@/components/ui';
+import { ChipRow, EmptyState, FilterChip, Icon, InfoNote, TopTabs } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { locationLabel } from '@/lib/geo';
 import { intentLabel } from '@/lib/ranking/rank';
 import type { IntentMode } from '@/types/domain';
 
-export const metadata: Metadata = { title: 'Ana Akış' };
+export const metadata: Metadata = { title: 'Ana Sayfa' };
 
 const INTENT_MODES: IntentMode[] = ['sosyallesme', 'kesfet', 'ogren', 'uret'];
 
@@ -40,12 +40,7 @@ export default async function FeedPage({
   const intentMode = (INTENT_MODES.includes(params.mod as IntentMode) ? params.mod : viewer.intentMode) as IntentMode;
   const newVoicesOnly = params.filtre === 'yeni-sesler';
 
-  const posts = store.getFeed({
-    viewerId: viewer.id,
-    intentMode,
-    newVoicesOnly,
-    limit: 40,
-  });
+  const posts = store.getFeed({ viewerId: viewer.id, intentMode, newVoicesOnly, limit: 40 });
 
   const memberCommunities = store
     .getMemberCommunityIds(viewer.id)
@@ -66,28 +61,27 @@ export default async function FeedPage({
   };
 
   return (
-    <div className="space-y-4">
-      <SectionHeader
-        as="h1"
-        title="Ana Akış"
-        description="Gündelik sohbet, mizah, sorular ve üretim aynı akışta."
-        action={
-          <Link
-            href="/video"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-semibold hover:bg-bg-sunken"
-          >
-            <span aria-hidden="true">🎬</span> Kısa videolar
-          </Link>
-        }
+    <div>
+      <TopTabs
+        tabs={[
+          { href: `/feed?mod=${intentMode}`, label: 'Akış', active: true },
+          { href: '/video', label: 'Medya', active: false },
+        ]}
       />
 
-      <section aria-labelledby="intent-heading" className="space-y-2">
-        <h2 id="intent-heading" className="text-sm font-semibold text-fg-muted">
+      <h1 className="sr-only">Ana akış</h1>
+
+      <section aria-labelledby="intent-heading" className="mb-3 px-1 sm:px-3">
+        <h2 id="intent-heading" className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg-subtle">
           Bugün buraya ne için geldin?
         </h2>
         <ChipRow label="Akış niyet modu">
           {INTENT_MODES.map((mode) => (
-            <FilterChip key={mode} href={buildHref(mode, newVoicesOnly ? 'yeni-sesler' : undefined)} active={mode === intentMode}>
+            <FilterChip
+              key={mode}
+              href={buildHref(mode, newVoicesOnly ? 'yeni-sesler' : undefined)}
+              active={mode === intentMode}
+            >
               {intentLabel(mode)}
             </FilterChip>
           ))}
@@ -95,13 +89,24 @@ export default async function FeedPage({
             href={newVoicesOnly ? buildHref(intentMode) : buildHref(intentMode, 'yeni-sesler')}
             active={newVoicesOnly}
           >
-            🌱 Yeni sesler
+            <Icon name="seedling" size={14} /> Yeni sesler
           </FilterChip>
         </ChipRow>
-        <p className="text-sm text-fg-subtle">{INTENT_HINT[intentMode]}</p>
+        <p className="mt-2 text-sm text-fg-muted">{INTENT_HINT[intentMode]}</p>
       </section>
 
       <Composer
+        viewer={{
+          id: viewer.id,
+          username: viewer.username,
+          displayName: viewer.displayName,
+          avatarEmoji: viewer.avatarEmoji,
+          avatarTone: viewer.avatarTone,
+          kind: viewer.kind,
+          verified: viewer.verified,
+          demo: true,
+          role: viewer.role,
+        }}
         topics={store.getTopics()}
         communities={memberCommunities}
         hasLocation={Boolean(viewer.provinceCode)}
@@ -109,25 +114,29 @@ export default async function FeedPage({
       />
 
       {newVoicesOnly ? (
-        <InfoNote icon="🌱">
-          Yeni sesler filtresi, takipçi sayısı düşük hesapların içeriklerini gösterir. Bu bir kalite garantisi
-          değildir; içerik yine konu ve topluluk uygunluğunu karşılamalıdır.
-        </InfoNote>
+        <div className="my-3 px-1 sm:px-3">
+          <InfoNote icon="seedling">
+            Yeni sesler filtresi, takipçi sayısı düşük hesapların içeriklerini gösterir. Bu bir kalite garantisi
+            değildir; içerik yine konu ve topluluk uygunluğunu karşılamalıdır.
+          </InfoNote>
+        </div>
       ) : null}
 
       {posts.length === 0 ? (
-        <EmptyState
-          icon="🌾"
-          title="Bu filtrede gösterilecek gönderi yok"
-          description="Filtreyi kaldırabilir veya başka bir niyet modu deneyebilirsin."
-          action={
-            <Link href="/feed" className="text-sm font-semibold text-accent underline">
-              Tüm akışa dön
-            </Link>
-          }
-        />
+        <div className="mt-4">
+          <EmptyState
+            icon="seedling"
+            title="Bu filtrede gösterilecek gönderi yok"
+            description="Filtreyi kaldırabilir veya başka bir niyet modu deneyebilirsin."
+            action={
+              <Link href="/feed" className="text-sm font-semibold text-accent underline">
+                Tüm akışa dön
+              </Link>
+            }
+          />
+        </div>
       ) : (
-        <ol className="space-y-3">
+        <ol>
           {posts.map((view) => (
             <li key={view.post.id}>
               <PostCard view={view} revalidate="/feed" />
@@ -136,16 +145,14 @@ export default async function FeedPage({
         </ol>
       )}
 
-      <Card className="p-4">
-        <p className="text-sm text-fg-muted">
-          <strong className="font-semibold text-fg">Sıralama nasıl çalışıyor?</strong> Akış; konu uyumu, takip
-          ettiklerin, topluluk üyeliğin, niyet modun, tazelik, isteğe bağlı konumun ve yeni sesler bonusundan
-          oluşan açıklanabilir bir skorla sıralanır. Ücretli hiçbir alan bu sıralamaya giremez.{' '}
-          <Link href="/about#siralama" className="font-semibold text-accent underline">
-            Ayrıntılar
-          </Link>
-        </p>
-      </Card>
+      <div className="mt-4 rounded-2xl bg-bg-sunken p-4 text-sm text-fg-muted ring-1 ring-[var(--border)]">
+        <strong className="font-semibold text-fg">Sıralama nasıl çalışıyor?</strong> Akış; konu uyumu, takip
+        ettiklerin, topluluk üyeliğin, niyet modun, tazelik, isteğe bağlı konumun ve yeni sesler bonusundan
+        oluşan açıklanabilir bir skorla sıralanır. Ücretli hiçbir alan bu sıralamaya giremez.{' '}
+        <Link href="/about#siralama" className="font-semibold text-accent underline">
+          Ayrıntılar
+        </Link>
+      </div>
     </div>
   );
 }

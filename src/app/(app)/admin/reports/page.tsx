@@ -27,7 +27,7 @@ export default async function ReportsPage() {
       />
 
       {reports.length === 0 ? (
-        <EmptyState icon="🚩" title="Rapor yok" description="Bildirilen içerik burada listelenir." />
+        <EmptyState icon="flag" title="Rapor yok" description="Bildirilen içerik burada listelenir." />
       ) : (
         <ul className="space-y-3">
           {reports.map((report) => {

@@ -156,7 +156,7 @@ export function OnboardingForm({
                   />
                   <span>
                     <span className="flex items-center gap-2 font-medium">
-                      <span aria-hidden="true">{topic.emoji}</span>
+                      
                       {topic.name}
                     </span>
                     <span className="mt-0.5 block text-sm text-fg-muted">{topic.description}</span>
@@ -259,7 +259,7 @@ export function OnboardingForm({
           ) : null}
 
           <div className="mt-4">
-            <InfoNote icon="🔒">
+            <InfoNote icon="lock">
               Kesin adres veya canlı konum hiçbir zaman istenmez ve haritada bireysel kullanıcı koordinatı
               gösterilmez. Konumunu istediğin an ayarlardan kaldırabilirsin.
             </InfoNote>

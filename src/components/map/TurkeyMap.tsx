@@ -57,12 +57,13 @@ export function TurkeyMap({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      // Tamamen yerel stil: dis servis yok.
+      // Tamamen yerel stil: dis servis yok. `glyphs` tanimlanmaz cunku hicbir
+      // katman metin etiketi cizmiyor; tanimlamak uzak bir font sunucusu
+      // gerektirirdi ve demoyu internete baglardi.
       style: {
         version: 8,
         sources: {},
         layers: [{ id: 'arka-plan', type: 'background', paint: { 'background-color': '#0b1b34' } }],
-        glyphs: undefined,
       },
       center: [35.2, 39.0],
       zoom: 4.6,

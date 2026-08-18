@@ -240,7 +240,7 @@ const PROJECTS: ProjectInput[] = [
     ],
   },
   {
-    slug: 'iha-iniş-yardimcisi',
+    slug: 'iha-inis-yardimcisi',
     title: 'İHA Görsel İniş Yardımcısı',
     summary: 'Sabit kanatlı İHA’lar için kamera tabanlı, GPS’siz iniş hizalama yardımcısı.',
     owner: 'burak.uav',

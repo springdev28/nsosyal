@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Avatar, Badge, Card, ChipRow, EmptyState, FilterChip, InfoNote, SectionHeader } from '@/components/ui';
+import { Avatar, Badge, Card, ChipRow, EmptyState, FilterChip, InfoNote, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatRelative } from '@/lib/time';
@@ -71,7 +71,7 @@ export default async function WhyBoardPage({
         }
       />
 
-      <InfoNote icon="💭">
+      <InfoNote icon="spark">
         Burası motivasyon sözü duvarı değil. İyi bir Neden hikâyesi somut bir an anlatır: neyi çözemedin, ne
         kaybettin, ne fark ettin?
       </InfoNote>
@@ -91,7 +91,7 @@ export default async function WhyBoardPage({
           </FilterChip>
           {topics.map((entry) => (
             <FilterChip key={entry.id} href={href({ topic: entry.slug })} active={topic?.id === entry.id}>
-              <span aria-hidden="true">{entry.emoji}</span> {entry.name}
+              {entry.name}
             </FilterChip>
           ))}
         </ChipRow>
@@ -99,7 +99,7 @@ export default async function WhyBoardPage({
 
       {stories.length === 0 ? (
         <EmptyState
-          icon="💭"
+          icon="spark"
           title="Bu filtrede hikâye yok"
           description="Neden panosunda insanlar bir alana ya da projeye nasıl yöneldiklerini anlatır. İlk hikâyeyi sen yazabilirsin."
           action={
@@ -143,22 +143,16 @@ export default async function WhyBoardPage({
                       href={`/projects/${entry.linkedProject.slug}`}
                       className="flex items-center gap-2 rounded-lg border border-line bg-bg-sunken px-2.5 py-2 text-sm hover:border-accent"
                     >
-                      <span aria-hidden="true">{entry.linkedProject.emoji}</span>
                       <span className="min-w-0 flex-1 truncate">{entry.linkedProject.title}</span>
-                      <span aria-hidden="true" className="text-fg-subtle">
-                        →
-                      </span>
+                      <Icon name="chevronRight" size={16} className="text-fg-subtle" />
                     </Link>
                   ) : entry.linkedCommunity ? (
                     <Link
                       href={`/communities/${entry.linkedCommunity.slug}`}
                       className="flex items-center gap-2 rounded-lg border border-line bg-bg-sunken px-2.5 py-2 text-sm hover:border-accent"
                     >
-                      <span aria-hidden="true">{entry.linkedCommunity.emoji}</span>
                       <span className="min-w-0 flex-1 truncate">{entry.linkedCommunity.name}</span>
-                      <span aria-hidden="true" className="text-fg-subtle">
-                        →
-                      </span>
+                      <Icon name="chevronRight" size={16} className="text-fg-subtle" />
                     </Link>
                   ) : null}
 

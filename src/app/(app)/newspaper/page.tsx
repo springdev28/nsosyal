@@ -40,7 +40,7 @@ export default async function NewspaperPage({
   if (!current) {
     return (
       <EmptyState
-        icon="📰"
+        icon="newspaper"
         title="Yayımlanmış sayı yok"
         description="Gazete her sabah yayımlanır. Yeni sayı çıktığında navigasyondaki nGazete düğmesinde rozet görünür."
       />
@@ -87,7 +87,6 @@ export default async function NewspaperPage({
                       : 'border-line bg-bg-raised text-fg-muted hover:border-line-strong'
                   }`}
                 >
-                  <span aria-hidden="true">{entry.issue.coverEmoji}</span>
                   {formatDate(`${entry.issue.issueDate}T09:00:00Z`)}
                   {entry.issue.theme ? ` · ${entry.issue.theme}` : ''}
                 </Link>
@@ -134,7 +133,7 @@ export default async function NewspaperPage({
         />
 
         {sponsored.length === 0 ? (
-          <InfoNote icon="📰">Bu sayıda ücretli alan yok.</InfoNote>
+          <InfoNote icon="newspaper">Bu sayıda ücretli alan yok.</InfoNote>
         ) : (
           <ul className="grid gap-3 md:grid-cols-2">
             {sponsored.map((entry) => (
@@ -181,7 +180,7 @@ function LeadCard({ entry }: { entry: NewspaperItemView }) {
   return entry.href ? (
     <Link href={entry.href} className="block rounded-xl border border-line p-4 hover:border-accent">
       {content}
-      <span className="mt-2 inline-block text-sm font-semibold text-accent">Devamını gör →</span>
+      <span className="mt-2 inline-block text-sm font-semibold text-accent">Devamını gör</span>
     </Link>
   ) : (
     <div className="rounded-xl border border-line p-4">{content}</div>

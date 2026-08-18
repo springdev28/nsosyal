@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Card, ChipRow, EmptyState, FilterChip, SectionHeader } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { getStore } from '@/lib/data/store';
 
 export const metadata: Metadata = { title: 'Projeler' };
@@ -70,14 +71,14 @@ export default async function ProjectsPage({
         </FilterChip>
         {topics.map((entry) => (
           <FilterChip key={entry.id} href={href(entry.slug)} active={topic?.id === entry.id}>
-            <span aria-hidden="true">{entry.emoji}</span> {entry.name}
+            {entry.name}
           </FilterChip>
         ))}
       </ChipRow>
 
       {projects.length === 0 ? (
         <EmptyState
-          icon="🧪"
+          icon="beaker"
           title="Bu filtrede proje yok"
           description="Konuyu değiştirebilir veya kendi projeni oluşturabilirsin."
           action={
@@ -92,9 +93,7 @@ export default async function ProjectsPage({
             <li key={project.id}>
               <Card className="flex h-full flex-col p-4">
                 <div className="flex items-start gap-3">
-                  <span aria-hidden="true" className="text-2xl">
-                    {project.emoji}
-                  </span>
+                  <CoverBadge seed={project.slug} glyph={project.emoji} size={44} />
                   <div className="min-w-0 flex-1">
                     <h2 className="font-semibold">
                       <Link href={`/projects/${project.slug}`} className="hover:underline">

@@ -26,7 +26,7 @@ export function WhyForm({
     <form action={formAction} className="space-y-4">
       {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-      <InfoNote icon="💭">
+      <InfoNote icon="spark">
         Neden panosu bir motivasyon sözü duvarı değil. En iyi hikâyeler somut bir anı anlatır: hangi soruya
         cevap veremedin, ne kaybettin, neyi fark ettin?
       </InfoNote>
@@ -96,7 +96,7 @@ export function WhyForm({
                 className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:font-semibold has-[:checked]:text-accent"
               >
                 <input type="checkbox" name="topics" value={topic.id} className="sr-only" />
-                <span aria-hidden="true">{topic.emoji}</span>
+                
                 {topic.name}
               </label>
             ))}

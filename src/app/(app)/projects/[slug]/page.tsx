@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { EventCard } from '@/components/discovery/EventCard';
 import { PostCard } from '@/components/feed/PostCard';
-import { Avatar, Badge, Card, EmptyState, SectionHeader, Stat } from '@/components/ui';
+import { Avatar, Badge, Card, EmptyState, SectionHeader, Stat, Icon } from '@/components/ui';
+import { CoverBadge } from '@/components/ui/CoverTile';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
@@ -66,9 +67,7 @@ export default async function ProjectPage({
     <div className="space-y-4">
       <Card className="p-4">
         <div className="flex flex-wrap items-start gap-3">
-          <span aria-hidden="true" className="text-4xl">
-            {project.emoji}
-          </span>
+          <CoverBadge seed={project.slug} glyph={project.emoji} size={64} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
@@ -177,9 +176,7 @@ export default async function ProjectPage({
                           {story.hasVideo ? ' · video anlatım' : ''}
                         </span>
                       </span>
-                      <span aria-hidden="true" className="text-fg-subtle">
-                        →
-                      </span>
+                      <Icon name="chevronRight" size={16} className="text-fg-subtle" />
                     </Link>
                   </li>
                 ))}
@@ -198,7 +195,7 @@ export default async function ProjectPage({
 
       {tab === 'ilerleme' ? (
         view.updates.length === 0 ? (
-          <EmptyState icon="📈" title="Henüz güncelleme yok" description="İlerleme günlüğü burada listelenir." />
+          <EmptyState icon="spark" title="Henüz güncelleme yok" description="İlerleme günlüğü burada listelenir." />
         ) : (
           <ol className="space-y-3">
             {view.updates.map((update) => (
@@ -220,7 +217,7 @@ export default async function ProjectPage({
 
       {tab === 'medya' ? (
         view.gallery.length === 0 && !view.pitch ? (
-          <EmptyState icon="🎬" title="Medya yok" description="Pitch videosu ve ekran görüntüleri burada görünür." />
+          <EmptyState icon="video" title="Medya yok" description="Pitch videosu ve ekran görüntüleri burada görünür." />
         ) : (
           <div className="space-y-3">
             {view.pitch ? <VideoPlayer media={view.pitch} /> : null}
@@ -269,9 +266,6 @@ export default async function ProjectPage({
           {view.communities.map((community) => (
             <li key={community.id}>
               <Link href={`/communities/${community.slug}`} className="card block p-4 hover:border-accent">
-                <span aria-hidden="true" className="mr-1">
-                  {community.emoji}
-                </span>
                 <span className="font-medium">{community.name}</span>
               </Link>
             </li>
@@ -282,7 +276,7 @@ export default async function ProjectPage({
       {tab === 'etkinlikler' ? (
         view.events.length === 0 ? (
           <EmptyState
-            icon="🗓️"
+            icon="calendar"
             title="Bağlı etkinlik yok"
             description="Projenin bağlı olduğu toplulukların etkinlikleri burada listelenir."
           />
