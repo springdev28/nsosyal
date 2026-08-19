@@ -85,8 +85,9 @@ kaynak önerisi, Neden bağlantısı. Kart alanları: yazar, zaman, gövde, medy
 Niyet modları akışın ağırlıklarını değiştirir: **Sosyalleş, Keşfet, Öğren, Üret.**
 
 ### 7.2 Kısa video
-Dikey, kısa (≤ 60 sn), ses varsayılan kapalı, metin karşılığı zorunlu alan olarak
-sunulur. Otomatik oynatma `prefers-reduced-motion` tercihinde devre dışı kalır.
+Dikey ve kısa: en fazla 90 saniye, 50 MB, MP4 veya WebM. Ses varsayılan kapalıdır,
+metin karşılığı her videoda bulunur ve otomatik oynatma `prefers-reduced-motion`
+tercihinde devre dışı kalır. Sınırlar hem formda hem sunucuda uygulanır.
 
 ### 7.3 Topluluklar
 Kök topluluk (geniş alan) + dal topluluk (şehir, okul, alt konu). **Topluluk
@@ -149,13 +150,15 @@ tarafındadır; `NEXT_PUBLIC_` önekiyle tanımlanmaz.**
 ## 10. Veri modeli
 
 Ana tablolar: `profiles`, `topics`, `follows`, `communities`, `community_members`,
-`community_applications`, `posts`, `comments`, `post_likes`, `saves`, `media`,
-`projects`, `project_members`, `project_updates`, `events`, `reminders`,
-`why_stories`, `resources`, `newspaper_issues`, `newspaper_items`, `ad_requests`,
-`notifications`, `reports`, `moderation_actions`, `analytics_events`.
+`community_applications`, `posts`, `comments`, `post_likes`, `post_saves`, `media`,
+`post_media`, `projects`, `project_members`, `project_updates`, `events`,
+`reminders`, `why_stories`, `resources`, `newspaper_issues`, `newspaper_items`,
+`ad_requests`, `notifications`, `reports`, `moderation_actions`, `analytics_events`.
 
-5N bağlam tabloları içeriği konuma, konuya ve zamana bağlar (`post_topics`,
-`project_communities`, il/ilçe alanları).
+5N bağlam tabloları içeriği konuya, topluluğa ve yere bağlar: `post_topics`,
+`project_topics`, `event_topics`, `resource_topics`, `why_story_topics`,
+`project_communities` ve varlıkların üzerindeki il/ilçe alanları
+(`provinces`, `districts`).
 
 Roller: `user`, `organization`, `moderator`, `admin`. Rol yükseltme yalnızca
 yönetici tarafından yapılabilir ve tetikleyiciyle korunur.

@@ -31,12 +31,14 @@ ve `/api/demo/reset` (testlerin veriyi sıfırlaması için; DEMO_MODE dışınd
 
 **Demo modu (varsayılan).** Tüm veri `src/lib/seed/` altındaki üreticilerle sunucu
 belleğinde kurulur ve `DemoStore` üzerinden okunur/yazılır. Dış servis, API anahtarı
-ve internet gerekmez. Yarışma demosunun kesintiye dayanıklı olması ve juri'nin
+ve internet gerekmez. Yarışma demosunun kesintiye dayanıklı olması ve jürinin
 depoyu klonlayıp tek komutla çalıştırabilmesi için varsayılan budur.
 
 **Supabase modu.** `DEMO_MODE=false` iken Supabase ortam değişkenleri zorunlu olur;
 eksikse uygulama sessizce çalışmaya devam etmek yerine açık hata verir. Şema,
-tetikleyiciler ve RLS politikaları `supabase/migrations/` altında hazırdır.
+tetikleyiciler ve RLS politikaları `supabase/migrations/` altında, istemci
+üreticileri `src/lib/supabase/` altında hazırdır. Eksik olan tek parça, store'un
+Supabase'e karşı yazılmış ikinci uygulamasıdır (bkz. [13. Bilinen sınırlar](#13-bilinen-sınırlar)).
 
 Karar kaydı: [0001](decisions/0001-demo-modu-ve-bellek-ici-veri-deposu.md).
 
@@ -115,7 +117,7 @@ uygulanır. Karar kaydı: [0005](decisions/0005-sentetik-demo-medyasi.md).
 
 Demo modunda oturum, yalnızca kullanıcı adını taşıyan bir çerezdir
 (`src/lib/auth/session.ts`); imzalı token yoktur. Bu bilinçli bir demo tercihidir —
-juri parola girmeden hesap değiştirebilsin diye. Gerçek kimlik doğrulama Supabase
+jüri parola girmeden hesap değiştirebilsin diye. Gerçek kimlik doğrulama Supabase
 Auth ile yapılır; şema bunu `profiles.id → auth.users.id` bağıyla ve
 `handle_new_user` tetikleyicisiyle hazırlar.
 
@@ -142,7 +144,9 @@ döndürmez.
 `src/lib/time` bu dönüşümü sabit UTC+3 ile yapar ve "bugünün gazetesi", etkinlik
 aralıkları, son başvuru uyarıları hep bu güne göre hesaplanır. Aksi hâlde UTC'de
 çalışan bir sunucuda bugünün sayısı akşam 21:00'den sonra kaybolurdu — bu gerçek
-bir hataydı ve `tests/unit/time.test.ts` içinde regresyon testi vardır.
+bir hataydı; `tests/unit/store.test.ts` içindeki regresyon testi gün sınırını aşan
+bir anda gazete sayısını arar, `tests/unit/time.test.ts` ise dönüşümün kendisini
+sabitler.
 
 ## 10. Tasarım sistemi
 
