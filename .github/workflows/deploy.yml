@@ -65,6 +65,33 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Eksik secret'ta hata ssh-keyscan'in icinden, anlasilmaz bicimde geliyordu.
+      # Once acikca kontrol edip hangi secret'in eksik oldugunu yaziyoruz.
+      - name: Check deploy secrets
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          USER: ${{ secrets.HOSTINGER_USER }}
+          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          PATH_ON_SERVER: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          missing=""
+          [ -z "$HOST" ] && missing="$missing HOSTINGER_HOST"
+          [ -z "$USER" ] && missing="$missing HOSTINGER_USER"
+          [ -z "$KEY" ] && missing="$missing HOSTINGER_SSH_KEY"
+          [ -z "$PATH_ON_SERVER" ] && missing="$missing HOSTINGER_PATH"
+          if [ -n "$missing" ]; then
+            echo "::error::Dagitim yapilamadi. Tanimli olmayan secret'lar:$missing"
+            echo ""
+            echo "Bunlari su adrese ekleyin:"
+            echo "  Settings > Secrets and variables > Actions > New repository secret"
+            echo ""
+            echo "Ayrintili kurulum: docs/deployment.md"
+            echo ""
+            echo "NOT: Derleme ve butun testler GECTI; eksik olan yalnizca sunucu erisimi."
+            exit 1
+          fi
+          echo "Dort zorunlu secret de tanimli."
+
       - name: Set up SSH
         run: |
           install -m 700 -d ~/.ssh
