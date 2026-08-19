@@ -11,40 +11,6 @@ import { resolvePreset } from '@/lib/time';
 
 export const metadata: Metadata = { title: 'Keşfet' };
 
-const DIMENSIONS = [
-  {
-    href: '/explore/map',
-    dimension: 'Nerede',
-    icon: '📍',
-    color: 'var(--color-dim-nerede)',
-    title: 'Haritadan keşfet',
-    description: 'Türkiye haritasında il, pilot ilde ilçe seç; oradaki topluluk, kurum, etkinlik ve projeleri gör.',
-  },
-  {
-    href: '/explore/time',
-    dimension: 'Ne zaman',
-    icon: '🗓️',
-    color: 'var(--color-dim-nezaman)',
-    title: 'Zaman makinesi',
-    description: 'Geçmişte ne olmuş, gelecekte ne var? Etkinlikler, son başvuru tarihleri ve proje kilometre taşları.',
-  },
-  {
-    href: '/explore/why',
-    dimension: 'Neden',
-    icon: '💭',
-    color: 'var(--color-dim-neden)',
-    title: 'Neden panosu',
-    description: 'İnsanları bir alana, projeye veya başarıya götüren deneyimler. Motivasyon sözü değil, gerçek hikâye.',
-  },
-  {
-    href: '/explore/how',
-    dimension: 'Nasıl',
-    icon: '🧭',
-    color: 'var(--color-dim-nasil)',
-    title: 'Nasıl kaynakları',
-    description: 'Toplulukların kendi deneyimlerinden ürettiği kısa rehberler, kontrol listeleri ve derlemeler.',
-  },
-];
 
 /** Kesfet ana sayfasi (PROJECT_SPEC 6.1 ekran 06). */
 export default async function ExplorePage({
@@ -85,7 +51,7 @@ export default async function ExplorePage({
       <SectionHeader
         as="h1"
         title="Keşfet"
-        description="Aynı içerik beş farklı bağlamdan bulunabilir: Ne, Nerede, Ne zaman, Nasıl, Neden."
+        description="Konu, kişi, topluluk, proje ve etkinlik ara."
       />
 
       <DiscoveryFilterBar base="/explore" state={filters} topics={topics} />
@@ -155,39 +121,10 @@ export default async function ExplorePage({
         </section>
       ) : null}
 
-      <section aria-labelledby="dimensions-heading">
-        <h2 id="dimensions-heading" className="sr-only">
-          5N keşif boyutları
-        </h2>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {DIMENSIONS.map((entry) => (
-            <li key={entry.href}>
-              <Link
-                href={entry.href}
-                className="card block h-full p-4 transition-colors hover:border-accent"
-                style={{ borderLeftWidth: 4, borderLeftColor: entry.color }}
-              >
-                <span
-                  className="text-xs font-bold uppercase tracking-wide"
-                  style={{ color: entry.color }}
-                >
-                  {entry.dimension}
-                </span>
-                <span className="mt-1 flex items-center gap-2 text-lg font-semibold">
-                  <span aria-hidden="true">{entry.icon}</span>
-                  {entry.title}
-                </span>
-                <span className="mt-1 block text-sm text-fg-muted">{entry.description}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section aria-labelledby="root-communities-heading">
         <SectionHeader
           title={<span id="root-communities-heading">Kök topluluklar</span>}
-          description="Platform moderatörlerince açılan ana alanlar. Niş ve yerel topluluklar bunların dalları olarak yaşar."
+          description="Platform moderatörlerince açılan ana alanlar."
           action={
             <Link href="/communities" className="text-sm font-semibold text-accent underline">
               Tümü
@@ -233,7 +170,6 @@ export default async function ExplorePage({
       <section aria-labelledby="why-heading">
         <SectionHeader
           title={<span id="why-heading">Öne çıkan Neden hikâyeleri</span>}
-          description="Bir kişiyi bu işe götüren şey neydi?"
           action={
             <Link href="/explore/why" className="text-sm font-semibold text-accent underline">
               Neden panosu

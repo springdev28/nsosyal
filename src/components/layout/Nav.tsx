@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { FiveNMark } from '@/components/brand/FiveNMark';
+import { FiveNSelector } from '@/components/brand/FiveNSelector';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { Profile } from '@/types/domain';
 
@@ -120,22 +122,27 @@ export function MainNav({
   return (
     <nav aria-label="Ana gezinme" className="hidden w-[236px] shrink-0 lg:block xl:w-[268px]">
       <div className="rail flex flex-col gap-1 py-3 pr-2">
-        <Link href="/feed" className="mb-3 flex items-center gap-3 px-3 py-1">
-          <span
-            aria-hidden="true"
-            className="text-gradient text-[2.1rem] font-black leading-none tracking-tight"
-          >
-            N
-          </span>
-          <span className="leading-tight">
-            <span className="block text-lg font-extrabold">
-              nSosyal <span className="text-accent">5N</span>
+        {/*
+          Marka isareti ve 5N secici yan yana durur. Secici, spec 4.4'un
+          istedigi gibi dogrudan isaretten acilir; boyutlar gezinme listesinde
+          bes ayri satir olarak TEKRARLANMAZ.
+        */}
+        <div className="mb-3 flex items-center gap-1 px-1 py-1">
+          <Link href="/feed" className="flex items-center gap-2.5 rounded-xl px-2 py-1">
+            <FiveNMark size={34} className="text-accent" />
+            <span className="leading-tight">
+              <span className="block text-lg font-extrabold">
+                nSosyal <span className="text-accent">5N</span>
+              </span>
+              <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.32em] text-fg-subtle">
+                prototip
+              </span>
             </span>
-            <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.32em] text-fg-subtle">
-              prototip
-            </span>
+          </Link>
+          <span className="ml-auto">
+            <FiveNSelector />
           </span>
-        </Link>
+        </div>
 
         <ul className="space-y-0.5">
           {items.map((item) => {
