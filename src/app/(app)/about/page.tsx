@@ -18,7 +18,7 @@ export default async function AboutPage() {
     <div className="space-y-4">
       <SectionHeader
         as="h1"
-        title="nSosyal 5N1K hakkında"
+        title="nSosyal hakkında"
         description="Bağlamsal sosyal keşif katmanı prototipi. Tüm içerik sentetik demo verisidir."
       />
 

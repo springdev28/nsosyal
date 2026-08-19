@@ -117,7 +117,7 @@ export default async function NewspaperPage({
         {/* Masthead */}
         <header className="border-b-4 border-double border-line-strong bg-bg-sunken px-4 py-5 text-center sm:px-6">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-fg-subtle">
-            nSosyal 5N1K
+            nSosyal
           </p>
           <p className="font-serif text-4xl font-black tracking-tight sm:text-5xl">nGazete</p>
           <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-y border-line py-1.5 text-xs text-fg-muted">

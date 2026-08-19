@@ -33,6 +33,19 @@ export function NewspaperAutoOpen({
 }) {
   const [open, setOpen] = useState(true);
   const [remaining, setRemaining] = useState(closeDelaySeconds);
+  /**
+   * Geri sayim YALNIZCA tarayicida isliyor, ama kapatma dugmeleri sunucudan
+   * `disabled` olarak geliyordu. Hydration gecikirse ya da basarisiz olursa
+   * `remaining` hic azalmaz ve modal kapanmaz: kullanici tam ekran bir kapagin
+   * arkasinda kilitli kalir. Render'in ucretsiz katmaninda uyanma suresi bunu
+   * gercek bir duvara cevirdi.
+   *
+   * Bu yuzden kilit ancak JavaScript'in calistigi DOGRULANDIKTAN sonra uygulanir.
+   * Deneysel bekleme korunur; kacis yolu her kosulda acik kalir.
+   */
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const locked = hydrated && remaining > 0;
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -53,7 +66,7 @@ export function NewspaperAutoOpen({
   }, [remaining]);
 
   function dismiss() {
-    if (remaining > 0) return;
+    if (locked) return;
     // Bugun icin gorulmus olarak isaretle; ayni gun tekrar acilmasin.
     document.cookie = `nsosyal_newspaper_seen=${issueDate}; path=/; max-age=86400; samesite=lax`;
     setOpen(false);
@@ -136,15 +149,15 @@ export function NewspaperAutoOpen({
             ref={closeRef}
             type="button"
             onClick={dismiss}
-            disabled={remaining > 0}
+            disabled={locked}
             className="inline-flex h-11 min-w-11 items-center justify-center rounded-full text-sm font-semibold ring-1 ring-[var(--border)] transition-colors hover:bg-bg-hover disabled:opacity-50"
           >
-            {remaining > 0 ? (
+            {locked ? (
               <span aria-hidden="true">{remaining}</span>
             ) : (
               <Icon name="close" size={18} aria-hidden="true" />
             )}
-            <span className="sr-only">{remaining > 0 ? `${remaining} saniye sonra kapatılabilir` : 'Kapat'}</span>
+            <span className="sr-only">{locked ? `${remaining} saniye sonra kapatılabilir` : 'Kapat'}</span>
           </button>
         </div>
 
@@ -177,7 +190,7 @@ export function NewspaperAutoOpen({
           <button
             type="button"
             onClick={dismiss}
-            disabled={remaining > 0}
+            disabled={locked}
             className="inline-flex min-h-11 items-center justify-center rounded-full px-4 font-semibold ring-1 ring-[var(--border)] transition-colors hover:bg-bg-hover disabled:opacity-50"
           >
             Sonra
@@ -185,7 +198,7 @@ export function NewspaperAutoOpen({
         </div>
 
         <p aria-live="polite" className="mt-2 text-center text-xs text-fg-subtle">
-          {remaining > 0
+          {locked
             ? `Kapatma ${remaining} saniye sonra aktif olacak.`
             : 'Kapatabilirsin. Bu bekleme davranışı kullanılabilirlik testinde ölçülüyor.'}
         </p>
