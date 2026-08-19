@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
       <header className="mb-5">
         <h1 className="text-2xl font-bold tracking-tight">Hoş geldin</h1>
         <p className="mt-1 text-fg-muted">
-          Dört kısa adım. Hiçbiri zorunlu bilgi istemiyor; konum tamamen sana bağlı.
+          Beş kısa adım. Hiçbiri zorunlu bilgi istemiyor; konum tamamen sana bağlı.
         </p>
       </header>
 

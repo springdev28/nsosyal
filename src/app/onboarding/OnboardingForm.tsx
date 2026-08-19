@@ -411,8 +411,12 @@ export function OnboardingForm({
         )}
       </div>
 
+      {/* Devre disi birakilmis bir dugme sebebini soylemeli. */}
       {!canContinue && step === 0 ? (
         <p className="text-center text-sm text-fg-subtle">Devam etmek için en az 3 ilgi alanı seç.</p>
+      ) : null}
+      {!canContinue && step === 1 ? (
+        <p className="text-center text-sm text-fg-subtle">Devam etmek için en az bir amaç seç.</p>
       ) : null}
     </form>
   );
