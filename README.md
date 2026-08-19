@@ -1,36 +1,42 @@
 # nSosyal 5N1K
 
 Bilim, teknoloji ve inovasyon topluluklarını birbirine bağlayan **bağlamsal sosyal
-keşif katmanı** prototipi. Gündelik sosyalliği (paylaşım, mizah, kısa video) proje,
-öğrenme, topluluk ve etkinlik keşfiyle aynı üründe birleştirir; ücretli görünürlüğü
-ise kişisel akıştan tamamen ayrı bir yüzeyde — **nGazete** — tutar.
+keşif katmanı** prototipi. Gündelik sosyalliği, paylaşım, mizah ve kısa videoyu;
+proje, öğrenme, topluluk, etkinlik ve yerel ekosistem keşfiyle aynı üründe
+birleştirir. Ücretli görünürlük kişisel akıştan tamamen ayrı bir yayın yüzeyinde,
+**nGazete** içinde yaşar.
 
-Ürünün omurgası 5N1K bağlam modelidir: **Ne, Nerede, Ne zaman, Nasıl, Neden** (ve
-tamamlayıcı olarak **Kim**). 5N1K bir menü değil, tüm içeriklerin paylaştığı ortak
-veri dilidir: bir gönderi yalnızca sahip olduğu bağlamları taşır, beş alanı
-doldurmak zorunlu değildir.
+Ürünün veri omurgası 5N1K bağlam modelidir: **Ne, Nerede, Ne zaman, Nasıl, Neden**,
+tamamlayıcı sosyal kimlik katmanı ise **Kim**dir. 5N1K bir zorunlu form değildir.
+Bir içerik yalnızca gerçekten sahip olduğu bağlamları taşır.
 
-> **Bu bir yarışma prototipidir.** Tüm hesaplar, gönderiler, projeler, kurumlar ve
-> videolar sentetiktir ve arayüzde `demo` rozetiyle işaretlenir. Gerçek kişi verisi
-> taklit edilmez.
+> Bu bir yarışma prototipidir. Demo hesapları ve içerikleri sentetiktir. Gerçek
+> kişi veya kurum verisiymiş gibi sunulmaz.
+
+## Kaynak önceliği
+
+Ürün davranışıyla ilgili çelişkide şu sıra kullanılır:
+
+1. Takımın en güncel açık ürün kararı ve Figma master tasarımı.
+2. Uzun ürün/geliştirme spesifikasyonu.
+3. `PROJECT_SPEC.md`, `AGENTS.md`, `CLAUDE.md`.
+4. Mevcut implementasyon.
+
+Kodda bulunan geçici veya eski bir sınır ürün gereksinimine dönüştürülmez.
 
 ## Hızlı başlangıç
 
-Gereksinim: Node.js 20+ (geliştirme Node 22 ile yapıldı).
+Gereksinim: Node.js 20+.
 
 ```bash
 npm install
-cp .env.example .env.local     # varsayılan DEMO_MODE=true yeterli
-npm run dev                    # http://localhost:3000
+cp .env.example .env.local
+npm run dev
 ```
 
-Giriş ekranında dört demo hesabından biri tek tıkla seçilir; parola yoktur.
-Ayrıntı için [docs/demo.md](docs/demo.md).
-
-Uygulama varsayılan olarak **DEMO_MODE** ile çalışır: veri sunucu belleğinde
-üretilir, hiçbir dış servise bağlanılmaz. Kurulum için Supabase projesi, API
-anahtarı veya internet bağlantısı gerekmez — harita, video ve görseller dahil her
-şey repodan gelir. Bunun gerekçesi ve üretim yolu: [docs/decisions/0001-demo-modu-ve-bellek-ici-veri-deposu.md](docs/decisions/0001-demo-modu-ve-bellek-ici-veri-deposu.md).
+Varsayılan `DEMO_MODE=true` yolunda veri sunucu belleğinde üretilir. Supabase
+projesi veya dış servis gerektirmeden demo yapılabilir. Ayrıntı için
+[docs/demo.md](docs/demo.md).
 
 ## Komutlar
 
@@ -38,80 +44,159 @@ anahtarı veya internet bağlantısı gerekmez — harita, video ve görseller d
 | --- | --- |
 | `npm run dev` | Geliştirme sunucusu |
 | `npm run build` / `npm start` | Üretim derlemesi ve sunumu |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint (next/core-web-vitals + typescript) |
-| `npm test` | Vitest birim testleri (97 test) |
-| `npm run test:e2e` | Playwright E2E + erişilebilirlik (49 test × 2 profil) |
+| `npm run typecheck` | TypeScript kontrolü |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest test suite |
+| `npm run test:e2e` | Playwright E2E ve erişilebilirlik suite |
 | `npm run verify` | typecheck + lint + birim testleri |
-| `npm run build:geo` | Harita GeoJSON'larını kaynak veriden yeniden üretir |
-| `npm run build:media` | Demo videolarını yeniden üretir |
-| `npm run build:supabase-seed` | `supabase/seed.sql` dosyasını seed verisinden üretir |
+| `npm run build:geo` | Yerel GeoJSON çıktılarını üretir |
+| `npm run build:media` | Demo medyasını üretir |
+| `npm run build:supabase-seed` | `supabase/seed.sql` üretir |
 
-`npm run test:e2e` gerektiğinde uygulamayı kendisi derleyip başlatır
-(`playwright.config.ts` → `webServer`).
+Dokümanda test dosyası veya test sayısı belirtilmesi testlerin o anda geçtiği
+anlamına gelmez. Bir değişiklikte yalnızca gerçekten çalıştırılan kontroller
+`passed` olarak raporlanmalıdır.
 
-## Ekranlar
+## Marka ve 5N etkileşimi
+
+Yeni nSosyal 5N1K marka işaretinin kaynak geometrisi takımın Figma'daki **master
+vector** dosyasıdır. Ekran görüntüsünden veya yaklaşık SVG ile yeniden çizilmez.
+
+- iki uç halka eşdeğerdir;
+- dış çap, iç çap ve stroke aynıdır;
+- bağlantı hattı tek ve sabit kalınlıklı monoline'dır;
+- statik logoda glow veya particle zorunlu değildir;
+- particle kullanılırsa ayrı motion katmanıdır.
+
+Keşfet içindeki 5N selector tam çark değildir. N işaretine basıldığında iki ucu
+fade olan **yarım yay** açılır. Ne, Nerede, Ne zaman, Nasıl ve Neden seçenekleri
+bu yay üzerinde hareket eder. Seçenek seçim noktasına hizalanınca kısa snap olur,
+selector kaybolur ve gerçek panel açılır. Başka boyut için kullanıcı N'ye tekrar
+basar.
+
+## Ekranlar ve temel davranışlar
 
 | Alan | Yol | İçerik |
 | --- | --- | --- |
-| Ana akış | `/feed` | Karışık akış, niyet modları (Sosyalleş / Keşfet / Öğren / Üret), "Neden gösteriliyor?" |
-| Kısa video | `/video` | Dikey video akışı, metin karşılığı, ses varsayılan kapalı |
-| Keşfet | `/explore` | 5N giriş noktaları |
-| Nerede | `/explore/map` | MapLibre Türkiye haritası + eşdeğer liste görünümü |
-| Ne zaman | `/explore/time` | Geçmiş/bugün/gelecek zaman makinesi, son başvuru uyarıları |
-| Neden | `/explore/why` | Motivasyon hikâyeleri panosu ve projeye geçiş |
-| Nasıl | `/explore/how` | Topluluk kaynakları, seviye ve süre filtreleri |
-| Topluluklar | `/communities` | Kök/dal topluluklar, katılma, başvuru formu |
-| Projeler | `/projects` | Proje sayfaları, ilerleme günlüğü, pitch videosu |
-| nGazete | `/newspaper` | Günlük sayı, sponsorlu alan, ilan başvurusu |
-| Yönetim | `/admin` | Topluluk onay kuyruğu, raporlar, gazete/ilan yönetimi (moderatör ve yönetici) |
+| Ana akış | `/feed` | Karışık sosyal akış, geçici niyet modları, açıklanabilir öneri |
+| Kısa video | `/video` | Kısa video, metin karşılığı, proje/topluluk bağları |
+| Keşfet | `/explore` | N bağlantı işaretinden açılan yarım 5N selector |
+| Nerede | `/explore/map` | Türkiye il yoğunluk haritası, filtreler, bölge detayı, liste eşdeğeri |
+| Ne zaman | `/explore/time` | Geçmiş/bugün/gelecek, etkinlik ve son başvuru, hatırlatma |
+| Neden | `/explore/why` | Gerçek motivasyon ve arka plan hikâyeleri |
+| Nasıl | `/explore/how` | Topluluk kaynakları ve süreç bilgisi |
+| Topluluklar | `/communities` | Kök/dal topluluklar, üyelik ve moderator onaylı başvuru |
+| Projeler | `/projects` | Yaşayan proje sayfaları, ilerleme, ekip, pitch videosu |
+| nGazete | `/newspaper` | Gerçek digital newspaper layout, editorial ve spatial sponsored inventory |
+| Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
+| Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan ve yerleşim yönetimi |
+
+## Kişiselleştirme
+
+Kişiselleştirme iki ayrı katmandır.
+
+**Kalıcı profil tercihleri:** interests, uzun dönem platform goals, content/feed
+preferences, location/privacy, notifications, accessibility ve nGazete
+preferences. Bunlar onboarding sonrasında Settings üzerinden düzenlenebilir.
+
+**Geçici niyet:** `Sosyalleş`, `Keşfet`, `Öğren`, `Üret`. Bu modlar kullanıcının
+o anda ne yapmak istediğini belirtir ve sıralama/keşif ağırlıklarını geçici olarak
+değiştirir. Kalıcı profil amaçlarının yerine geçmez.
+
+## Nerede ve yoğunluk haritası
+
+Ürün Türkiye genelini hedefler. Mevcut repoda 81 il GeoJSON'u ve şu an için İzmir
+ilçe GeoJSON'u bulunması yalnızca **mevcut veri envanteridir**. İzmir ürün
+mimarisinde özel pilot şehir değildir.
+
+Nerede ekranı seçili topic, entity/metric ve time bağlamında hangi bölgelerde daha
+fazla aktivite olduğunu göstermelidir. Province-level density/choropleth tek
+nSosyal blue/cyan intensity family ile çizilir. Legend, hover/click value ve region
+detail bulunur. Metrics en az communities, events, projects ve institutions;
+veri varsa people, posts, resources ve opportunities olabilir.
+
+Yoğunluk nüfus değildir. Seçili platform varlıklarının count veya normalized
+score değeridir. Kullanıcı kendi konumunu paylaşmadan haritayı keşfedebilir. Kesin
+veya canlı bireysel koordinat gösterilmez. Harita sonuçlarının erişilebilir liste
+eşdeğeri vardır.
+
+## nGazete
+
+nGazete generic card grid değildir. Gerçek dijital gazete yapısı hedeflenir:
+
+- masthead ve issue/date;
+- hero ve headline hierarchy;
+- article images ve alt text;
+- sections, columns/grid;
+- internal/external links;
+- editorial priority ve layout variants.
+
+Sponsored placements gazetenin grid'i içinde yer alır ve açık `Sponsorlu` etiketi
+taşır. Reader UI'da ayrı bir `Ücretli alanlar` kart listesi veya gelir modeli
+öğretici paneli kullanılmaz.
+
+Reklam envanteri mekânsaldır. Örnek boyutlar `300x250`, `728x90`, `300x600`,
+`600x400`, `970x250` olabilir. Responsive karşılık için grid span veya aspect
+ratio da tutulur. Fiyat alan, placement prominence, issue count/duration, demand
+ve subscription discount sinyallerine göre açıklanabilir biçimde hesaplanır.
+Ödeme kişisel feed sıralamasını değiştirmez.
 
 ## Teknoloji
 
-- **Next.js 15 (App Router) + React 19 + TypeScript** — sunucu bileşenleri ve
-  Server Actions; ayrı bir API katmanı yok.
-- **Tailwind CSS 4** — tema değişkenleri `src/app/globals.css` içinde; koyu tema
-  varsayılan, açık tema kullanıcı tercihiyle.
-- **MapLibre GL JS + yerel GeoJSON** — tile sunucusu yok, harita çevrimdışı çalışır.
-- **Supabase (Postgres + RLS)** — üretim yolu. Şema, tetikleyiciler ve satır
-  düzeyinde güvenlik politikaları `supabase/migrations/` altında hazır.
-- **Vitest + Playwright + axe-core** — birim, kritik akış ve erişilebilirlik testleri.
+- **Next.js App Router + React + TypeScript**
+- **Tailwind CSS** ve mevcut nSosyal dark-first görsel sistemi
+- **MapLibre GL JS + yerel GeoJSON**
+- **Supabase Postgres/Auth/Storage + RLS** production yolu
+- **DemoStore** sentetik, ağsız demo yolu
+- **Vitest + Playwright + axe-core** test altyapısı
 
 ## Klasör düzeni
 
-```
+```text
 src/
-  app/            App Router sayfaları ((app) grubu = oturum açılmış kabuk)
-  actions/        Server Actions (sosyal etkileşim, topluluk, proje, gazete)
+  app/            App Router sayfaları
+  actions/        Server Actions
   components/     feed, map, video, community, discovery, newspaper, layout, ui
   lib/
-    auth/         demo oturumu ve rol kontrolleri
-    data/         DemoStore: tüm okuma ve mutasyonlar
-    ranking/      açıklanabilir akış sıralaması
-    geo/          il/ilçe verisi ve yardımcıları
-    seed/         sentetik veri seti üreticileri
-    supabase/     istemci yapılandırması (DEMO_MODE=false yolu)
-    time/         Europe/Istanbul tarih yardımcıları
-  types/          domain ve view tipleri
-supabase/         migration'lar ve üretilmiş seed.sql
-public/geo/       81 il + İzmir ilçeleri GeoJSON
-public/demo/      sentetik görsel, poster ve video dosyaları
-tests/            unit (Vitest) ve e2e (Playwright + axe)
-docs/             mimari, demo ve karar kayıtları
+    auth/
+    data/
+    ranking/
+    geo/
+    seed/
+    supabase/
+    time/
+  types/
+supabase/
+public/geo/
+public/demo/
+tests/
+docs/
 ```
 
-## Erişilebilirlik
+## Tasarım ve erişilebilirlik
 
-Hedef WCAG 2.2 AA. Otomatik tarama (axe-core) tüm ana sayfalarda hem açık hem koyu
-temada, masaüstü ve mobil görünümde ihlalsiz çalışır. Otomatik testin
-kanıtlamadıkları — klavye sırası, odak yönetimi, ekran okuyucu deneyimi — elle
-kontrol edilir. Ayrıntı: [docs/architecture.md](docs/architecture.md#erişilebilirlik).
+Mevcut nSosyal dark-first ürün ailesi korunur. Ayrı bir rainbow/neon tasarım
+kimliği üretilmez. 5N ve map intensity aynı blue/cyan family içinde kalır.
+
+Ana UI teknik rapor gibi açıklama yapmaz. Uzun ürün gerekçileri Hakkında, Help,
+admin, advertiser veya dokümantasyonda yaşar.
+
+Hedef WCAG 2.2 AA:
+
+- keyboard operation ve visible focus;
+- accessible names;
+- labelled form errors;
+- colour-only olmayan state;
+- reduced motion;
+- video text/caption equivalent;
+- map list equivalent;
+- yeterli touch target ve overflow kontrolü.
 
 ## Veri ve lisans
 
-Harita sınırları OpenStreetMap katkıda bulunanlarından türetilmiştir (ODbL) ve
-uygulama içinde kaynak gösterilir. Görsel keşif amaçlıdır; resmî idari sınır verisi
-değildir. Diğer tüm içerik bu prototip için üretilmiş sentetik veridir.
+Mevcut yerel sınır verisi OpenStreetMap katkıda bulunanlarından türetilmiştir ve
+ODbL atfı uygulamada gösterilir. Görsel keşif amaçlıdır, resmî idari sınır verisi
+olarak sunulmaz. Demo sosyal içeriği sentetiktir.
 
 ## Dağıtım
 
@@ -121,9 +206,8 @@ dağıtır. Ayrıntılar: [docs/deployment.md](docs/deployment.md).
 
 ## Belgeler
 
-- [PROJECT_SPEC.md](PROJECT_SPEC.md) — ürün ve teknik özet
-- [docs/architecture.md](docs/architecture.md) — veri modeli ve sistem kararları
-- [docs/demo.md](docs/demo.md) — demo hesapları ve sunum senaryosu
-- [docs/deployment.md](docs/deployment.md) — Hostinger dağıtımı
-- [docs/decisions/](docs/decisions/) — karar kayıtları
-- [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) — kodlama ajanları için repo kuralları
+- [PROJECT_SPEC.md](PROJECT_SPEC.md) - ürün ve teknik sözleşme
+- [docs/architecture.md](docs/architecture.md) - sistem mimarisi ve güncel hedef model
+- [docs/demo.md](docs/demo.md) - demo hesapları ve sunum akışı
+- [docs/decisions/](docs/decisions/) - karar kayıtları
+- [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) - coding agent kuralları

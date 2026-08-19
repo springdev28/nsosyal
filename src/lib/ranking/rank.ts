@@ -176,6 +176,7 @@ export function computeSignals(post: Post, ctx: RankingContext): RankingSignals 
  */
 export const GOAL_SIGNAL_BIAS: Record<GoalKey, Partial<RankingSignals>> = {
   socialize: { followedSource: 0.06, recency: 0.03 },
+  meet_people: { explorationBonus: 0.05, communityMatch: 0.03 },
   casual_discussion: { followedSource: 0.05, recency: 0.04 },
   find_communities: { communityMatch: 0.08 },
   discover_events: { recency: 0.04, locationMatch: 0.04 },

@@ -1,54 +1,67 @@
-# 0003 — Yerel GeoJSON ile tile sunucusuz harita
+# 0003 - Yerel GeoJSON ile tile sunucusuz harita
 
-**Durum:** Kabul edildi
+**Durum:** Kısmen geçerli. Tile sunucusuz yerel harita kararı geçerlidir. Ürün
+kapsamı ve density davranışı 0009 ile genişletilmiştir.
 
 ## Bağlam
 
-"Nerede" ekranı ürünün en görünür farklarından biri. Alışılmış çözüm bir tile
-sağlayıcısına (Mapbox, MapTiler, OSM tile sunucuları) bağlanmak. Bu, demo için üç
-risk taşıyor: ağ kesintisi, API anahtarı/kota, ve kullanım koşulları.
+Nerede ekranı ürünün görünür farklarından biridir. Dış tile sağlayıcısı demo için
+ağ kesintisi, API anahtarı, kota ve kullanım koşulu riski getirir.
 
-Üstelik ürünün ihtiyacı sokak seviyesinde bir taban harita değil: il ve ilçe
-poligonlarını seçilebilir biçimde göstermek.
+Ürünün discovery amacı sokak seviyesinde bir basemap gerektirmez. Province ve
+district polygon'ları, region selection ve density visualization için yeterlidir.
 
-## Karar
+## İlk karar
 
-MapLibre GL JS kullanılır ama **hiçbir dış kaynağa bağlanılmaz**:
+MapLibre GL JS dış tile kaynağı olmadan kullanılacaktır:
 
-- Stil nesnesi yereldir: tek bir arka plan katmanı, ardından GeoJSON kaynakları.
-- Poligonlar `public/geo/` altındadır: 81 il ve pilot il İzmir'in 30 ilçesi.
-  OpenStreetMap türevi veri Douglas–Peucker ile sadeleştirilmiştir (toplam ~210 KB).
-- Vurgu ve seçim `feature-state` ile yapılır; kaynak yeniden yüklenmez.
-- Stil nesnesinde `glyphs` **tanımlı değildir**; hiçbir katman metin çizmediği için
-  gereksiz ve tanımlamak uzak bir font sunucusu bağımlılığı yaratırdı.
-- Kaynak gösterimi (OpenStreetMap katkıda bulunanlar, ODbL) arayüzde yer alır.
+- style ve polygon sources yereldir;
+- province GeoJSON repoda tutulur;
+- source attribution görünürdür;
+- feature-state gibi MapLibre mekanizmaları etkileşim için kullanılabilir;
+- map başarısız olursa aynı discovery result'larının list equivalent'i vardır.
+
+## Mevcut repo veri envanteri
+
+Repo şu anda:
+
+- Türkiye'nin 81 province polygon'unu;
+- İzmir district polygon paketini
+
+içerir.
+
+Bu durum **ürünün İzmir pilotu olduğu anlamına gelmez**. İzmir district dosyası
+mevcut implementasyon/data inventory'sidir. Güncel ürün mimarisi Türkiye-wide'dır
+ve district data bulunan her province için aynı drill-down sözleşmesini kullanır.
+
+## Güncel product extension
+
+0009 ile Nerede yalnızca region selection yapan map olmaktan çıkar ve selected
+metric/topic/time bağlamında province-level density/choropleth üretir. Density
+population değildir. Platform entity count veya normalized score'dur.
+
+Color scale nSosyal blue/cyan single-hue family kullanır. Rainbow heatmap product
+kararı değildir.
 
 ## Sonuçlar
 
-- Harita çevrimdışı açılır; demo ağa bağımlı değildir.
-- Anahtar, kota ve faturalandırma yok.
-- Sadeleştirme yüzünden sınırlar milimetrik doğru değildir. Arayüzde "görsel keşif
-  amaçlıdır, resmî idari sınır verisi değildir" notu bulunur.
-- İlçe katmanı yalnızca pilot il için vardır; diğer illerde keşif il düzeyindedir.
-  Bu, veri boyutunu makul tutmak için bilinçli bir sınırdır.
+- Demo dış tile/API bağımlılığı olmadan çalışabilir.
+- Province map Türkiye-wide'dır.
+- District coverage veri eklenerek genişler, component architecture değişmez.
+- Current İzmir district data bir demo örneğidir, product boundary değildir.
+- Harita discovery'nin görsel yüzüdür; accessible list aynı bilgiyi taşır.
 
-## Erişilebilirlik notu
+## Erişilebilirlik
 
-Harita **yardımcı** bir görünümdür: aynı sonuçlar her zaman sayfadaki il listesi ve
-sonuç panelinde metin olarak da bulunur, dolayısıyla klavye ve ekran okuyucu
-kullanıcıları hiçbir şey kaçırmaz. Harita bir nedenle yüklenemezse sayfa çalışmaya
-devam eder.
-
-Sarmalayıcı öğe `role="group"`tur, `role="img"` değil: MapLibre kendi odaklanabilir
-tuvalini, yakınlaştırma düğmelerini ve kaynak bağlantısını bu kutunun içine ekler ve
-bir `img` odaklanabilir çocuk barındıramaz. MapLibre'in kendi denetim metinleri de
-Türkçeye çevrilmiştir.
+Map tek erişim yolu değildir. List view aynı region values ve entity results'ı
+sunmalıdır. Keyboard, focus ve selected state color-only olmamalıdır.
 
 ## Değerlendirilen alternatifler
 
-- **Tile sağlayıcı + anahtar:** daha güzel taban harita, ama demo riski ve kota
-  bağımlılığı.
-- **Statik SVG Türkiye haritası:** en hafifi, ama yakınlaştırma, ilçe katmanı ve
-  `feature-state` etkileşimi kaybolurdu.
-- **Tüm illerin ilçeleri:** veri birkaç MB'a çıkıyordu; pilot il yaklaşımı aynı
-  ürün fikrini yeterince gösteriyor.
+- Dış tile provider: daha zengin basemap, fakat demo dependency ve quota riski.
+- Static SVG: basit ama MapLibre state, zoom ve future district expansion sınırlı.
+- District data'yı tek bir city ile product olarak sınırlamak: reddedildi. Data
+  availability implementation concern'dür, product information architecture değil.
+
+Güncel kapsam kararı:
+[0009](0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md).

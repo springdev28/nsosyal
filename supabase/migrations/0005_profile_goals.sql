@@ -21,6 +21,7 @@ begin
   if not exists (select 1 from pg_type where typname = 'goal_key') then
     create type goal_key as enum (
       'socialize',
+      'meet_people',
       'find_communities',
       'discover_events',
       'discover_projects',

@@ -23,7 +23,7 @@ test.describe('Kalıcı platform amaçları', () => {
     await expect(goals).toBeVisible();
 
     // Spec 10.1.1'deki kontrollu sozlugun tamami sunulur.
-    await expect(goals.getByRole('checkbox')).toHaveCount(15);
+    await expect(goals.getByRole('checkbox')).toHaveCount(16);
 
     const collaborators = goals.getByRole('checkbox', { name: /Ekip veya iş birliği bulmak/ });
     const wasChecked = await collaborators.isChecked();

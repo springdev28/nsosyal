@@ -19,6 +19,7 @@ export interface GoalOption {
 
 export const GOALS: readonly GoalOption[] = [
   { key: 'socialize', label: 'Sosyalleşmek', hint: 'Sohbet ve tanışma' },
+  { key: 'meet_people', label: 'Yeni insanlarla tanışmak', hint: 'Çevreni genişletmek' },
   { key: 'discover_people', label: 'Bilgili kişileri keşfetmek', hint: 'Alanında üreten insanlar' },
   { key: 'find_communities', label: 'Topluluk bulmak', hint: 'Ait olacağın bir çevre' },
   { key: 'discover_events', label: 'Etkinlik keşfetmek', hint: 'Buluşma, atölye, yarışma' },

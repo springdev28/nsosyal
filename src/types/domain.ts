@@ -46,6 +46,7 @@ export type IntentMode = 'sosyallesme' | 'kesfet' | 'ogren' | 'uret';
  */
 export type GoalKey =
   | 'socialize'
+  | 'meet_people'
   | 'find_communities'
   | 'discover_events'
   | 'discover_projects'
