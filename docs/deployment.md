@@ -1,5 +1,20 @@
 # Dağıtım
 
+## Şu an nerede yayında
+
+Proje **Render** üzerinde yayında ve `main` dalına her push'ta otomatik yeniden
+dağıtılıyor. Render, uygulamayı tek ve kalıcı bir Node süreci olarak çalıştırır —
+yani `npm start` ile aynı şekil. Bu önemli: demo veri deposu **bellekte** yaşar,
+dolayısıyla isteği farklı örneklere dağıtan serverless bir ortamda (Vercel gibi)
+topluluğa katılma veya hatırlatma kurma gibi yazma işlemleri kaybolabilirdi.
+
+Render kurulumu: **New → Web Service** → depoyu seç → build `npm ci && npm run build`,
+start `npm start`. Ücretsiz katman ~15 dakika hareketsizlikten sonra uykuya geçer
+ve ilk istekte 30-60 saniyede uyanır; demodan önce siteyi bir kez açmak yeterli.
+
+Aşağıdaki Hostinger yolu **isteğe bağlıdır** ve secret'lar tanımlanmadığı sürece
+iş akışı sessizce atlanır.
+
 ## Neden statik barındırma yetmiyor
 
 nSosyal 5N1K bir **sunucu uygulamasıdır**. `npm run build` çıktısında her rota `ƒ`

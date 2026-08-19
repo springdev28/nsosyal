@@ -40,8 +40,11 @@ jobs:
   preflight:
     name: Preflight
     runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.secrets.outputs.configured }}
     steps:
       - name: Check deploy secrets
+        id: secrets
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
@@ -53,18 +56,33 @@ jobs:
           [ -z "$SSH_USER" ] && missing="$missing HOSTINGER_USER"
           [ -z "$KEY" ] && missing="$missing HOSTINGER_SSH_KEY"
           [ -z "$TARGET_PATH" ] && missing="$missing HOSTINGER_PATH"
+
+          # Hic secret yoksa Hostinger bu depo icin yapilandirilmamis demektir.
+          # Bu bir hata degil bir tercih: proje su an Render uzerinde yayinda.
+          # Her push'ta kirmizi yanan bir is akisi zamanla tamamen goz ardi
+          # edilir; asil bir sorun ciktiginda da kimse fark etmez.
+          if [ -z "$HOST" ] && [ -z "$SSH_USER" ] && [ -z "$KEY" ] && [ -z "$TARGET_PATH" ]; then
+            echo "Hostinger secret'lari tanimli degil; dagitim atlaniyor."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Bazilari var bazilari yoksa bu yarim kalmis bir kurulumdur ve
+          # sessizce gecilmemeli.
           if [ -n "$missing" ]; then
-            echo "::error::Eksik secret'lar:$missing"
-            echo "Settings > Secrets and variables > Actions altina ekleyin."
+            echo "::error::Hostinger kismen yapilandirilmis. Eksik:$missing"
             echo "Ayrintili kurulum: docs/deployment.md"
             exit 1
           fi
+
           echo "Dort zorunlu secret de tanimli."
+          echo "configured=true" >> "$GITHUB_OUTPUT"
 
       # Anahtarin sunucuda GERCEKTEN calistigini burada ogreniyoruz. Secret'in
       # dolu olmasi yetmez: acik anahtar authorized_keys'te degilse dagitim
       # yine duser, ama bu kez sebebini bilerek.
       - name: Verify server access
+        if: steps.secrets.outputs.configured == 'true'
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
@@ -128,6 +146,7 @@ jobs:
   deploy:
     name: Deploy
     needs: [preflight, verify]
+    if: needs.preflight.outputs.configured == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
