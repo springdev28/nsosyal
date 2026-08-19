@@ -1,4 +1,4 @@
-# nSosyal 5N — repo rules for coding agents
+# nSosyal 5N1K — repo rules for coding agents
 
 You are working on a competition prototype, not a full production social network.
 The team owns the product idea and must be able to read, review and defend every

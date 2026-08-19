@@ -20,7 +20,7 @@ const POST_TYPE_LABEL: Record<string, string> = {
  *
  * Yerlesim nsosyal.com'daki gonderi kartindan alinmistir: avatar, kalin ad,
  * dogrulama isareti, @kullanici · sure, sagda menu; altta metin, medya ve
- * etkilesim satiri. 5N chipleri yalnizca gercekten var olan baglamlar icin
+ * etkilesim satiri. 5N1K chipleri yalnizca gercekten var olan baglamlar icin
  * gosterilir (PROJECT_SPEC 7.1).
  */
 export function PostCard({ view, revalidate = '/feed' }: { view: PostView; revalidate?: string }) {

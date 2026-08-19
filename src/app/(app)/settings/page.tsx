@@ -27,6 +27,7 @@ export default async function SettingsPage() {
         initial={{
           bio: viewer.bio,
           intentMode: viewer.intentMode,
+          goalKeys: viewer.goalKeys,
           locationVisibility: viewer.locationVisibility,
           provinceCode: viewer.provinceCode,
           districtCode: viewer.districtCode,

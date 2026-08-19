@@ -12,7 +12,7 @@
  * tests/unit/ranking.test.ts bunu ayrica dogrular.
  */
 
-import type { IntentMode, Post, RankedPost, RankingReason, RankingSignals, UUID } from '@/types/domain';
+import type { GoalKey, IntentMode, Post, RankedPost, RankingReason, RankingSignals, UUID } from '@/types/domain';
 
 /** PROJECT_SPEC 12.1'deki baslangic agirliklari. Urun gercegi degil, demo baslangic degerleridir. */
 export const BASE_WEIGHTS: RankingSignals = {
@@ -83,7 +83,10 @@ export interface RankingViewer {
   communityIds: UUID[];
   provinceCode: string | null;
   districtCode: string | null;
-  intentMode: IntentMode;
+  /** Kalici platform amaclari. */
+  goalKeys: GoalKey[];
+  /** Anlik niyet; secilmemis olabilir. */
+  intentMode: IntentMode | null;
 }
 
 export interface RankingContext {
@@ -137,10 +140,13 @@ export function computeSignals(post: Post, ctx: RankingContext): RankingSignals 
 
   const communityMatch = post.communityId && viewer.communityIds.includes(post.communityId) ? 1 : 0;
 
-  const intentMatch = INTENT_POST_TYPES[viewer.intentMode].includes(post.type)
-    ? // Listedeki sirasi onemli: ilk tur tam puan, sonrakiler kademeli.
-      clamp01(1 - INTENT_POST_TYPES[viewer.intentMode].indexOf(post.type) * 0.15)
-    : 0;
+  // Mod secilmemisse niyet sinyali notrdur; agirligi kalici katman dagitir.
+  const intentTypes = viewer.intentMode ? INTENT_POST_TYPES[viewer.intentMode] : null;
+  const intentMatch =
+    intentTypes && intentTypes.includes(post.type)
+      ? // Listedeki sirasi onemli: ilk tur tam puan, sonrakiler kademeli.
+        clamp01(1 - intentTypes.indexOf(post.type) * 0.15)
+      : 0;
 
   const recency = recencyScore(new Date(post.createdAt), ctx.now, ctx.recencyHalfLifeHours);
 
@@ -159,8 +165,89 @@ export function computeSignals(post: Post, ctx: RankingContext): RankingSignals 
   return { topicMatch, followedSource, communityMatch, intentMatch, recency, locationMatch, explorationBonus };
 }
 
-export function weightsFor(intentMode: IntentMode): RankingSignals {
-  return INTENT_WEIGHTS[intentMode] ?? BASE_WEIGHTS;
+/**
+ * Kalici platform amaclarinin sinyallere itmesi (PROJECT_SPEC 10.1.1).
+ *
+ * Her amac bir iki sinyale kucuk bir itme uygular. Degerler mutlak agirlik
+ * degil, taban agirliga eklenen paydir; eklendikten sonra toplam yeniden
+ * 1.0'a normalize edilir. Kucuk tutulmalarinin sebebi: hedefler akisi
+ * yonlendirmeli, ele gecirmemeli. Bes hedef secen bir kullanicinin akisi
+ * hicbir hedef secmeyeninkinden taninmaz olmamali.
+ */
+export const GOAL_SIGNAL_BIAS: Record<GoalKey, Partial<RankingSignals>> = {
+  socialize: { followedSource: 0.06, recency: 0.03 },
+  casual_discussion: { followedSource: 0.05, recency: 0.04 },
+  find_communities: { communityMatch: 0.08 },
+  discover_events: { recency: 0.04, locationMatch: 0.04 },
+  discover_projects: { topicMatch: 0.05, explorationBonus: 0.03 },
+  share_projects: { communityMatch: 0.05, explorationBonus: 0.03 },
+  find_collaborators: { communityMatch: 0.05, explorationBonus: 0.04 },
+  learn: { intentMatch: 0.06, topicMatch: 0.03 },
+  find_resources: { intentMatch: 0.07 },
+  follow_developments: { followedSource: 0.05, recency: 0.04 },
+  discover_local_ecosystem: { locationMatch: 0.09 },
+  find_institutions: { locationMatch: 0.05, communityMatch: 0.03 },
+  discover_opportunities: { recency: 0.05, topicMatch: 0.03 },
+  follow_creation_stories: { topicMatch: 0.04, explorationBonus: 0.04 },
+  discover_people: { explorationBonus: 0.06, followedSource: 0.02 },
+};
+
+const SIGNAL_KEYS: (keyof RankingSignals)[] = [
+  'topicMatch',
+  'followedSource',
+  'communityMatch',
+  'intentMatch',
+  'recency',
+  'locationMatch',
+  'explorationBonus',
+];
+
+/** Toplami 1.0'a getirir. Skorlarin modlar arasi karsilastirilabilirligi buna bagli. */
+function normalize(weights: RankingSignals): RankingSignals {
+  const total = SIGNAL_KEYS.reduce((sum, key) => sum + weights[key], 0);
+  if (total <= 0) return { ...BASE_WEIGHTS };
+  const out = {} as RankingSignals;
+  for (const key of SIGNAL_KEYS) out[key] = weights[key] / total;
+  return out;
+}
+
+/**
+ * Kisisellestirmenin iki katmani (PROJECT_SPEC 7.10 / 17.18-10).
+ *
+ * 1. KALICI katman: profil hedefleri taban agirliklari egriltir. Hicbir hedef
+ *    secilmemisse taban agirliklar oldugu gibi kalir.
+ * 2. ANLIK katman: bir niyet modu secilmisse o modun dagilimina dogru
+ *    harmanlanir. Mod hedefleri SILMEZ, uzerine gecici olarak biner - bu
+ *    yuzden tam degistirme degil harmanlama.
+ *
+ * Mod secilmemisse (intentMode null) yalnizca kalici katman calisir; spec
+ * kullanicinin hicbir mod secmeden de kisisellestirilmis akis gorebilmesini
+ * sart kosuyor.
+ */
+export function weightsForViewer(
+  goalKeys: readonly GoalKey[] = [],
+  intentMode: IntentMode | null = null,
+): RankingSignals {
+  const persistent = { ...BASE_WEIGHTS };
+  for (const goal of goalKeys) {
+    const bias = GOAL_SIGNAL_BIAS[goal];
+    if (!bias) continue;
+    for (const key of SIGNAL_KEYS) persistent[key] += bias[key] ?? 0;
+  }
+
+  const base = normalize(persistent);
+  if (!intentMode) return base;
+
+  // Anlik niyet gecicidir: kalici katmani ezmek yerine ona dogru %65 harmanlanir.
+  const intent = INTENT_WEIGHTS[intentMode] ?? BASE_WEIGHTS;
+  const blended = {} as RankingSignals;
+  for (const key of SIGNAL_KEYS) blended[key] = base[key] * 0.35 + intent[key] * 0.65;
+  return normalize(blended);
+}
+
+/** Geriye donuk kisayol: yalnizca niyet modundan agirlik uretir. */
+export function weightsFor(intentMode: IntentMode | null): RankingSignals {
+  return intentMode ? INTENT_WEIGHTS[intentMode] ?? BASE_WEIGHTS : BASE_WEIGHTS;
 }
 
 export function scoreFromSignals(signals: RankingSignals, weights: RankingSignals): number {
@@ -246,7 +333,8 @@ export function intentLabel(mode: IntentMode): string {
  * bilerek bu fonksiyona hic ulasmaz.
  */
 export function rankPosts(posts: readonly Post[], ctx: RankingContext): RankedPost[] {
-  const weights = weightsFor(ctx.viewer.intentMode);
+  // Iki katman birlikte: kalici amaclar tabani kurar, anlik mod uzerine biner.
+  const weights = weightsForViewer(ctx.viewer.goalKeys, ctx.viewer.intentMode);
 
   return posts
     .map((post) => {

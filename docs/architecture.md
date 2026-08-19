@@ -157,7 +157,7 @@ eylem. Mobilde alt gezinme çubuğu.
 
 Renkler `src/app/globals.css` içinde iki katmanlıdır: `:root` koyu paleti taşır,
 açık tema hem `prefers-color-scheme` hem de kullanıcının `[data-theme]` tercihiyle
-devreye girer. 5N boyut renkleri her iki temada ayrı değerler alır, çünkü bağlam
+devreye girer. 5N1K boyut renkleri her iki temada ayrı değerler alır, çünkü bağlam
 çipi kendi renginin %12'sini zemin olarak kullanır — koyu tema için ayarlanmış canlı
 tonlar açık zeminde 1.5:1'e kadar düşüyordu.
 

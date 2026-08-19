@@ -366,3 +366,38 @@ describe('kimlikler kararlıdır', () => {
     expect(second).toBe(first);
   });
 });
+
+/**
+ * Kalici platform amaclari yalnizca bir profil alani degil, siralamayi gercekten
+ * degistiren bir katman olmali (PROJECT_SPEC 7.10 / 17.18-10). Aksi hâlde
+ * "iki katmanli kisisellestirme" iddiasi arayuzde kalirdi.
+ */
+describe('kalıcı platform amaçları akışı etkiler', () => {
+  it('yerel ekosistem amacı, aynı kullanıcı için yerel içeriği yukarı taşır', () => {
+    const store = new DemoStore();
+    const viewer = store.getProfileByUsername('elif.demo');
+    expect(viewer).toBeTruthy();
+    if (!viewer) return;
+
+    const localFirst = store.getFeed({ viewerId: viewer.id, intentMode: null, limit: 40 });
+
+    store.updateProfile(viewer.id, { goalKeys: ['casual_discussion', 'socialize'] });
+    const socialFirst = store.getFeed({ viewerId: viewer.id, intentMode: null, limit: 40 });
+
+    // Ayni veri, ayni mod (yok), yalnizca amaclar farkli -> siralama farkli.
+    const a = localFirst.map((entry) => entry.post.id).join(',');
+    const b = socialFirst.map((entry) => entry.post.id).join(',');
+    expect(a).not.toEqual(b);
+  });
+
+  it('mod seçilmemişken de kişiselleştirilmiş bir akış döner', () => {
+    const store = new DemoStore();
+    const viewer = store.getProfileByUsername('elif.demo');
+    if (!viewer) return;
+
+    const feed = store.getFeed({ viewerId: viewer.id, intentMode: null, limit: 10 });
+    expect(feed.length).toBeGreaterThan(0);
+    // Siralama gerekce uretebiliyorsa kisisellestirme calisiyor demektir.
+    expect(feed.some((entry) => entry.reason !== null)).toBe(true);
+  });
+});

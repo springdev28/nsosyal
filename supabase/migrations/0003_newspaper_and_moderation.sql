@@ -1,5 +1,5 @@
 -- =============================================================================
--- nSosyal 5N · 0003 · nGazete, ilanlar, moderasyon ve bildirimler
+-- nSosyal 5N1K · 0003 · nGazete, ilanlar, moderasyon ve bildirimler
 --
 -- Ürün kuralı (PROJECT_SPEC 1.1 madde 6 / 7.9):
 -- Ücretli görünürlük yalnızca gazete içinde yaşar. Bu şemada bilinçli olarak

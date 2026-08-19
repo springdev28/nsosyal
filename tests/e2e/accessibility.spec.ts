@@ -85,7 +85,7 @@ test.describe('axe taraması', () => {
 
 /**
  * Karanlik tema uygulamanin varsayilan gorunumu; Playwright ise varsayilan
- * olarak acik temayi taklit eder. 5N boyut renkleri her iki temada farkli
+ * olarak acik temayi taklit eder. 5N1K boyut renkleri her iki temada farkli
  * degerler aldigi icin ikisini de tariyoruz.
  */
 test.describe('karanlık tema', () => {

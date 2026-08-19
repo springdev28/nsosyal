@@ -10,6 +10,12 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 /**
  * 5N boyut secici (PROJECT_SPEC 4.4 / 17.18-4).
  *
+ * Isim neden "5N", urun adi "nSosyal 5N1K" iken: 1K yani KIM, bir kesif paneli
+ * degil sosyal kimlik katmanidir (spec 4.1) ve profil yuzeyinde yasar. Spec
+ * 4.4/3 yayin uzerinde tasinacak ogeleri tek tek sayiyor ve bes tane: Ne,
+ * Nerede, Ne zaman, Nasil, Neden. Bu yuzden secici bes oge tasir ve adi da
+ * bunu soyler; baglam MODELININ tamami 5N1K'dir, secicinin tasidigi 5N'dir.
+ *
  * Spec bu mekanigi olumsuz cumlelerle tarif ediyor, o yuzden once ne DEGIL:
  *   - Kesfet sayfasinin ustunde duran bes sabit buton degil.
  *   - Bes buyuk kart ya da surekli gorunen bir liste degil.

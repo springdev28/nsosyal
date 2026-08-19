@@ -8,7 +8,7 @@ Prototipin ilk arayüzü yalnızca yazılı spec'ten türetilmişti. Sonuç tekn
 doğru ama üründen kopuktu: farklı bir renk hissi, farklı yoğunluk, gezinme
 düzeni tutmuyordu ve arayüz mobilyası (gezinme, etiketler, boş durumlar) emoji ile
 kurulmuştu. Bu prototipin işi yeni bir ürün icat etmek değil, mevcut nSosyal
-arayüzünün üstüne 5N bağlam katmanını göstermek.
+arayüzünün üstüne 5N1K bağlam katmanını göstermek.
 
 ## Karar
 

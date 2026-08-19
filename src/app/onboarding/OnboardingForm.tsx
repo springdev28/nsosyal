@@ -4,7 +4,8 @@ import { useActionState, useMemo, useState } from 'react';
 
 import { completeOnboarding, type OnboardingState } from '@/actions/auth';
 import { Button, Card, ErrorNote, InfoNote } from '@/components/ui';
-import type { District, IntentMode, LocationVisibility, Province, Topic } from '@/types/domain';
+import { GOALS } from '@/lib/personalization/goals';
+import type { District, GoalKey, IntentMode, LocationVisibility, Province, Topic } from '@/types/domain';
 
 /**
  * Onboarding akisi (PROJECT_SPEC 17.4).
@@ -16,7 +17,7 @@ import type { District, IntentMode, LocationVisibility, Province, Topic } from '
  * - Her adim klavye ile tamamen kullanilabilir, hatalar alanlarla iliskilidir.
  */
 
-const STEPS = ['İlgi alanları', 'Konum', 'Niyet', 'Profil'] as const;
+const STEPS = ['İlgi alanları', 'Amaçlar', 'Konum', 'Niyet', 'Profil'] as const;
 
 const INTENT_OPTIONS: Array<{ value: IntentMode; label: string; description: string; icon: string }> = [
   {
@@ -86,6 +87,10 @@ export function OnboardingForm({
   const [state, formAction, pending] = useActionState<OnboardingState, FormData>(completeOnboarding, {});
   const [step, setStep] = useState(0);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  // Kalici platform amaclari (spec 7.10). Birden fazla secilebilir ve
+  // sonradan Ayarlar'dan degistirilebilir; onboarding yalnizca baslangic
+  // degerini toplar.
+  const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
   const [visibility, setVisibility] = useState<LocationVisibility>('hidden');
   const [provinceCode, setProvinceCode] = useState('');
 
@@ -99,8 +104,16 @@ export function OnboardingForm({
     step === 0
       ? selectedTopics.length >= 3
       : step === 1
-        ? !needsProvince || Boolean(provinceCode)
-        : true;
+        ? selectedGoals.length >= 1
+        : step === 2
+          ? !needsProvince || Boolean(provinceCode)
+          : true;
+
+  function toggleGoal(key: GoalKey) {
+    setSelectedGoals((current) =>
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
+    );
+  }
 
   function toggleTopic(id: string) {
     setSelectedTopics((current) =>
@@ -175,7 +188,41 @@ export function OnboardingForm({
       </Card>
 
       {/* --- 2. Konum --- */}
+      {/* --- 2. Kalici platform amaclari --- */}
       <Card className={`p-4 ${step === 1 ? '' : 'hidden'}`}>
+        <fieldset>
+          <legend className="text-lg font-semibold">Platformdan genel olarak ne bekliyorsun?</legend>
+          <p className="mt-1 text-sm text-fg-muted">
+            Birden fazla seçebilirsin. Ayarlar’dan istediğin zaman değiştirirsin.
+          </p>
+
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {GOALS.map((goal) => {
+              const checked = selectedGoals.includes(goal.key);
+              return (
+                <li key={goal.key}>
+                  <label className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-bg-raised p-3 transition-colors hover:border-line-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+                    <input
+                      type="checkbox"
+                      name="goalKeys"
+                      value={goal.key}
+                      checked={checked}
+                      onChange={() => toggleGoal(goal.key)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{goal.label}</span>
+                      <span className="block text-xs text-fg-subtle">{goal.hint}</span>
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        </fieldset>
+      </Card>
+
+      <Card className={`p-4 ${step === 2 ? '' : 'hidden'}`}>
         <fieldset>
           <legend className="text-lg font-semibold">Konum paylaşmak ister misin?</legend>
           <p className="mt-1 text-sm text-fg-muted">
@@ -268,15 +315,15 @@ export function OnboardingForm({
       </Card>
 
       {/* --- 3. Niyet modu --- */}
-      <Card className={`p-4 ${step === 2 ? '' : 'hidden'}`}>
+      <Card className={`p-4 ${step === 3 ? '' : 'hidden'}`}>
         <fieldset>
           <legend className="text-lg font-semibold">Bugün buraya ne için geldin?</legend>
           <p className="mt-1 text-sm text-fg-muted">
-            Akış modunu belirler. Ana akışın üstünden istediğin zaman değiştirebilirsin.
+            Anlık moddur; amaçlarını değiştirmez. Boş bırakabilirsin.
           </p>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {INTENT_OPTIONS.map((option, index) => (
+            {INTENT_OPTIONS.map((option) => (
               <label
                 key={option.value}
                 className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-bg-raised p-3 transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft hover:border-line-strong"
@@ -285,7 +332,6 @@ export function OnboardingForm({
                   type="radio"
                   name="intentMode"
                   value={option.value}
-                  defaultChecked={index === 0}
                   className="mt-1 h-5 w-5 accent-[var(--accent)]"
                 />
                 <span>
@@ -302,7 +348,7 @@ export function OnboardingForm({
       </Card>
 
       {/* --- 4. Profil --- */}
-      <Card className={`p-4 ${step === 3 ? '' : 'hidden'}`}>
+      <Card className={`p-4 ${step === 4 ? '' : 'hidden'}`}>
         <h2 className="text-lg font-semibold">Seni nasıl tanıyalım?</h2>
 
         <div className="mt-4 space-y-4">

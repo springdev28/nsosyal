@@ -4,7 +4,8 @@ import { useActionState, useMemo, useState } from 'react';
 
 import { updateSettings, type SettingsState } from '@/actions/auth';
 import { Button, Card, ErrorNote, InfoNote } from '@/components/ui';
-import type { District, IntentMode, LocationVisibility, Province } from '@/types/domain';
+import { GOALS } from '@/lib/personalization/goals';
+import type { District, GoalKey, IntentMode, LocationVisibility, Province } from '@/types/domain';
 
 const LOCATION_OPTIONS: Array<{ value: LocationVisibility; label: string; description: string }> = [
   { value: 'hidden', label: 'Paylaşmıyorum', description: 'Haritayı yine kullanabilirsin.' },
@@ -32,7 +33,8 @@ export function SettingsForm({
   districtDataProvinces: readonly string[];
   initial: {
     bio: string;
-    intentMode: IntentMode;
+    intentMode: IntentMode | null;
+    goalKeys: GoalKey[];
     locationVisibility: LocationVisibility;
     provinceCode: string | null;
     districtCode: string | null;
@@ -85,16 +87,53 @@ export function SettingsForm({
           <select
             id="intentMode"
             name="intentMode"
-            defaultValue={initial.intentMode}
+            defaultValue={initial.intentMode ?? ''}
             className="min-h-11 w-full rounded-xl border border-line bg-bg-raised px-3 sm:max-w-xs"
           >
+            {/* Spec 7.10: hicbir mod secmeden de kisisellestirilmis akis kullanilabilir. */}
+            <option value="">Mod seçme, amaçlarıma göre kişiselleştir</option>
             {INTENTS.map((intent) => (
               <option key={intent.value} value={intent.value}>
                 {intent.label}
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-fg-subtle">
+            Anlık moddur; aşağıdaki amaçlarını değiştirmez.
+          </p>
         </div>
+      </Card>
+
+      <Card className="space-y-3 p-4">
+        <div>
+          <h2 className="text-lg font-semibold">Platform amaçların</h2>
+          <p className="mt-0.5 text-sm text-fg-muted">
+            Birden fazla seçebilirsin. Akış sıralaman bunlara göre kurulur.
+          </p>
+        </div>
+
+        <fieldset>
+          <legend className="sr-only">Platform amaçları</legend>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {GOALS.map((goal) => (
+              <li key={goal.key}>
+                <label className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-bg-raised p-3 transition-colors hover:border-line-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+                  <input
+                    type="checkbox"
+                    name="goalKeys"
+                    value={goal.key}
+                    defaultChecked={initial.goalKeys.includes(goal.key)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">{goal.label}</span>
+                    <span className="block text-xs text-fg-subtle">{goal.hint}</span>
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
       </Card>
 
       <Card className="space-y-4 p-4">

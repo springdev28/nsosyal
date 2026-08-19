@@ -1,12 +1,12 @@
-# nSosyal 5N
+# nSosyal 5N1K
 
 Bilim, teknoloji ve inovasyon topluluklarını birbirine bağlayan **bağlamsal sosyal
 keşif katmanı** prototipi. Gündelik sosyalliği (paylaşım, mizah, kısa video) proje,
 öğrenme, topluluk ve etkinlik keşfiyle aynı üründe birleştirir; ücretli görünürlüğü
 ise kişisel akıştan tamamen ayrı bir yüzeyde — **nGazete** — tutar.
 
-Ürünün omurgası 5N bağlam modelidir: **Ne, Nerede, Ne zaman, Nasıl, Neden** (ve
-tamamlayıcı olarak **Kim**). 5N bir menü değil, tüm içeriklerin paylaştığı ortak
+Ürünün omurgası 5N1K bağlam modelidir: **Ne, Nerede, Ne zaman, Nasıl, Neden** (ve
+tamamlayıcı olarak **Kim**). 5N1K bir menü değil, tüm içeriklerin paylaştığı ortak
 veri dilidir: bir gönderi yalnızca sahip olduğu bağlamları taşır, beş alanı
 doldurmak zorunlu değildir.
 
@@ -113,10 +113,17 @@ Harita sınırları OpenStreetMap katkıda bulunanlarından türetilmiştir (ODb
 uygulama içinde kaynak gösterilir. Görsel keşif amaçlıdır; resmî idari sınır verisi
 değildir. Diğer tüm içerik bu prototip için üretilmiş sentetik veridir.
 
+## Dağıtım
+
+Uygulama sunucu tarafında render edilir; paylaşımlı/PHP barındırma yetmez, Node
+çalıştıran bir plan gerekir. `main` dalına push, testler geçtiği sürece otomatik
+dağıtır. Ayrıntılar: [docs/deployment.md](docs/deployment.md).
+
 ## Belgeler
 
 - [PROJECT_SPEC.md](PROJECT_SPEC.md) — ürün ve teknik özet
 - [docs/architecture.md](docs/architecture.md) — veri modeli ve sistem kararları
 - [docs/demo.md](docs/demo.md) — demo hesapları ve sunum senaryosu
+- [docs/deployment.md](docs/deployment.md) — Hostinger dağıtımı
 - [docs/decisions/](docs/decisions/) — karar kayıtları
 - [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) — kodlama ajanları için repo kuralları

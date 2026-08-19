@@ -1,5 +1,5 @@
 /**
- * nSosyal 5N alan modeli.
+ * nSosyal 5N1K alan modeli.
  *
  * Bu tipler PROJECT_SPEC bolum 10'daki Supabase semasinin birebir karsiligidir.
  * Supabase adaptoru ile demo adaptoru ayni tipleri dondurur; boylece veri
@@ -12,7 +12,7 @@ export type UUID = string;
 /** ISO-8601 timestamptz. Veritabaninda timestamptz, UI'da Europe/Istanbul gosterilir. */
 export type Timestamp = string;
 
-/** 5N baglam boyutlari. "Kim" sosyal kimlik katmanidir. */
+/** 5N1K baglam boyutlari. "Kim" sosyal kimlik katmanidir. */
 export type Dimension = 'ne' | 'nerede' | 'nezaman' | 'nasil' | 'neden' | 'kim';
 
 export type EntityType =
@@ -28,7 +28,47 @@ export type EntityType =
 export type Role = 'user' | 'community_manager' | 'organization' | 'moderator' | 'admin';
 
 /** Kullanicinin akistan ne beklediği. Sıralama ağırlıklarını değiştirir. */
+/**
+ * ANLIK niyet. Oturum olceginde calisir: akis ve kesif yuzeylerinin
+ * agirliklarini GECICI olarak yeniden dagitir, kalici profil hedeflerini
+ * SILMEZ (PROJECT_SPEC 7.10 / 17.18-10). Kullanici hicbir mod secmeden de
+ * varsayilan kisisellestirilmis akisi kullanabilir; bu yuzden null olabilir.
+ */
 export type IntentMode = 'sosyallesme' | 'kesfet' | 'ogren' | 'uret';
+
+/**
+ * KALICI platform amaclari. Kullanicinin platformdan genel olarak ne
+ * bekledigini ifade eder ve birden fazlasi ayni anda secilebilir.
+ *
+ * Spec 10.1.1 tek bir intent_mode alaninin kisisellestirme icin yetersiz
+ * oldugunu soyluyor ve bu kontrollu sozlugu veriyor. Deger listesi kapali
+ * tutulur: serbest metin olsaydi ne siralamaya ne analitige baglanabilirdi.
+ */
+export type GoalKey =
+  | 'socialize'
+  | 'find_communities'
+  | 'discover_events'
+  | 'discover_projects'
+  | 'share_projects'
+  | 'find_collaborators'
+  | 'learn'
+  | 'find_resources'
+  | 'follow_developments'
+  | 'discover_local_ecosystem'
+  | 'find_institutions'
+  | 'discover_opportunities'
+  | 'casual_discussion'
+  | 'follow_creation_stories'
+  | 'discover_people';
+
+/** profile_goals(profile_id, goal_key, weight, created_at) - spec 10.1.1. */
+export interface ProfileGoal {
+  profileId: UUID;
+  goalKey: GoalKey;
+  /** 0-1. Prototipte hepsi 1; arayuz ileride agirlik verebilsin diye alan var. */
+  weight: number;
+  createdAt: Timestamp;
+}
 
 /**
  * Konum gorunurlugu. Varsayilan `hidden` (PROJECT_SPEC 11.1).
@@ -72,7 +112,13 @@ export interface Profile {
   districtCode: string | null;
   locationVisibility: LocationVisibility;
   topicIds: UUID[];
-  intentMode: IntentMode;
+  /**
+   * Varsayilan anlik niyet. null ise kullanici hicbir mod secmemistir ve akis
+   * yalnizca kalici hedeflerden turetilir (spec 7.10).
+   */
+  intentMode: IntentMode | null;
+  /** Kalici platform amaclari; birden fazla olabilir. */
+  goalKeys: GoalKey[];
   createdAt: Timestamp;
   /** Sentetik demo hesabi isareti - jurinin gercek kisi sanmamasi icin. */
   demo: true;

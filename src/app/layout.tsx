@@ -4,12 +4,12 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'nSosyal 5N · Bağlamsal sosyal keşif',
-    template: '%s · nSosyal 5N',
+    default: 'nSosyal 5N1K · Bağlamsal sosyal keşif',
+    template: '%s · nSosyal 5N1K',
   },
   description:
     'Bilim, teknoloji ve inovasyon ilgi alanları çevresinde gündelik sosyalliği, aidiyeti, keşfi, öğrenmeyi ve üretimi tek ekosistemde birleştiren bağlamsal sosyal keşif katmanı prototipi.',
-  applicationName: 'nSosyal 5N',
+  applicationName: 'nSosyal 5N1K',
   robots: { index: false, follow: false },
 };
 

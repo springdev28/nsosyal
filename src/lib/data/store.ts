@@ -66,7 +66,12 @@ import { eventOverlaps, isWithin, toIstanbulDateKey, type DateRange } from '@/li
 
 export interface FeedOptions {
   viewerId: UUID | null;
-  intentMode?: IntentMode;
+  /**
+   * undefined = cagiran taraf belirtmedi, profilin varsayilani kullanilir.
+   * null      = kullanici acikca mod secmedi; yalnizca kalici platform
+   *             amaclari isler (PROJECT_SPEC 7.10).
+   */
+  intentMode?: IntentMode | null;
   communityId?: UUID | null;
   limit?: number;
   /** Yalnizca kisa video gonderileri. */
@@ -310,7 +315,7 @@ export class DemoStore {
     );
   }
 
-  private rankingViewer(profileId: UUID | null, intentMode?: IntentMode): RankingViewer {
+  private rankingViewer(profileId: UUID | null, intentMode?: IntentMode | null): RankingViewer {
     const profile = profileId ? this.getProfile(profileId) : null;
     return {
       id: profile?.id ?? 'anonymous',
@@ -319,7 +324,10 @@ export class DemoStore {
       communityIds: profile ? this.getMemberCommunityIds(profile.id) : [],
       provinceCode: profile?.provinceCode ?? null,
       districtCode: profile?.districtCode ?? null,
-      intentMode: intentMode ?? profile?.intentMode ?? 'sosyallesme',
+      goalKeys: profile?.goalKeys ?? [],
+      // undefined = "cagiran taraf mod belirtmedi, profilin varsayilanini kullan".
+      // null = "kullanici acikca mod secmedi". Ikisi ayni sey degil.
+      intentMode: intentMode === undefined ? (profile?.intentMode ?? null) : intentMode,
     };
   }
 
@@ -383,7 +391,7 @@ export class DemoStore {
   }
 
   /**
-   * Bir gonderiyi kart icin hazirlar ve 5N baglam chiplerini uretir.
+   * Bir gonderiyi kart icin hazirlar ve 5N1K baglam chiplerini uretir.
    * Chipler yalnizca gercekten var olan baglamlar icin eklenir; kartin ustu
    * gereksiz etiketle doldurulmaz (PROJECT_SPEC 7.1).
    */

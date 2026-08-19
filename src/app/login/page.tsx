@@ -27,10 +27,10 @@ export default async function LoginPage({
           aria-hidden="true"
           className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-xl font-bold text-accent-fg"
         >
-          5N
+          5N1K
         </span>
         <h1 className="text-3xl font-bold tracking-tight">
-          nSosyal <span className="text-accent">5N</span>
+          nSosyal <span className="text-accent">5N1K</span>
         </h1>
         <p className="mx-auto mt-2 max-w-md text-fg-muted">
           Bilim ve teknolojiyle ilgilenen insanların yalnızca fırsat aramadığı; sohbet ettiği, ürettiği ve ait

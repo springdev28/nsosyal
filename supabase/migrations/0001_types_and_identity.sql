@@ -1,5 +1,5 @@
 -- =============================================================================
--- nSosyal 5N · 0001 · Türler, kimlik ve konu taksonomisi
+-- nSosyal 5N1K · 0001 · Türler, kimlik ve konu taksonomisi
 --
 -- PROJECT_SPEC bölüm 10'daki veri modelinin ilk parçası.
 -- Kurallar:

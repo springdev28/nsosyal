@@ -1,0 +1,120 @@
+name: Deploy to Hostinger
+
+# nSosyal 5N1K bir Next.js sunucu uygulamasidir: her rota sunucuda render edilir
+# ve butun yazma yollari Server Action'lardan gecer. Bu yuzden statik/PHP
+# barindirma yeterli degildir; hedef Node calistirabilen bir Hostinger plani
+# (VPS ya da Node.js hosting) olmak zorunda.
+#
+# Kimlik bilgileri depoda DURMAZ. Dort repository secret gerekir:
+#   HOSTINGER_HOST      sunucu adresi        (or. 123.45.67.89 veya vps.example.com)
+#   HOSTINGER_USER      SSH kullanicisi
+#   HOSTINGER_SSH_KEY   ozel anahtar (PEM icerigi)
+#   HOSTINGER_PATH      sunucudaki uygulama dizini (or. /home/user/nsosyal)
+# Istege bagli:
+#   HOSTINGER_PORT      SSH portu (varsayilan 22)
+#   HOSTINGER_HEALTH_URL  dagitim sonrasi kontrol edilecek adres
+
+on:
+  push:
+    branches: [main]
+  # Elle tetikleme: bir dagitimi yeniden calistirmak icin.
+  workflow_dispatch:
+
+# Ust uste gelen dagitimlar birbirini ezmesin.
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Kirik bir surum dagitilmasin: typecheck + lint + birim testleri.
+      - run: npm run verify
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        run: npm run test:e2e
+
+  deploy:
+    name: Deploy
+    needs: verify
+    runs-on: ubuntu-latest
+    # Ortam koruma kurallari ve dagitim gecmisi icin.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "${{ secrets.HOSTINGER_PORT || 22 }}" -H "${{ secrets.HOSTINGER_HOST }}" \
+            >> ~/.ssh/known_hosts 2>/dev/null
+
+      # Yalnizca calistirmak icin gerekenler gonderilir. node_modules
+      # gonderilmez; sunucuda uretim bagimliliklari ayrica kurulur.
+      - name: Upload build
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_deploy -p ${{ secrets.HOSTINGER_PORT || 22 }}" \
+            --exclude '.git' \
+            .next public package.json package-lock.json next.config.ts \
+            "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/"
+
+      - name: Install and restart
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "${{ secrets.HOSTINGER_PORT || 22 }}" \
+            "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}" \
+            "set -e
+             cd '${{ secrets.HOSTINGER_PATH }}'
+             npm ci --omit=dev
+             # pm2 uygulamayi ayakta tutar ve sunucu yeniden baslayinca geri getirir.
+             if pm2 describe nsosyal >/dev/null 2>&1; then
+               pm2 reload nsosyal --update-env
+             else
+               pm2 start npm --name nsosyal -- start
+               pm2 save
+             fi"
+
+      # Dagitimin gercekten ayakta oldugunu dogrula. Adres verilmemisse atlanir.
+      - name: Health check
+        if: ${{ secrets.HOSTINGER_HEALTH_URL != '' }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS "${{ secrets.HOSTINGER_HEALTH_URL }}" | grep -q '"status":"ok"'; then
+              echo "Saglik kontrolu gecti."
+              exit 0
+            fi
+            echo "Deneme $attempt basarisiz, tekrar denenecek..."
+            sleep 5
+          done
+          echo "Saglik kontrolu gecmedi."
+          exit 1
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

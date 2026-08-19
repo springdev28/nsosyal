@@ -25,6 +25,8 @@ interface SeedProfileInput {
   locationVisibility?: Profile['locationVisibility'];
   topics: Parameters<typeof topicId>[0][];
   intentMode?: Profile['intentMode'];
+  /** Kalici platform amaclari (spec 10.1.1). Verilmezse makul bir varsayilan. */
+  goals?: Profile['goalKeys'];
   followerCount: number;
   daysAgo: number;
 }
@@ -44,7 +46,10 @@ function build(input: SeedProfileInput, now: Date): Profile {
     districtCode: input.districtCode ?? null,
     locationVisibility: input.locationVisibility ?? 'hidden',
     topicIds: input.topics.map(topicId),
-    intentMode: input.intentMode ?? 'sosyallesme',
+    // Varsayilan olarak mod SECILMEMIS kabul edilir: spec 7.10 kullanicinin
+    // hicbir mod secmeden de kisisellestirilmis akis gorebilmesini istiyor.
+    intentMode: input.intentMode ?? null,
+    goalKeys: input.goals ?? ['socialize', 'find_communities'],
     createdAt: new Date(now.getTime() - input.daysAgo * 86_400_000).toISOString(),
     demo: true,
     followerCount: input.followerCount,
@@ -62,6 +67,7 @@ export const DEMO_ACCOUNT_USERNAMES = {
 const PEOPLE: SeedProfileInput[] = [
   {
     username: 'elif.demo',
+    goals: ['learn', 'find_communities', 'discover_local_ecosystem'],
     displayName: 'Elif Yıldırım',
     bio: 'Üniversite 3. sınıf, havacılık kulübünde gönüllü. Çoğunlukla izliyorum, ara sıra çok konuşuyorum.',
     avatarEmoji: '🛩️',
@@ -76,6 +82,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'baran.demo',
+    goals: ['share_projects', 'find_collaborators', 'follow_creation_stories'],
     displayName: 'Baran Koç',
     bio: 'Rüzgâr ölçer yapıyorum, bozuyorum, tekrar yapıyorum. Bitmemiş proje paylaşmayı seviyorum.',
     avatarEmoji: '🌬️',
@@ -90,6 +97,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'moderator.demo',
+    goals: ['find_communities', 'follow_developments'],
     displayName: 'Deniz Aksoy',
     bio: 'nSosyal topluluk moderatörü. Başvuruları inceler, raporlara bakar.',
     avatarEmoji: '🛡️',
@@ -105,6 +113,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'zeynep.bio',
+    goals: ['learn', 'find_resources', 'discover_projects'],
     displayName: 'Zeynep Arslan',
     bio: 'Moleküler biyoloji yüksek lisans. Laboratuvarda başarısız denemelerin arşivcisiyim.',
     avatarEmoji: '🧬',
@@ -118,6 +127,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'mert.kod',
+    goals: ['share_projects', 'find_collaborators'],
     displayName: 'Mert Şahin',
     bio: 'Gömülü sistemler. Lehim kokusu ve derleyici hatası.',
     avatarEmoji: '🤖',
@@ -131,6 +141,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'ayse.veri',
+    goals: ['discover_projects', 'follow_developments', 'discover_people'],
     displayName: 'Ayşe Demirtaş',
     bio: 'Veri bilimi, Türkçe NLP ve açık veri. Grafik çizmeyi sevmem ama çiziyorum.',
     avatarEmoji: '📊',
@@ -144,6 +155,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'kaan.roket',
+    goals: ['share_projects', 'discover_events'],
     displayName: 'Kaan Erdoğan',
     bio: 'Model roket takımı kaptanı. İtki eğrisi paylaşmaktan mutlu olurum.',
     avatarEmoji: '🚀',
@@ -158,6 +170,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'selin.oyun',
+    goals: ['casual_discussion', 'socialize', 'discover_people'],
     displayName: 'Selin Kaya',
     bio: 'Oyun tasarımcısı. Game jam bağımlısı, pixel art amatörü.',
     avatarEmoji: '🎮',
@@ -172,6 +185,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'emre.guvenlik',
+    goals: ['learn', 'find_resources'],
     displayName: 'Emre Yalçın',
     bio: 'CTF, tersine mühendislik ve çok fazla kahve.',
     avatarEmoji: '🛡️',
@@ -185,6 +199,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'nazli.tasarim',
+    goals: ['discover_projects', 'follow_creation_stories'],
     displayName: 'Nazlı Öztürk',
     bio: 'Erişilebilirlik odaklı arayüz tasarımı. Ekran okuyucuyla test etmeyen tasarım tasarım değildir.',
     avatarEmoji: '🎨',
@@ -199,6 +214,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'onur.enerji',
+    goals: ['discover_local_ecosystem', 'find_institutions'],
     displayName: 'Onur Çetin',
     bio: 'Enerji mühendisi. Çatıya panel koymayı herkese tavsiye ederim.',
     avatarEmoji: '☀️',
@@ -213,6 +229,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'irem.lise',
+    goals: ['learn', 'discover_opportunities', 'find_communities'],
     displayName: 'İrem Toprak',
     bio: 'Lise son sınıf. Biyoteknoloji okumak istiyorum, şimdilik çok soru soruyorum.',
     avatarEmoji: '🔬',
@@ -227,6 +244,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'burak.uav',
+    goals: ['share_projects', 'find_collaborators', 'discover_events'],
     displayName: 'Burak Tunç',
     bio: 'İHA otopilot yazılımı. Uçtu, düştü, tekrar uçtu.',
     avatarEmoji: '🛸',
@@ -240,6 +258,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'ece.uzay',
+    goals: ['discover_events', 'discover_local_ecosystem'],
     displayName: 'Ece Balaban',
     bio: 'Astrofizik öğrencisi. Gece gökyüzü fotoğrafı ve çok fazla veri.',
     avatarEmoji: '🌌',
@@ -252,6 +271,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'tolga.mizah',
+    goals: ['casual_discussion', 'socialize'],
     displayName: 'Tolga Nar',
     bio: 'Mühendislik mizahı ve haftalık felaket hikâyeleri. Ciddi işler de yapıyorum, söz.',
     avatarEmoji: '😄',
@@ -268,6 +288,7 @@ const PEOPLE: SeedProfileInput[] = [
 const ORGANIZATIONS: SeedProfileInput[] = [
   {
     username: 'egeteknopark.demo',
+    goals: ['find_institutions', 'discover_opportunities'],
     displayName: 'Ege Teknopark (Demo)',
     bio: 'Demo kurum hesabı. Atölye, hızlandırma programı ve etkinlik duyuruları.',
     avatarEmoji: '🏛️',
@@ -285,6 +306,7 @@ const ORGANIZATIONS: SeedProfileInput[] = [
   },
   {
     username: 'anadoluuzay.demo',
+    goals: ['find_communities', 'discover_events'],
     displayName: 'Anadolu Uzay Kulübü (Demo)',
     bio: 'Demo kurum hesabı. Öğrenci uzay ve roket topluluğu.',
     avatarEmoji: '🛰️',
@@ -301,6 +323,7 @@ const ORGANIZATIONS: SeedProfileInput[] = [
   },
   {
     username: 'biyolab.demo',
+    goals: ['find_institutions', 'discover_projects'],
     displayName: 'BiyoLab Girişim (Demo)',
     bio: 'Demo kurum hesabı. Biyoteknoloji laboratuvar ekipmanı ve eğitim.',
     avatarEmoji: '🧪',
@@ -317,6 +340,7 @@ const ORGANIZATIONS: SeedProfileInput[] = [
   },
   {
     username: 'kodkultur.demo',
+    goals: ['find_communities', 'socialize'],
     displayName: 'Kod Kültür Derneği (Demo)',
     bio: 'Demo kurum hesabı. Açık kaynak, siber güvenlik ve topluluk etkinlikleri.',
     avatarEmoji: '⌨️',
@@ -334,6 +358,7 @@ const ORGANIZATIONS: SeedProfileInput[] = [
   },
   {
     username: 'yesilcati.demo',
+    goals: ['discover_local_ecosystem', 'find_institutions'],
     displayName: 'Yeşil Çatı Kooperatifi (Demo)',
     bio: 'Demo kurum hesabı. Yerel yenilenebilir enerji ve iklim projeleri.',
     avatarEmoji: '🌿',

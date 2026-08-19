@@ -18,7 +18,7 @@ export default async function AboutPage() {
     <div className="space-y-4">
       <SectionHeader
         as="h1"
-        title="nSosyal 5N hakkında"
+        title="nSosyal 5N1K hakkında"
         description="Bağlamsal sosyal keşif katmanı prototipi. Tüm içerik sentetik demo verisidir."
       />
 
@@ -28,9 +28,9 @@ export default async function AboutPage() {
       </InfoNote>
 
       <Card className="p-4" id="5n">
-        <h2 className="text-lg font-semibold">5N nedir?</h2>
+        <h2 className="text-lg font-semibold">5N1K nedir?</h2>
         <p className="mt-2 text-fg-muted">
-          5N bir gönderi formu değil, ortak bir veri ve keşif dilidir. Her içerik bütün boyutları doldurmak
+          5N1K bir gönderi formu değil, ortak bir veri ve keşif dilidir. Her içerik bütün boyutları doldurmak
           zorunda değildir: gündelik bir mizah gönderisi yalnızca konu ve topluluk bağlamı taşırken bir etkinlik
           Ne, Nerede ve Ne zaman boyutlarını birlikte kullanır.
         </p>
@@ -57,6 +57,13 @@ export default async function AboutPage() {
           Prototipte makine öğrenmesi modeli yerine açıklanabilir, ağırlıklı bir skor kullanılır. Böylece her
           kartın neden gösterildiği kullanıcıya yazılabilir ve ağırlıklar kullanıcı testleriyle
           değiştirilebilir. Aşağıdaki değerler demo başlangıç değerleridir, ürün gerçeği iddiası taşımaz.
+        </p>
+
+        <p className="mt-2 text-fg-muted">
+          Kişiselleştirme iki katmanlıdır. <strong className="text-fg">Kalıcı platform amaçların</strong>{' '}
+          (Ayarlar’dan seçtiklerin) taban ağırlıkları eğriltir; seçtiğin{' '}
+          <strong className="text-fg">anlık niyet modu</strong> bunun üzerine geçici olarak biner ve
+          amaçlarını silmez. Hiçbir mod seçmezsen akış yalnızca amaçlarına göre sıralanır.
         </p>
 
         {/* Tablo dar ekranda yatay kayar; kaydirilabilir alan klavyeyle de

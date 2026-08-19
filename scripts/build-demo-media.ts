@@ -83,7 +83,7 @@ function cardHtml(clip: DemoClip) {
       <p class="sub">${escapeXml(clip.subtitle)}</p>
     </div>
     <div class="foot">
-      <span class="brand"><span class="badge">5N</span> nSosyal 5N</span>
+      <span class="brand"><span class="badge">5N</span> nSosyal 5N1K</span>
       <span>${seconds}</span>
     </div>
   </div>
@@ -118,7 +118,7 @@ function posterSvg(clip: DemoClip) {
   <text x="44" y="742" font-family="system-ui, sans-serif" font-size="24" fill="#ffffff" fill-opacity="0.85">${escapeXml(
     clip.subtitle,
   )}</text>
-  <text x="44" y="904" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff" fill-opacity="0.8">nSosyal 5N</text>
+  <text x="44" y="904" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff" fill-opacity="0.8">nSosyal 5N1K</text>
 </svg>`;
 }
 
@@ -155,7 +155,7 @@ function imageSvg(image: DemoImage) {
     <rect y="94" width="340" height="10" rx="5" fill="${image.tone}" fill-opacity="0.22"/>
     <rect y="116" width="386" height="10" rx="5" fill="${image.tone}" fill-opacity="0.16"/>
   </g>
-  <text x="736" y="452" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#1c2b44" fill-opacity="0.55" text-anchor="end">nSosyal 5N · demo</text>
+  <text x="736" y="452" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#1c2b44" fill-opacity="0.55" text-anchor="end">nSosyal 5N1K · demo</text>
 </svg>`;
 }
 

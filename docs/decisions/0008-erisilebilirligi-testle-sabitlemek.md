@@ -17,7 +17,7 @@ canlı bir camgöbeği açık zeminde 1.5:1'e kadar düşüyordu.
 1. **Renk oranları hesaplanır, tahmin edilmez.** Bir renk değişince oran, gerçek
    yüzeye (kartın zemini, çipin kendi karışımı, sayfa arka planı) karşı hesaplanır ve
    değişkenin yanına ölçülen değer yorum olarak yazılır.
-2. **5N boyut renkleri temaya bağlıdır.** Koyu ve açık tema için ayrı değerler
+2. **5N1K boyut renkleri temaya bağlıdır.** Koyu ve açık tema için ayrı değerler
    tutulur; her iki temada ölçülen en düşük oran 4.8:1'dir.
 3. **Otomatik tarama iki temayı da kapsar.** Playwright varsayılan olarak açık temayı
    taklit eder, oysa ürünün varsayılanı koyu tema. `tests/e2e/accessibility.spec.ts`

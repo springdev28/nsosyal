@@ -1,5 +1,5 @@
 -- =============================================================================
--- nSosyal 5N · Referans verisi
+-- nSosyal 5N1K · Referans verisi
 --
 -- OTOMATIK URETILDI - elle duzenlemeyin.
 -- Yeniden uretmek icin: npm run build:supabase-seed

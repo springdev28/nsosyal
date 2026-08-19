@@ -151,7 +151,7 @@ const DIMENSION: Record<ContextChip['dimension'], { color: string; label: string
 };
 
 /**
- * 5N baglam chipi. Renk yalnizca destekleyici ipucudur; boyut adi ekran
+ * 5N1K baglam chipi. Renk yalnizca destekleyici ipucudur; boyut adi ekran
  * okuyucu icin metin olarak da verilir ve her chip bir ikon tasir.
  */
 export function DimensionChip({ chip }: { chip: ContextChip }) {

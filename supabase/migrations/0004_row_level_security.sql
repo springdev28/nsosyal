@@ -1,5 +1,5 @@
 -- =============================================================================
--- nSosyal 5N · 0004 · Row Level Security
+-- nSosyal 5N1K · 0004 · Row Level Security
 --
 -- İlke: RLS kapalı tablo bırakılmaz (PROJECT_SPEC 11.3 / 17.3).
 -- Her politika neden var olduğunu açıklayan bir yorumla birlikte yazılır.
@@ -406,7 +406,7 @@ drop policy if exists post_saves_own on public.post_saves;
 create policy post_saves_own on public.post_saves for all
   using (auth.uid() = profile_id) with check (auth.uid() = profile_id);
 
--- --- 5N bağlam ilişkileri ----------------------------------------------------
+-- --- 5N1K bağlam ilişkileri ----------------------------------------------------
 -- Okuma herkese açık; yazma ilgili varlığın sahibine bağlı.
 
 drop policy if exists post_topics_read on public.post_topics;

@@ -6,7 +6,7 @@ changing product behaviour.
 
 ## What this is
 
-nSosyal 5N — a competition prototype of a contextual social discovery layer for
+nSosyal 5N1K — a competition prototype of a contextual social discovery layer for
 science, technology and innovation communities. Next.js 15 App Router + React 19 +
 TypeScript + Tailwind 4. Supabase Postgres with RLS is the production path;
 `DEMO_MODE=true` (the default) runs everything from an in-memory synthetic dataset

@@ -52,7 +52,7 @@ Uygulama kuralları:
 
 - Prototipin görsel dili artık doğrulanabilir bir kaynağa dayanıyor; "ürünün
   devamı gibi görünüyor" iddiası ölçülebilir hâle geldi.
-- 5N boyut renkleri tek vurgu rengine indi (tasarım dosyası `--color-5n-*`
+- 5N1K boyut renkleri tek vurgu rengine indi (tasarım dosyası `--color-5n-*`
   değişkenlerinin hepsini aynı maviye eşitliyor); ayrım ikon, etiket, konum ve
   seçili state ile yapılıyor.
 - **Bedeli:** tasarım dosyası değiştiğinde prototip elle güncellenmek zorunda.

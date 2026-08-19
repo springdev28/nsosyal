@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 import { getStore } from '@/lib/data/store';
+import { parseGoalKeys } from '@/lib/personalization/goals';
 import {
   DEMO_ACCOUNTS,
   NEWSPAPER_SEEN_COOKIE,
@@ -106,7 +107,13 @@ export async function completeOnboarding(
     return { error: 'İlçe düzeyinde paylaşmayı seçtin ama ilçe seçmedin.' };
   }
 
-  const intentMode = String(formData.get('intentMode') ?? 'sosyallesme') as IntentMode;
+  // Anlik niyet opsiyoneldir; bos birakilirsa kullanici mod secmemis sayilir
+  // ve akis yalnizca kalici amaclardan turer (spec 7.10).
+  const rawIntent = String(formData.get('intentMode') ?? '');
+  const intentMode = rawIntent ? (rawIntent as IntentMode) : null;
+  // Kalici platform amaclari - P0 (teknik rapor 3.3.2): onboarding birden
+  // fazlasini toplar, kullanici sonradan Ayarlar'dan hepsini degistirebilir.
+  const goalKeys = parseGoalKeys(formData.getAll('goalKeys').map(String));
   const bio = String(formData.get('bio') ?? '').slice(0, 240);
 
   getStore().updateProfile(viewer.id, {
@@ -114,6 +121,7 @@ export async function completeOnboarding(
     bio,
     topicIds,
     intentMode,
+    goalKeys,
     locationVisibility: visibility,
     provinceCode: visibility === 'hidden' || visibility === 'online_only' ? null : provinceCode,
     districtCode: visibility === 'district' ? districtCode : null,
@@ -121,7 +129,7 @@ export async function completeOnboarding(
 
   getStore().track(
     'onboarding_completed',
-    { topics: topicIds.length, locationVisibility: visibility, intentMode },
+    { topics: topicIds.length, locationVisibility: visibility, intentMode, goals: goalKeys.length },
     viewer.id,
   );
 
@@ -144,7 +152,9 @@ export async function updateSettings(_prev: SettingsState, formData: FormData): 
   const visibility = String(formData.get('locationVisibility') ?? 'hidden') as LocationVisibility;
   const provinceCode = String(formData.get('provinceCode') ?? '') || null;
   const districtCode = String(formData.get('districtCode') ?? '') || null;
-  const intentMode = String(formData.get('intentMode') ?? viewer.intentMode) as IntentMode;
+  const rawIntent = String(formData.get('intentMode') ?? '');
+  const intentMode = rawIntent ? (rawIntent as IntentMode) : null;
+  const goalKeys = parseGoalKeys(formData.getAll('goalKeys').map(String));
   const bio = String(formData.get('bio') ?? '').slice(0, 240);
 
   if ((visibility === 'province' || visibility === 'district') && !provinceCode) {
@@ -154,6 +164,7 @@ export async function updateSettings(_prev: SettingsState, formData: FormData): 
   getStore().updateProfile(viewer.id, {
     bio,
     intentMode,
+    goalKeys,
     locationVisibility: visibility,
     provinceCode: visibility === 'hidden' || visibility === 'online_only' ? null : provinceCode,
     districtCode: visibility === 'district' ? districtCode : null,

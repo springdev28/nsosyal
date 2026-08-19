@@ -1,4 +1,4 @@
-# nSosyal 5N — teknik özet
+# nSosyal 5N1K — teknik özet
 
 Bu dosya, ürün raporunun geliştirme sırasında kaynak alınan kısa hâlidir. Uzun
 rapordaki bölüm numaraları korunmuştur; kod içindeki `PROJECT_SPEC 7.1` gibi
@@ -37,9 +37,9 @@ ve nereden başlayacağımı görüyorum."
 | Kurum / teknopark | Doğru kitleye görünmek, etkinlik ve ilan duyurmak |
 | Moderatör | Topluluk kalitesini ve güvenliğini korumak |
 
-## 4. 5N bilgi mimarisi
+## 4. 5N1K bilgi mimarisi
 
-5N bir menü değil, **ortak veri dili**dir:
+5N1K bir menü değil, **ortak veri dili**dir:
 
 | Boyut | Anlamı | Veri karşılığı |
 | --- | --- | --- |
@@ -155,7 +155,7 @@ Ana tablolar: `profiles`, `topics`, `follows`, `communities`, `community_members
 `reminders`, `why_stories`, `resources`, `newspaper_issues`, `newspaper_items`,
 `ad_requests`, `notifications`, `reports`, `moderation_actions`, `analytics_events`.
 
-5N bağlam tabloları içeriği konuya, topluluğa ve yere bağlar: `post_topics`,
+5N1K bağlam tabloları içeriği konuya, topluluğa ve yere bağlar: `post_topics`,
 `project_topics`, `event_topics`, `resource_topics`, `why_story_topics`,
 `project_communities` ve varlıkların üzerindeki il/ilçe alanları
 (`provinces`, `districts`).

@@ -37,7 +37,14 @@ export default async function FeedPage({
   if (!viewer) return null;
 
   const store = getStore();
-  const intentMode = (INTENT_MODES.includes(params.mod as IntentMode) ? params.mod : viewer.intentMode) as IntentMode;
+  // Mod secmek zorunlu degil (spec 7.10). URL'de gecerli bir mod varsa o,
+  // yoksa profilin varsayilani; o da yoksa mod YOK ve akis kalici platform
+  // amaclarindan turer.
+  const intentMode: IntentMode | null = INTENT_MODES.includes(params.mod as IntentMode)
+    ? (params.mod as IntentMode)
+    : params.mod === 'yok'
+      ? null
+      : viewer.intentMode;
   const newVoicesOnly = params.filtre === 'yeni-sesler';
 
   const posts = store.getFeed({ viewerId: viewer.id, intentMode, newVoicesOnly, limit: 40 });
@@ -54,8 +61,8 @@ export default async function FeedPage({
       kind: community.kind,
     }));
 
-  const buildHref = (mod: IntentMode, filtre?: string) => {
-    const search = new URLSearchParams({ mod });
+  const buildHref = (mod: IntentMode | null, filtre?: string) => {
+    const search = new URLSearchParams({ mod: mod ?? 'yok' });
     if (filtre) search.set('filtre', filtre);
     return `/feed?${search.toString()}`;
   };
@@ -64,7 +71,7 @@ export default async function FeedPage({
     <div>
       <TopTabs
         tabs={[
-          { href: `/feed?mod=${intentMode}`, label: 'Akış', active: true },
+          { href: buildHref(intentMode), label: 'Akış', active: true },
           { href: '/video', label: 'Medya', active: false },
         ]}
       />
@@ -76,6 +83,13 @@ export default async function FeedPage({
           Bugün buraya ne için geldin?
         </h2>
         <ChipRow label="Akış niyet modu">
+          {/* Mod secmemek de gecerli bir secim: amaclarina gore kisisellestirilmis akis. */}
+          <FilterChip
+            href={buildHref(null, newVoicesOnly ? 'yeni-sesler' : undefined)}
+            active={intentMode === null}
+          >
+            Amaçlarıma göre
+          </FilterChip>
           {INTENT_MODES.map((mode) => (
             <FilterChip
               key={mode}
@@ -92,7 +106,9 @@ export default async function FeedPage({
             <Icon name="seedling" size={14} /> Yeni sesler
           </FilterChip>
         </ChipRow>
-        <p className="mt-2 text-sm text-fg-muted">{INTENT_HINT[intentMode]}</p>
+        <p className="mt-2 text-sm text-fg-muted">
+          {intentMode ? INTENT_HINT[intentMode] : 'Ayarlarındaki platform amaçlarına göre sıralanıyor.'}
+        </p>
       </section>
 
       <Composer

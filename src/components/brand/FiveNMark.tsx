@@ -1,5 +1,5 @@
 /**
- * nSosyal 5N baglanti isareti (PROJECT_SPEC 4.4 / 8.1.1 / 17.18-2).
+ * nSosyal 5N1K baglanti isareti (PROJECT_SPEC 4.4 / 8.1.1 / 17.18-2).
  *
  * KAYNAK: takimin Figma master vector'u, "Brand Mark" bileseni
  * (dosya QiXXYwqSFvcx2N2hHLw8DP, State=Static dugumu 17:2). Asagidaki uc path

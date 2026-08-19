@@ -30,7 +30,7 @@ import type {
   WhyStory,
 } from './domain';
 
-/** Kartlarda gosterilen 5N baglam chipi. Renk tek basina anlam tasimaz: ikon + metin de vardir. */
+/** Kartlarda gosterilen 5N1K baglam chipi. Renk tek basina anlam tasimaz: ikon + metin de vardir. */
 export interface ContextChip {
   dimension: Dimension;
   label: string;

@@ -1,5 +1,5 @@
 -- =============================================================================
--- nSosyal 5N · 0002 · Topluluklar, gönderiler, medya ve 5N bağlam ilişkileri
+-- nSosyal 5N1K · 0002 · Topluluklar, gönderiler, medya ve 5N1K bağlam ilişkileri
 --
 -- Ürün kuralı: topluluk doğrudan açılmaz. community_applications kaydı
 -- moderatör onayından geçtikten sonra communities satırı oluşur
@@ -297,7 +297,7 @@ create table if not exists public.post_saves (
   primary key (post_id, profile_id)
 );
 
--- --- 5N bağlam ilişkileri ----------------------------------------------------
+-- --- 5N1K bağlam ilişkileri ----------------------------------------------------
 -- Her varlığa onlarca nullable kolon eklemek yerine join tabloları kullanılır
 -- (PROJECT_SPEC 10.2). Konum ve zaman gibi sık sorgulanan alanlar ise doğrudan
 -- ilgili tabloda durur.

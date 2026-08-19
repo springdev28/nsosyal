@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   BASE_WEIGHTS,
+  GOAL_SIGNAL_BIAS,
   INTENT_WEIGHTS,
   NEW_VOICE_FOLLOWER_THRESHOLD,
   computeSignals,
@@ -12,10 +13,11 @@ import {
   rankPosts,
   recencyScore,
   scoreFromSignals,
-  weightsFor,
   type RankingContext,
+  weightsFor,
+  weightsForViewer,
 } from '@/lib/ranking/rank';
-import type { Post } from '@/types/domain';
+import type { GoalKey, IntentMode, Post } from '@/types/domain';
 
 /**
  * Siralama motoru testleri (PROJECT_SPEC 12.1-12.3).
@@ -68,6 +70,7 @@ function makeContext(overrides: Partial<RankingContext> = {}): RankingContext {
       communityIds: [COMMUNITY],
       provinceCode: '35',
       districtCode: '35-07',
+      goalKeys: [],
       intentMode: 'sosyallesme',
     },
     now: NOW,
@@ -104,6 +107,60 @@ describe('ağırlıklar', () => {
 
   it('bilinmeyen mod için temel ağırlıklara düşmez, tanımlı modu döndürür', () => {
     expect(weightsFor('kesfet')).toBe(INTENT_WEIGHTS.kesfet);
+  });
+});
+
+/**
+ * Kisisellestirme iki katmanlidir (PROJECT_SPEC 7.10 / 17.18-10): kalici
+ * platform amaclari + anlik niyet modu. Tek bir intentMode alani butun
+ * kisisellestirme modeli gibi kullanilamaz.
+ */
+describe('weightsForViewer - iki katmanli kişiselleştirme', () => {
+  it('hiçbir amaç ve mod yokken temel ağırlıkları verir', () => {
+    const weights = weightsForViewer([], null);
+    for (const key of Object.keys(BASE_WEIGHTS) as (keyof typeof BASE_WEIGHTS)[]) {
+      expect(weights[key]).toBeCloseTo(BASE_WEIGHTS[key], 5);
+    }
+  });
+
+  it('her amaç ve mod bileşiminde toplam 1.0 kalır', () => {
+    const combos: Array<[GoalKey[], IntentMode | null]> = [
+      [[], null],
+      [['discover_local_ecosystem'], null],
+      [['learn', 'find_resources'], null],
+      [['socialize', 'find_communities', 'discover_events'], 'kesfet'],
+      [Object.keys(GOAL_SIGNAL_BIAS) as GoalKey[], 'uret'],
+    ];
+    for (const [goals, intent] of combos) {
+      const total = Object.values(weightsForViewer(goals, intent)).reduce((sum, v) => sum + v, 0);
+      expect(total, `${goals.length} amaç / ${intent ?? 'mod yok'}`).toBeCloseTo(1, 5);
+    }
+  });
+
+  it('yerel ekosistem amacı konum ağırlığını yükseltir', () => {
+    const base = weightsForViewer([], null);
+    const local = weightsForViewer(['discover_local_ecosystem'], null);
+    expect(local.locationMatch).toBeGreaterThan(base.locationMatch);
+  });
+
+  it('kaynak bulma amacı öğrenme sinyalini yükseltir', () => {
+    const base = weightsForViewer([], null);
+    const learner = weightsForViewer(['find_resources', 'learn'], null);
+    expect(learner.intentMatch).toBeGreaterThan(base.intentMatch);
+  });
+
+  it('anlık mod kalıcı amaçları silmez, üzerine geçici olarak biner', () => {
+    // Ayni mod, farkli kalici amaclar -> farkli agirlik. Mod hedefleri ezseydi
+    // ikisi ayni cikardi ve kalici katman anlamsizlasirdi.
+    const socialOnly = weightsForViewer(['socialize'], 'kesfet');
+    const localOnly = weightsForViewer(['discover_local_ecosystem'], 'kesfet');
+    expect(localOnly.locationMatch).toBeGreaterThan(socialOnly.locationMatch);
+  });
+
+  it('mod seçilmemiş olması kişiselleştirmeyi kapatmaz', () => {
+    const withGoals = weightsForViewer(['discover_local_ecosystem'], null);
+    const flat = weightsForViewer([], null);
+    expect(withGoals.locationMatch).not.toBeCloseTo(flat.locationMatch, 5);
   });
 });
 
