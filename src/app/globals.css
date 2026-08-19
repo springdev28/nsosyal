@@ -54,14 +54,6 @@
   --color-signal-800: #7d3c0d;
   --color-signal-900: #4a250b;
 
-  /* 5N boyut renkleri - her zaman ikon ve metinle birlikte kullanilir */
-  --color-dim-ne: #35d6ee;
-  --color-dim-nerede: #a78bfa;
-  --color-dim-nezaman: #3d9bff;
-  --color-dim-nasil: #4ade80;
-  --color-dim-neden: #fb7185;
-  --color-dim-kim: #fbbf24;
-
   --font-sans:
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif;
@@ -88,7 +80,8 @@
   --bg-hover: #1a2333;
   --fg: #e9eff7;
   --fg-muted: #94a3b8;
-  --fg-subtle: #6b7a8d;
+  /* WCAG AA icin olculdu: yukseltilen yuzeyde 5.5:1 (onceki deger 3.95:1 idi). */
+  --fg-subtle: #8593a6;
   --border: #1f2937;
   --border-strong: #33415a;
 
@@ -107,6 +100,17 @@
   --success-soft: #0f2a1c;
   --warning: #fbbf24;
   --warning-soft: #2e2208;
+
+  /* 5N boyut renkleri - her zaman ikon ve metinle birlikte kullanilir.
+     Temaya bagli: chip zemini bu rengin %12 karisimi oldugu icin acik temada
+     ayni parlak tonlar 1.5:1'e kadar dusuyordu. Her iki temada da en dusuk
+     olculen oran 4.8:1. */
+  --dim-ne: #35d6ee;
+  --dim-nerede: #a78bfa;
+  --dim-nezaman: #3d9bff;
+  --dim-nasil: #4ade80;
+  --dim-neden: #fb7185;
+  --dim-kim: #fbbf24;
 }
 
 @media (prefers-color-scheme: light) {
@@ -119,22 +123,31 @@
     --bg-hover: #e6ecf5;
     --fg: #0f172a;
     --fg-muted: #52627a;
-    --fg-subtle: #6b7a8d;
+    /* Olculen kontrast: en dusuk yuzeyde 5.0:1 (onceki deger 3.79:1 idi). */
+    --fg-subtle: #586777;
     --border: #dde5ef;
     --border-strong: #b7c4d6;
 
-    --accent: #0b6fe6;
+    /* Olculen kontrast: accent-soft uzerinde 5.3:1 (onceki deger 4.22:1 idi). */
+    --accent: #0a5fcc;
     --accent-fg: #ffffff;
     --accent-soft: #e8f3ff;
     --accent-line: #a3d0ff;
 
-    --focus: #0b6fe6;
+    --focus: #0a5fcc;
     --danger: #c02640;
     --danger-soft: #fdf1f3;
     --success: #157347;
     --success-soft: #eefaf2;
     --warning: #9a6700;
     --warning-soft: #fff9e8;
+
+    --dim-ne: #0a5b70;
+    --dim-nerede: #5b21b6;
+    --dim-nezaman: #0a56b8;
+    --dim-nasil: #11632f;
+    --dim-neden: #a30f33;
+    --dim-kim: #7c3508;
   }
 }
 
@@ -147,22 +160,29 @@
   --bg-hover: #e6ecf5;
   --fg: #0f172a;
   --fg-muted: #52627a;
-  --fg-subtle: #6b7a8d;
+  --fg-subtle: #586777;
   --border: #dde5ef;
   --border-strong: #b7c4d6;
 
-  --accent: #0b6fe6;
+  --accent: #0a5fcc;
   --accent-fg: #ffffff;
   --accent-soft: #e8f3ff;
   --accent-line: #a3d0ff;
 
-  --focus: #0b6fe6;
+  --focus: #0a5fcc;
   --danger: #c02640;
   --danger-soft: #fdf1f3;
   --success: #157347;
   --success-soft: #eefaf2;
   --warning: #9a6700;
   --warning-soft: #fff9e8;
+
+  --dim-ne: #0a5b70;
+  --dim-nerede: #5b21b6;
+  --dim-nezaman: #0a56b8;
+  --dim-nasil: #11632f;
+  --dim-neden: #a30f33;
+  --dim-kim: #7c3508;
 }
 
 @theme inline {
@@ -185,6 +205,12 @@
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-dim-ne: var(--dim-ne);
+  --color-dim-nerede: var(--dim-nerede);
+  --color-dim-nezaman: var(--dim-nezaman);
+  --color-dim-nasil: var(--dim-nasil);
+  --color-dim-neden: var(--dim-neden);
+  --color-dim-kim: var(--dim-kim);
 }
 
 /* --- Temel katman --------------------------------------------------------- */

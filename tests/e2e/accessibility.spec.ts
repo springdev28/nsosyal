@@ -83,6 +83,27 @@ test.describe('axe taraması', () => {
   });
 });
 
+/**
+ * Karanlik tema uygulamanin varsayilan gorunumu; Playwright ise varsayilan
+ * olarak acik temayi taklit eder. 5N boyut renkleri her iki temada farkli
+ * degerler aldigi icin ikisini de tariyoruz.
+ */
+test.describe('karanlık tema', () => {
+  test.use({ colorScheme: 'dark' });
+
+  for (const path of ['/feed', '/explore', '/explore/how', '/communities']) {
+    test(`${path} karanlık temada ihlal içermez`, async ({ page }) => {
+      await loginAs(page, 'user');
+      await page.goto(path);
+      const results = await scan(page);
+      const summary = results.violations.map(
+        (violation) => `${violation.id} (${violation.impact}): ${violation.nodes.length} düğüm`,
+      );
+      expect(summary, `${path} karanlık tema ihlalleri`).toEqual([]);
+    });
+  }
+});
+
 test.describe('klavye ile kullanım', () => {
   test('atlama bağlantısı ilk Tab ile odaklanır ve ana içeriğe gider', async ({ page }) => {
     await loginAs(page, 'user');
@@ -112,7 +133,7 @@ test.describe('klavye ile kullanım', () => {
 
   test('akış filtreleri klavyeyle gezilebilir', async ({ page }) => {
     await loginAs(page, 'user');
-    const learn = page.getByRole('link', { name: 'Öğren' });
+    const learn = page.getByRole('link', { name: 'Öğren', exact: true });
     await learn.focus();
     await expect(learn).toBeFocused();
     await learn.press('Enter');
@@ -124,7 +145,8 @@ test.describe('klavye ile kullanım', () => {
     await page.goto('/create/why');
 
     await page.getByLabel('Başlık').fill('Kısa bir başlık denemesi');
-    await page.getByLabel('Hikâye').fill('Çok kısa.');
+    // "Hikâyeye konumumu ekle" onay kutusuyla karismasin diye tam eslesme.
+    await page.getByLabel('Hikâye', { exact: true }).fill('Çok kısa.');
     await page.getByRole('button', { name: 'Hikâyeyi yayımla' }).click();
 
     // Tarayici dogrulamasi minLength ile engeller; sunucu mesaji da alert rolunde.
@@ -139,7 +161,8 @@ test.describe('renk tek başına durum iletmez', () => {
     await page.goto('/explore/how?level=baslangic');
     const active = page.getByRole('link', { name: /Başlangıç/ }).first();
     await expect(active).toHaveAttribute('aria-current', 'true');
-    await expect(active).toContainText('✓');
+    // Secili durum renge ek olarak onay isareti ikonuyla da gosterilir.
+    await expect(active.locator('svg[data-icon="check"]')).toBeVisible();
   });
 
   test('videonun metin karşılığı vardır', async ({ page }) => {

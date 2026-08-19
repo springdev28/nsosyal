@@ -61,8 +61,13 @@ export function PostCard({ view, revalidate = '/feed' }: { view: PostView; reval
           </div>
 
           {community ? (
-            <p className="mt-0.5 text-[0.82rem]">
-              <Link href={`/communities/${community.slug}`} className="text-fg-muted hover:text-accent">
+            <p className="text-[0.82rem]">
+              {/* Dokunma hedefi en az 24px: WCAG 2.2 target-size. */}
+              <Link
+                href={`/communities/${community.slug}`}
+                className="inline-flex min-h-6 items-center gap-1.5 text-fg-muted transition-colors hover:text-accent"
+              >
+                <Icon name="users" size={13} />
                 {community.name}
               </Link>
             </p>

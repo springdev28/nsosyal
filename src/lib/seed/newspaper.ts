@@ -4,6 +4,7 @@ import { eventId } from './events';
 import { uid } from './ids';
 import { profileId } from './profiles';
 import { projectId } from './projects';
+import { toIstanbulDateKey } from '@/lib/time';
 import { whyStoryId } from './why';
 
 /**
@@ -20,8 +21,14 @@ import { whyStoryId } from './why';
 export const issueId = (date: string) => uid('issue', date);
 export const itemId = (key: string) => uid('newspaper-item', key);
 
-const toIsoDate = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+/**
+ * Sayi tarihleri Europe/Istanbul gunune gore uretilir.
+ *
+ * Sunucunun yerel saat dilimine gore uretmek, UTC'de calisan bir sunucuda
+ * aksam 21:00'den sonra "bugunun sayisi"nin kaybolmasina yol aciyordu: uygulama
+ * Istanbul gunune bakarken seed sunucu gunune bakiyordu.
+ */
+const toIsoDate = (date: Date) => toIstanbulDateKey(date);
 
 interface ItemInput {
   key: string;

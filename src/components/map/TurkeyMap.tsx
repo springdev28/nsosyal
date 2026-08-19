@@ -72,6 +72,20 @@ export function TurkeyMap({
       attributionControl: false,
       // Kucuk ekranlarda sayfa kaydirmayi engellememesi icin.
       cooperativeGestures: true,
+      // MapLibre'in kendi denetimleri varsayilan olarak Ingilizce seslendirilir;
+      // arayuzun tamami Turkce oldugu icin ekran okuyucu metinlerini ceviriyoruz.
+      locale: {
+        'Map.Title': 'Etkileşimli harita',
+        'NavigationControl.ZoomIn': 'Yakınlaştır',
+        'NavigationControl.ZoomOut': 'Uzaklaştır',
+        'AttributionControl.ToggleAttribution': 'Veri kaynağını göster',
+        'AttributionControl.MapFeedback': 'Harita geri bildirimi',
+        'CooperativeGesturesHandler.WindowsHelpText':
+          'Yakınlaştırmak için Ctrl tuşuyla birlikte kaydır.',
+        'CooperativeGesturesHandler.MacHelpText':
+          'Yakınlaştırmak için ⌘ tuşuyla birlikte kaydır.',
+        'CooperativeGesturesHandler.MobileHelpText': 'Haritayı iki parmakla hareket ettir.',
+      },
     });
 
     mapRef.current = map;
@@ -298,7 +312,10 @@ export function TurkeyMap({
         ref={containerRef}
         className="h-[52dvh] min-h-[320px] w-full bg-ink-950 md:h-[60dvh]"
         // Harita gorsel bir yardimcidir; ayni sonuclar sayfadaki listede de var.
-        role="img"
+        // Rol "img" degil "group": MapLibre kendi tuvalini, yakinlastirma
+        // dugmelerini ve kaynak baglantisini bu kutunun icine ekliyor; bir img
+        // odaklanabilir cocuk barindiramaz (WCAG 4.1.2 / axe nested-interactive).
+        role="group"
         aria-label={
           selectedProvince
             ? `Türkiye haritası, ${metrics.find((m) => m.code === selectedProvince)?.name ?? ''} seçili. Aynı sonuçlar aşağıdaki listede de yer alıyor.`

@@ -314,6 +314,8 @@ export function Icon({ name, size = 20, label, strokeWidth = 1.75, filled = fals
       viewBox="0 0 24 24"
       width={size}
       height={size}
+      // Testlerin ve hata ayiklamanin ikonu adiyla bulabilmesi icin.
+      data-icon={name}
       fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth={filled ? 0 : strokeWidth}

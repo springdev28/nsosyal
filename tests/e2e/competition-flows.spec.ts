@@ -14,7 +14,7 @@ test.describe('1 · Demo girişi ve ana akış', () => {
   test('demo hesabıyla tek tıkla giriş yapılır ve karışık akış açılır', async ({ page }) => {
     await loginAs(page, 'user');
 
-    await expect(page.getByRole('heading', { name: 'Ana Akış', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Ana akış', level: 1 })).toBeVisible();
 
     // Akis yalnizca proje icerigi degildir: gundelik paylasim da gorunmeli.
     const articles = page.getByRole('article');
@@ -22,7 +22,7 @@ test.describe('1 · Demo girişi ve ana akış', () => {
     expect(await articles.count()).toBeGreaterThan(4);
 
     // Niyet modu secici calisir ve URL'e yansir (paylasilabilir durum).
-    await page.getByRole('link', { name: 'Öğren' }).click();
+    await page.getByRole('link', { name: 'Öğren', exact: true }).click();
     await expect(page).toHaveURL(/mod=ogren/);
     await expect(page.getByText(/Nasıl kaynakları|açıklayıcı içerikler/)).toBeVisible();
   });
@@ -37,8 +37,11 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
   test('İzmir + havacılık + gelecek 30 gün filtresi etkinlik getirir', async ({ page }) => {
     await loginAs(page, 'user');
 
-    await page.getByRole('navigation', { name: 'Ana gezinme' }).first()
-      .getByRole('link', { name: 'Keşfet' }).click();
+    await page
+      .getByRole('navigation', { name: 'Ana gezinme' })
+      .first()
+      .getByRole('link', { name: 'Keşfet', exact: true })
+      .click();
     await page.getByRole('link', { name: /Haritadan keşfet/ }).click();
     await expect(page).toHaveURL(/\/explore\/map/);
 
@@ -46,7 +49,7 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await page.getByRole('link', { name: /^İzmir/ }).first().click();
     await expect(page).toHaveURL(/province=35/);
 
-    await page.getByRole('link', { name: /Havacılık ve Uzay/ }).first().click();
+    await page.getByRole('link', { name: 'Havacılık ve Uzay', exact: true }).first().click();
     await page.getByRole('link', { name: 'Gelecek 30 gün' }).click();
 
     await expect(page).toHaveURL(/time=next-30/);
@@ -58,8 +61,10 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await loginAs(page, 'user');
     await page.goto('/explore/map?province=35');
 
-    await expect(page.getByRole('link', { name: 'Bornova' })).toBeVisible();
-    await page.getByRole('link', { name: 'Bornova' }).click();
+    // "Bornova" sayfada gonderi konum etiketlerinde de geciyor; ilce listesine odaklan.
+    const districts = page.getByRole('list', { name: 'İlçeler' });
+    await expect(districts.getByRole('link', { name: 'Bornova' })).toBeVisible();
+    await districts.getByRole('link', { name: 'Bornova' }).click();
     await expect(page).toHaveURL(/district=35-07/);
   });
 
@@ -177,7 +182,7 @@ test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
 
   test('akışta sponsorlu içerik bulunmaz', async ({ page }) => {
     await loginAs(page, 'user');
-    await expect(page.getByRole('heading', { name: 'Ana Akış', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Ana akış', level: 1 })).toBeVisible();
     await expect(page.getByText('Sponsorlu')).toHaveCount(0);
   });
 });
@@ -242,7 +247,10 @@ test.describe('Ek · konum mahremiyeti kullanıcının kontrolünde', () => {
     await page.getByRole('button', { name: 'Ayarları kaydet' }).click();
 
     await expect(page.getByText('Ayarların kaydedildi.')).toBeVisible();
+    // Profil basligindaki konum satiri kaybolmali. (Gonderilere ayri ayri
+    // eklenmis konumlar korunur; onlar gonderi basina verilmis bir izindir.)
     await page.goto('/profile/elif.demo');
-    await expect(page.getByText('📍', { exact: false })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByText('İzmir / Bornova', { exact: false })).toHaveCount(0);
   });
 });

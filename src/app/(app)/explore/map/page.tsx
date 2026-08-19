@@ -150,8 +150,10 @@ export default async function MapPage({
 
             {hasDistrictData(province.code) ? (
               <div className="mt-3">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-fg-subtle">İlçeler</p>
-                <ul className="scroll-x hide-scrollbar flex gap-1.5 pb-1">
+                <p id="district-list-label" className="mb-1 text-xs font-semibold uppercase tracking-wide text-fg-subtle">
+                  İlçeler
+                </p>
+                <ul aria-labelledby="district-list-label" className="scroll-x hide-scrollbar flex gap-1.5 pb-1">
                   <li>
                     <Link
                       href={buildFilterHref(currentPath, filters, { district: null })}

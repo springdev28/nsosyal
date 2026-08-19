@@ -5,7 +5,7 @@ import { profileId } from '@/lib/seed/profiles';
 import { communityId } from '@/lib/seed/communities';
 import { eventId } from '@/lib/seed/events';
 import { uid } from '@/lib/seed/ids';
-import { resolvePreset } from '@/lib/time';
+import { resolvePreset, toIstanbulDateKey } from '@/lib/time';
 
 /**
  * Veri deposu ve ürün kuralları testleri.
@@ -234,6 +234,16 @@ describe('konum mahremiyeti', () => {
 
 describe('nGazete ve gelir modeli', () => {
   const admin = profileId('admin.demo');
+
+  it('bugünün sayısı Europe/Istanbul gününe göre bulunur', () => {
+    // Sunucu UTC'de calisirken 21:00'den sonra Istanbul ertesi gune gecer.
+    // Sayi tarihi sunucu gunune gore uretilseydi "bugunun sayisi" kaybolurdu.
+    const lateUtc = new Date('2026-08-18T23:30:00Z');
+    const lateStore = new DemoStore(lateUtc);
+    expect(toIstanbulDateKey(lateUtc)).toBe('2026-08-19');
+    expect(lateStore.hasIssueForToday(lateUtc)).toBe(true);
+    expect(lateStore.getIssueByDate('2026-08-19')).not.toBeNull();
+  });
 
   it('sponsorlu kartların hepsinin sponsoru bilinir', () => {
     for (const issue of store.listIssues()) {
