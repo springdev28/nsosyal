@@ -1,87 +1,158 @@
 # CLAUDE.md
 
-Working context for Claude Code in this repo. `AGENTS.md` holds the same rules in
-long form; this file is the operational short version. Read `PROJECT_SPEC.md` before
-changing product behaviour.
+Operational context for Claude Code in this repo. Read `PROJECT_SPEC.md` first.
+`AGENTS.md` contains the expanded rules.
+
+## Source priority
+
+When product sources disagree:
+
+1. latest explicit team decision and current Figma master design;
+2. long-form product specification;
+3. `PROJECT_SPEC.md`, `AGENTS.md`, this file;
+4. existing implementation.
+
+An existing implementation limitation is not automatically a product requirement.
+Do not rewrite the specification to rationalize outdated code.
 
 ## What this is
 
-nSosyal 5N — a competition prototype of a contextual social discovery layer for
-science, technology and innovation communities. Next.js 15 App Router + React 19 +
-TypeScript + Tailwind 4. Supabase Postgres with RLS is the production path;
-`DEMO_MODE=true` (the default) runs everything from an in-memory synthetic dataset
+nSosyal 5N is a competition prototype of a contextual social discovery layer for
+science, technology and innovation communities. It combines casual social content,
+communities, projects, learning, events, location/time discovery and a separate
+nGazete monetization surface.
+
+Next.js 15 App Router + React 19 + TypeScript + Tailwind 4. Supabase Postgres with
+RLS is the production path. `DEMO_MODE=true` uses an in-memory synthetic dataset
 with no network access.
 
 ## Commands
 
 ```bash
-npm run dev            # dev server
-npm run verify         # typecheck + lint + unit tests — run this after every change
-npm test               # Vitest only
-npm run test:e2e       # Playwright (builds and starts the app itself)
+npm run dev
+npm run verify
+npm test
+npm run test:e2e
 npm run build && npm start
 ```
 
-E2E notes: all specs share one server-side store, so Playwright runs with
-`workers: 1` and each test POSTs `/api/demo/reset` first. The sandbox's Chromium is
-pinned via `executablePath` in `playwright.config.ts`; do not run
-`playwright install`.
+Do not say a check passed unless you actually ran it in the current work.
 
-## Where things live
+## Key paths
 
 | Path | What |
 | --- | --- |
-| `src/app/(app)/` | Signed-in pages (feed, explore, communities, projects, newspaper, admin) |
-| `src/actions/` | Server Actions — the only write path from the UI |
-| `src/lib/data/store.ts` | `DemoStore`: every read and mutation goes through it |
-| `src/lib/ranking/rank.ts` | Explainable feed scoring |
-| `src/lib/seed/` | Synthetic dataset generators |
-| `src/lib/time/` | Europe/Istanbul date helpers |
-| `src/components/ui/Icon.tsx` | The icon set — no emoji as UI furniture |
-| `supabase/migrations/` | Schema, triggers, RLS |
-| `tests/unit`, `tests/e2e` | Vitest, Playwright + axe |
+| `src/app/(app)/` | signed-in product pages |
+| `src/actions/` | Server Actions, the UI write path |
+| `src/lib/data/store.ts` | DemoStore, data access |
+| `src/lib/ranking/rank.ts` | explainable feed scoring |
+| `src/lib/seed/` | synthetic data |
+| `src/lib/time/` | Europe/Istanbul helpers |
+| `src/components/ui/Icon.tsx` | UI icon system |
+| `supabase/migrations/` | schema, triggers, RLS |
+| `tests/unit`, `tests/e2e` | Vitest, Playwright, axe |
 
-## Product invariants (do not break these)
+## Product invariants
 
-1. Location is optional, user-controlled, district-level at finest.
-2. Community creation needs moderator approval and is logged.
-3. The Why board is real motivation stories, not motivational quotes.
-4. Paid placement lives only in the newspaper. `rank.ts` must not learn that
-   sponsorship exists — `tests/unit/ranking.test.ts` reads its source to enforce this.
+1. Location is optional and user-controlled. No exact/live individual location.
+2. Community creation requires moderator approval and audit logging.
+3. Why is real motivation/background stories, not motivational quotes.
+4. Paid placement lives only in nGazete. Ranking code must not learn that
+   sponsorship exists.
 5. 5N is optional context, never a required five-field form.
 6. Casual content is first-class.
-7. Seed data is synthetic and labelled `demo`; never imitate a real person or
-   institution.
+7. Demo data is synthetic and labelled demo.
+8. Long-term profile goals and transient intent are separate.
+
+## Brand and selector
+
+Use the team-created Figma **master vector** for the logo. Do not recreate it from
+screenshots or invent a new approximate path.
+
+- two endpoint rings are equal in outer diameter, inner diameter and stroke;
+- connecting monoline has uniform thickness;
+- no big/small node hierarchy or taper;
+- particle/glow is motion only, not required in the static mark.
+
+5N navigation is a **half, end-fading selector**, not a full radial wheel. N opens
+the half arc, options travel along it, selection snaps at the marker, then the
+selector disappears and the functional panel opens. N remains available to reopen
+it. Avoid persistent explanatory helper text.
+
+## Visual rules
+
+Preserve the existing nSosyal dark-first visual family. Do not introduce a
+rainbow/neon AI-startup style. Use the nSosyal blue/cyan family for 5N states and
+map density.
+
+Primary UI should show rather than explain. Put long rationales in About, Help,
+admin, advertiser or documentation surfaces.
+
+## Nerede
+
+The product is Türkiye-wide. Current İzmir district data is an implementation
+inventory detail, not a product pilot rule.
+
+Nerede must show province-level density/choropleth for the selected platform
+metric using a single blue/cyan intensity scale, legend, hover/click values and
+region details. Metrics include communities, events, projects, institutions and,
+where supported, people/posts/resources/opportunities. District drill-down uses
+the same architecture wherever district data exists. Always provide list
+-equivalent results. Never expose exact/live personal coordinates.
+
+## Personalization
+
+Settings owns long-term interests, platform goals, content/feed preferences,
+location/privacy, notifications, accessibility and nGazete preferences.
+
+`Sosyalleş`, `Keşfet`, `Öğren`, `Üret` are temporary modes only. They may rebalance
+ranking for the current task/session but do not replace long-term profile goals.
+
+## nGazete
+
+nGazete is a real digital newspaper layout: masthead, issue/date, headline
+hierarchy, images, sections, columns/grid, links and editorial priority. Sponsored
+placements sit inside the newspaper grid with an explicit `Sponsorlu` label.
+
+Ads are spatial inventory. Store size/grid area, placement, issue count/duration,
+package and pricing snapshot. Example dimensions such as 300x250, 728x90,
+300x600, 600x400 and 970x250 are examples, not a closed list. Price is influenced
+by area, placement, duration/issue count, demand and subscription discount.
+
+Do not build a separate reader-facing `Ücretli alanlar` card list or explanatory
+`Gelir modeli nasıl çalışıyor?` panel. Those explanations belong in advertiser,
+admin, About or docs.
 
 ## Engineering invariants
 
-- Keep RLS enabled; never weaken a policy to make a feature work.
-- The service-role key is server-only and never `NEXT_PUBLIC_`.
-- Add migrations, never edit ones that already ran.
-- No new dependency without saying why.
-- No large rewrites unless asked.
-- `'use server'` files may only export async functions — put constants elsewhere
-  (see `src/lib/media/constraints.ts`).
+- Keep RLS enabled. Never weaken policy to make a feature work.
+- Service-role key is server-only and never `NEXT_PUBLIC_`.
+- Add migrations, do not edit already-run migrations.
+- No new dependency without explaining why.
+- No large rewrites unless requested.
+- `'use server'` files export only async functions.
+- Pages load data, components take view models from `src/types/view.ts`.
+- Use `src/lib/time` for date logic.
 
-## Style
+## Working method
 
-- Comments in Turkish without diacritics (`ç ğ ı ö ş ü` → `c g i o s u`), explaining
-  **why**. UI strings in proper Turkish with diacritics.
-- Match the comment density of the file you are editing.
-- Pages load data; components take view models from `src/types/view.ts`.
-- Use `src/lib/time` for anything date-shaped — the product day is Europe/Istanbul.
+1. Inspect relevant code and the current screen.
+2. Compare implementation against `PROJECT_SPEC.md`.
+3. State a short plan and files to change.
+4. Implement only requested scope.
+5. Run relevant verification.
+6. For UI changes, inspect real mobile/desktop output for clipping, overflow,
+   contrast and layout quality.
+7. Report exactly what was run, failed, skipped or not run.
 
-## Accessibility is part of "done"
+## Accessibility
 
-WCAG 2.2 AA. Keyboard operation, visible focus, accessible names on icon buttons,
-labelled form errors, no colour-only state, reduced motion, ≥24 px targets, text
-equivalent for video, list equivalent for the map, focusable scroll containers.
-
-Colour work is measured, not eyeballed: compute the ratio against the real surface
-in **both** themes. Playwright emulates the light theme by default while dark is the
-product default, and `tests/e2e/accessibility.spec.ts` scans both.
+Target WCAG 2.2 AA: keyboard operation, visible focus, accessible names, associated
+form errors, no colour-only state, reduced motion, adequate touch targets, video
+text/caption equivalent, map list equivalent and focusable overflow areas.
 
 ## Definition of done
 
-`npm run verify` passes, the E2E flows you touched pass, and
-`npm run build && npm start` still serves a working demo with no network.
+A task is done only after requested behavior is implemented, relevant checks have
+actually been run, and important UI changes have been visually inspected. Do not
+claim the complete suite or build passes unless you verified it.
