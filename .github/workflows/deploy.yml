@@ -26,6 +26,78 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Sunucu erisimi testlerden ONCE ve onlarla PARALEL denetlenir.
+  #
+  # Onceki duzende dagitim tam test paketinin arkasindaydi: eksik bir secret ya
+  # da sunucuya konmamis bir anahtar ancak ~12 dakika sonra ortaya cikiyordu.
+  # Kimlik bilgisi sorunu kodla ilgili degil; kod testlerini beklemesi icin bir
+  # sebep yok. Bu is saniyeler icinde biter ve sorunu adiyla soyler.
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deploy secrets
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          missing=""
+          [ -z "$HOST" ] && missing="$missing HOSTINGER_HOST"
+          [ -z "$SSH_USER" ] && missing="$missing HOSTINGER_USER"
+          [ -z "$KEY" ] && missing="$missing HOSTINGER_SSH_KEY"
+          [ -z "$TARGET_PATH" ] && missing="$missing HOSTINGER_PATH"
+          if [ -n "$missing" ]; then
+            echo "::error::Eksik secret'lar:$missing"
+            echo "Settings > Secrets and variables > Actions altina ekleyin."
+            echo "Ayrintili kurulum: docs/deployment.md"
+            exit 1
+          fi
+          echo "Dort zorunlu secret de tanimli."
+
+      # Anahtarin sunucuda GERCEKTEN calistigini burada ogreniyoruz. Secret'in
+      # dolu olmasi yetmez: acik anahtar authorized_keys'te degilse dagitim
+      # yine duser, ama bu kez sebebini bilerek.
+      - name: Verify server access
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          port="${PORT:-22}"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
+          if ! ssh-keyscan -p "$port" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
+            echo "::error::$HOST:$port adresine ulasilamadi. HOSTINGER_HOST dogru mu? (yalnizca IP/alan adi, https:// ve port olmadan)"
+            exit 1
+          fi
+
+          if ! ssh -i ~/.ssh/id_deploy -p "$port" -o BatchMode=yes -o ConnectTimeout=15 \
+                 "$SSH_USER@$HOST" 'echo baglanti-tamam'; then
+            echo "::error::SSH kimlik dogrulamasi basarisiz. Ozel anahtar secret'ta, ama ACIK anahtar sunucuda authorized_keys icinde olmayabilir."
+            echo "Cozum: ssh-copy-id -i ~/.ssh/nsosyal_deploy.pub $SSH_USER@$HOST"
+            echo "veya hPanel > VPS > SSH Keys altina .pub dosyasinin icerigini yapistirin."
+            exit 1
+          fi
+
+          # Hedef dizin ve calisma zamani da simdi kontrol edilsin; dagitim
+          # sirasinda ortaya cikmasindansa burada cikmasi daha ucuz.
+          ssh -i ~/.ssh/id_deploy -p "$port" -o BatchMode=yes "$SSH_USER@$HOST" "
+            set -e
+            [ -d '$TARGET_PATH' ] || { echo '::error::HOSTINGER_PATH sunucuda yok: $TARGET_PATH'; exit 1; }
+            command -v node >/dev/null || { echo '::error::Sunucuda node bulunamadi'; exit 1; }
+            command -v pm2  >/dev/null || { echo '::error::Sunucuda pm2 bulunamadi (npm i -g pm2)'; exit 1; }
+            echo \"node \$(node -v) / pm2 hazir\"
+          "
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
+
   verify:
     name: Verify
     runs-on: ubuntu-latest
@@ -50,7 +122,7 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: verify
+    needs: [preflight, verify]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,33 +136,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      # Eksik secret'ta hata ssh-keyscan'in icinden, anlasilmaz bicimde geliyordu.
-      # Once acikca kontrol edip hangi secret'in eksik oldugunu yaziyoruz.
-      - name: Check deploy secrets
-        env:
-          HOST: ${{ secrets.HOSTINGER_HOST }}
-          USER: ${{ secrets.HOSTINGER_USER }}
-          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
-          PATH_ON_SERVER: ${{ secrets.HOSTINGER_PATH }}
-        run: |
-          missing=""
-          [ -z "$HOST" ] && missing="$missing HOSTINGER_HOST"
-          [ -z "$USER" ] && missing="$missing HOSTINGER_USER"
-          [ -z "$KEY" ] && missing="$missing HOSTINGER_SSH_KEY"
-          [ -z "$PATH_ON_SERVER" ] && missing="$missing HOSTINGER_PATH"
-          if [ -n "$missing" ]; then
-            echo "::error::Dagitim yapilamadi. Tanimli olmayan secret'lar:$missing"
-            echo ""
-            echo "Bunlari su adrese ekleyin:"
-            echo "  Settings > Secrets and variables > Actions > New repository secret"
-            echo ""
-            echo "Ayrintili kurulum: docs/deployment.md"
-            echo ""
-            echo "NOT: Derleme ve butun testler GECTI; eksik olan yalnizca sunucu erisimi."
-            exit 1
-          fi
-          echo "Dort zorunlu secret de tanimli."
 
       - name: Set up SSH
         run: |
