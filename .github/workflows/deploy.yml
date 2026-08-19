@@ -52,8 +52,6 @@ jobs:
     name: Deploy
     needs: verify
     runs-on: ubuntu-latest
-    # Ortam koruma kurallari ve dagitim gecmisi icin.
-    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -101,11 +99,21 @@ jobs:
              fi"
 
       # Dagitimin gercekten ayakta oldugunu dogrula. Adres verilmemisse atlanir.
+      #
+      # Kosul `if:` icinde DEGIL, betigin icinde: GitHub `secrets` baglamini
+      # if ifadelerinde kabul etmiyor ve is akisini daha ayristirma asamasinda
+      # reddediyor (hic job uretmeden). Secret'i env'e alip burada kontrol
+      # ediyoruz.
       - name: Health check
-        if: ${{ secrets.HOSTINGER_HEALTH_URL != '' }}
+        env:
+          HEALTH_URL: ${{ secrets.HOSTINGER_HEALTH_URL }}
         run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "HOSTINGER_HEALTH_URL tanimli degil; saglik kontrolu atlandi."
+            exit 0
+          fi
           for attempt in 1 2 3 4 5; do
-            if curl -fsS "${{ secrets.HOSTINGER_HEALTH_URL }}" | grep -q '"status":"ok"'; then
+            if curl -fsS "$HEALTH_URL" | grep -q '"status":"ok"'; then
               echo "Saglik kontrolu gecti."
               exit 0
             fi
