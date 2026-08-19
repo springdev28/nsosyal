@@ -21,9 +21,14 @@ on:
   workflow_dispatch:
 
 # Ust uste gelen dagitimlar birbirini ezmesin.
+#
+# `cancel-in-progress: false` kuyruk olusturuyordu: yeni bir push, onceki
+# kosunun ~12 dakikalik test paketinin arkasinda bekliyor ve geri bildirim
+# gecikiyordu. Dagitim hattinda eskimis bir commit'i yayina almanin degeri
+# zaten yok; yeni kosu eskisini iptal eder.
 concurrency:
   group: deploy-hostinger
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # Sunucu erisimi testlerden ONCE ve onlarla PARALEL denetlenir.
