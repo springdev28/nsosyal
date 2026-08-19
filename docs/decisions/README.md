@@ -21,3 +21,4 @@ işaret edin.
 | [0007](0007-zaman-ekseni-europe-istanbul.md) | Ürünün günü Europe/Istanbul günüdür | Kabul edildi |
 | [0008](0008-erisilebilirligi-testle-sabitlemek.md) | Erişilebilirliği ölçüp testle sabitlemek | Kabul edildi |
 | [0009](0009-tasarim-kaynagi-figma-master-dosyasi.md) | Tasarımın kaynağı takımın Figma dosyasıdır | Kabul edildi |
+| [0010](0010-iki-katmanli-kisisellestirme.md) | Kişiselleştirme iki katmanlıdır | Kabul edildi |
