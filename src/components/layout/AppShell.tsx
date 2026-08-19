@@ -63,8 +63,8 @@ export function AppShell({
 
             <TrendingCard trending={trending} />
 
-            <p className="px-1 text-xs leading-relaxed text-fg-subtle">
-              Yarışma prototipi · tüm hesaplar, gönderiler ve etkinlikler sentetik demo verisidir.{' '}
+            <p className="px-1 text-xs text-fg-subtle">
+              Sentetik demo verisi ·{' '}
               <Link href="/about" className="underline hover:text-fg-muted">
                 Hakkında
               </Link>

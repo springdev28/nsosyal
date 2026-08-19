@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Badge, Card, InfoNote, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
+import { formatPrice, placementByCode } from '@/lib/newspaper/inventory';
 import { formatDate, formatRelative } from '@/lib/time';
 
 import { AdRequestForm } from './AdRequestForm';
@@ -70,8 +71,16 @@ export default async function AdvertisePage() {
                           {formatRelative(entry.request.createdAt)}
                         </time>{' '}
                         gönderildi
-                        {entry.request.requestedIssueDate
-                          ? ` · hedef sayı ${formatDate(`${entry.request.requestedIssueDate}T09:00:00Z`)}`
+                        {entry.request.requestedIssueStart
+                          ? ` · ilk sayı ${formatDate(`${entry.request.requestedIssueStart}T09:00:00Z`)}`
+                          : ''}
+                      </span>
+                      <span className="block text-sm text-fg-subtle">
+                        {placementByCode(entry.request.requestedPlacement)?.label ??
+                          entry.request.requestedPlacement}{' '}
+                        · {entry.request.requestedIssueCount} sayı
+                        {entry.request.pricingSnapshot !== null
+                          ? ` · ${formatPrice(entry.request.pricingSnapshot)}`
                           : ''}
                       </span>
                     </span>

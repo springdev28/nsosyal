@@ -1,29 +1,43 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Badge, Card, EmptyState, InfoNote, SectionHeader } from '@/components/ui';
+import { Badge, Card, EmptyState, SectionHeader } from '@/components/ui';
+import { CoverTile } from '@/components/ui/CoverTile';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
+import { placementByCode } from '@/lib/newspaper/inventory';
 import { formatDate } from '@/lib/time';
+import type { NewspaperSection } from '@/types/domain';
 import type { NewspaperItemView } from '@/types/view';
 
 export const metadata: Metadata = { title: 'nGazete' };
 
-const ITEM_LABEL: Record<string, string> = {
-  lead: 'Günün ana başlığı',
-  editorial: 'Editoryal',
-  local: 'Yerel gündem',
-  project_showcase: 'Proje vitrini',
-  event_ad: 'Etkinlik ilanı',
-  org_ad: 'Kurumsal ilan',
+const SECTION_LABEL: Record<NewspaperSection, string> = {
+  gundem: 'Gündem',
+  yerel: 'Yerel',
+  proje: 'Projeler',
+  topluluk: 'Topluluklar',
+  etkinlik: 'Etkinlik',
+  kaynak: 'Kaynaklar',
 };
 
 /**
- * nGazete (PROJECT_SPEC 7.9 / 17.12).
+ * nGazete (PROJECT_SPEC 7.9 / 17.12 / 17.18-8).
  *
- * Iki isi ayni anda yapar: gunluk acilmaya deger editoryal ozet ve kisisel akis
- * siralamasindan tamamen ayrilmis bir ticari envanter. Sponsorlu kartlar hem
- * gorsel hem metinsel olarak editoryal icerikten ayrilir.
+ * Spec'in acik kurali: burasi bir kart katalogu DEGILDIR. Okuyucu gercek bir
+ * dijital gazete hissi almalidir; bu yuzden sayfa masthead, sayi ve tarih,
+ * manset hiyerarsisi, hero gorsel, bolum etiketleri ve kolon/grid kompozisyonu
+ * kullanir.
+ *
+ * Ucretli alanlar da ayni grid'in icinde yasar. Onceki surumde sponsorlu
+ * kartlar sayfanin altinda ayri bir "Ucretli alanlar" listesine yigiliyordu;
+ * spec bunu ismen yasakliyor. Simdi her sponsorlu kart satin aldigi envanter
+ * alaninin span'i kadar yer kaplar ve bulundugu yerde "Sponsorlu" etiketi
+ * tasir. Etiket, sadelestirme kuralinin istisnasidir (spec 8.1.2): kullanici
+ * kararini etkiledigi icin her zaman gorunur kalir.
+ *
+ * Gelir modelinin nasil calistigi burada ANLATILMAZ; o metin /about ve
+ * reklamveren ekraninda yasar (spec 7.9).
  */
 export default async function NewspaperPage({
   searchParams,
@@ -42,15 +56,19 @@ export default async function NewspaperPage({
       <EmptyState
         icon="newspaper"
         title="Yayımlanmış sayı yok"
-        description="Gazete her sabah yayımlanır. Yeni sayı çıktığında navigasyondaki nGazete düğmesinde rozet görünür."
+        description="Gazete her sabah yayımlanır."
       />
     );
   }
 
-  const editorial = current.items.filter((entry) => !entry.item.sponsored);
-  const sponsored = current.items.filter((entry) => entry.item.sponsored);
-  const lead = editorial.find((entry) => entry.item.itemType === 'lead');
-  const rest = editorial.filter((entry) => entry !== lead);
+  // Sayi numarasi: en eski sayidan bugune artan sira.
+  const issueNumber = issues.length - issues.findIndex((entry) => entry.issue.id === current.issue.id);
+
+  // Kompozisyon sirasi: once oncelik, esitlikte yayin sirasi. Sponsorlu kartlar
+  // ayri bir listeye alinmaz; ayni siralamaya girer.
+  const composed = [...current.items].sort(
+    (a, b) => a.item.priority - b.item.priority || a.item.publicationOrder - b.item.publicationOrder,
+  );
 
   const canAdvertise = viewer?.kind === 'organization' || viewer?.role === 'admin';
 
@@ -59,7 +77,6 @@ export default async function NewspaperPage({
       <SectionHeader
         as="h1"
         title="nGazete"
-        description="Günün editoryal özeti ve açıkça işaretlenmiş ücretli alanlar."
         action={
           canAdvertise ? (
             <Link
@@ -97,143 +114,169 @@ export default async function NewspaperPage({
       </nav>
 
       <Card className="overflow-hidden">
-        <div className="border-b-4 border-double border-line-strong bg-bg-sunken px-4 py-5 text-center sm:px-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-subtle">
-            nSosyal 5N · Dijital Gazete
+        {/* Masthead */}
+        <header className="border-b-4 border-double border-line-strong bg-bg-sunken px-4 py-5 text-center sm:px-6">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-fg-subtle">
+            nSosyal 5N
           </p>
-          <h2 className="mt-1 font-serif text-3xl font-bold tracking-tight">{current.issue.title}</h2>
-          <p className="mt-1 text-sm text-fg-muted">
+          <p className="font-serif text-4xl font-black tracking-tight sm:text-5xl">nGazete</p>
+          <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-y border-line py-1.5 text-xs text-fg-muted">
+            <span>Sayı {issueNumber}</span>
+            <span aria-hidden="true">·</span>
             <time dateTime={current.issue.issueDate}>
               {formatDate(`${current.issue.issueDate}T09:00:00Z`)}
             </time>
-            {current.issue.theme ? ` · ${current.issue.theme} özel sayısı` : ''}
+            {current.issue.theme ? (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{current.issue.theme} özel sayısı</span>
+              </>
+            ) : null}
           </p>
-          <p className="mx-auto mt-2 max-w-xl text-fg-muted">{current.issue.standfirst}</p>
+          <h2 className="mt-3 font-serif text-2xl font-bold tracking-tight">{current.issue.title}</h2>
+          <p className="mx-auto mt-1 max-w-xl text-sm text-fg-muted">{current.issue.standfirst}</p>
+        </header>
+
+        {/* Editoryal grid. Sponsorlu alanlar bu grid'in icinde yer alir. */}
+        <div className="grid grid-cols-1 gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+          {composed.map((entry) => (
+            <NewspaperCell key={entry.item.id} entry={entry} />
+          ))}
         </div>
-
-        <div className="space-y-4 p-4 sm:p-6">
-          {lead ? <LeadCard entry={lead} /> : null}
-
-          {rest.length > 0 ? (
-            <ul className="grid gap-3 md:grid-cols-2">
-              {rest.map((entry) => (
-                <li key={entry.item.id}>
-                  <EditorialCard entry={entry} />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </Card>
-
-      <section aria-labelledby="sponsored-heading">
-        <SectionHeader
-          title={<span id="sponsored-heading">Ücretli alanlar</span>}
-          description="Bu kartlar için ödeme yapılmıştır ve gazete dışında hiçbir sıralamayı etkilemez."
-        />
-
-        {sponsored.length === 0 ? (
-          <InfoNote icon="newspaper">Bu sayıda ücretli alan yok.</InfoNote>
-        ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
-            {sponsored.map((entry) => (
-              <li key={entry.item.id}>
-                <SponsoredCard entry={entry} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <Card className="p-4">
-        <h2 className="font-semibold">Gelir modeli nasıl çalışıyor?</h2>
-        <ul className="mt-2 space-y-1 text-sm text-fg-muted">
-          <li>• Ücretli görünürlük yalnızca nGazete içinde satılır.</li>
-          <li>• Sponsorlu kartlar zorunlu olarak “Sponsorlu” etiketi taşır ve editoryal içerikten ayrılır.</li>
-          <li>
-            • Kişisel akış sıralaması hiçbir ödemeyle değiştirilemez; sıralama kodunda sponsorlu bir alan
-            bulunmaz.
-          </li>
-          <li>• Kurumlar tekil ilan veya düzenli yer alma (abonelik) tercih edebilir.</li>
-        </ul>
-        <p className="mt-3 text-sm">
-          <Link href="/about#gelir" className="font-semibold text-accent underline">
-            Ayrıntılar ve kodda nerede durduğu
-          </Link>
-        </p>
       </Card>
     </div>
   );
 }
 
-function LeadCard({ entry }: { entry: NewspaperItemView }) {
-  const content = (
-    <>
-      <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">
-        {ITEM_LABEL[entry.item.itemType]}
-      </p>
-      <h3 className="mt-1 font-serif text-2xl font-bold leading-tight">{entry.item.title}</h3>
-      <p className="mt-2 text-fg-muted">{entry.item.body}</p>
-    </>
-  );
+/** Grid hucresi: span'i kartin kendi layout/envanter kaydindan gelir. */
+function NewspaperCell({ entry }: { entry: NewspaperItemView }) {
+  const { item } = entry;
+  const colSpan = Math.min(4, Math.max(1, item.gridColumnSpan));
 
-  return entry.href ? (
-    <Link href={entry.href} className="block rounded-xl border border-line p-4 hover:border-accent">
-      {content}
-      <span className="mt-2 inline-block text-sm font-semibold text-accent">Devamını gör</span>
-    </Link>
-  ) : (
-    <div className="rounded-xl border border-line p-4">{content}</div>
+  // Tailwind sinif adlarini calisma aninda birlestirmiyoruz; JIT tarayamaz.
+  const spanClass =
+    colSpan >= 4
+      ? 'sm:col-span-2 lg:col-span-4'
+      : colSpan === 3
+        ? 'sm:col-span-2 lg:col-span-3'
+        : colSpan === 2
+          ? 'sm:col-span-2 lg:col-span-2'
+          : '';
+  const rowClass = item.gridRowSpan >= 2 ? 'lg:row-span-2' : '';
+
+  return (
+    <div className={`bg-bg-raised ${spanClass} ${rowClass}`}>
+      {item.sponsored ? <SponsoredCell entry={entry} /> : <EditorialCell entry={entry} />}
+    </div>
   );
 }
 
-function EditorialCard({ entry }: { entry: NewspaperItemView }) {
-  const content = (
+function EditorialCell({ entry }: { entry: NewspaperItemView }) {
+  const { item } = entry;
+  const isLead = item.layoutVariant === 'lead';
+  const isFeature = item.layoutVariant === 'feature';
+  const isBrief = item.layoutVariant === 'brief';
+
+  const headingClass = isLead
+    ? 'font-serif text-2xl font-bold leading-tight sm:text-3xl'
+    : isFeature
+      ? 'font-serif text-xl font-bold leading-snug'
+      : isBrief
+        ? 'font-serif text-base font-bold leading-snug'
+        : 'font-serif text-lg font-bold leading-snug';
+
+  const body = (
     <>
-      <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">
-        {ITEM_LABEL[entry.item.itemType]}
+      {item.imageSeed && item.imageGlyph ? (
+        <CoverTile
+          seed={item.imageSeed}
+          glyph={item.imageGlyph}
+          height={isLead ? 180 : 120}
+          rounded="none"
+          className="mb-3"
+        />
+      ) : null}
+
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-accent">
+        {SECTION_LABEL[item.section]}
       </p>
-      <h3 className="mt-1 font-serif text-lg font-bold leading-snug">{entry.item.title}</h3>
-      <p className="mt-1 text-sm text-fg-muted">{entry.item.body}</p>
+
+      <h3 className={`mt-1 ${headingClass}`}>{item.title}</h3>
+
+      {item.standfirst ? (
+        <p className="mt-1.5 font-serif text-base italic leading-snug text-fg-muted">
+          {item.standfirst}
+        </p>
+      ) : null}
+
+      {!isBrief ? <p className="mt-2 text-sm leading-relaxed text-fg-muted">{item.body}</p> : null}
+
+      {item.sourceOrAuthor ? (
+        <p className="mt-2 text-xs text-fg-subtle">{item.sourceOrAuthor}</p>
+      ) : null}
     </>
   );
 
-  return entry.href ? (
-    <Link href={entry.href} className="block h-full rounded-xl border border-line p-4 hover:border-accent">
-      {content}
-    </Link>
-  ) : (
-    <div className="h-full rounded-xl border border-line p-4">{content}</div>
-  );
+  const padding = isLead ? 'p-4 sm:p-6' : 'p-4';
+
+  if (entry.href) {
+    return (
+      <Link href={entry.href} className={`block h-full ${padding} transition-colors hover:bg-bg-hover`}>
+        {body}
+      </Link>
+    );
+  }
+
+  return <div className={`h-full ${padding}`}>{body}</div>;
 }
 
 /**
- * Sponsorlu kart. Editoryal karttan bilerek farkli gorunur: kesikli kenarlik,
- * farkli arka plan ve zorunlu etiket (PROJECT_SPEC 7.9).
+ * Sponsorlu alan. Gazetenin grid'i icinde durur ama editoryal karttan bakisla
+ * ayirt edilebilir: farkli zemin, kesikli ust cizgi ve zorunlu etiket.
+ * Etiket rengi tek basina tasiyici degildir; metin de "Sponsorlu" yazar.
  */
-function SponsoredCard({ entry }: { entry: NewspaperItemView }) {
-  const content = (
+function SponsoredCell({ entry }: { entry: NewspaperItemView }) {
+  const { item } = entry;
+  const placement = placementByCode(item.placementCode);
+
+  const body = (
     <>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="sponsored">Sponsorlu</Badge>
-        <span className="text-xs text-fg-subtle">{ITEM_LABEL[entry.item.itemType]}</span>
+        {item.sponsorName ? <span className="text-xs text-fg-subtle">{item.sponsorName}</span> : null}
       </div>
-      <h3 className="mt-2 font-semibold leading-snug">{entry.item.title}</h3>
-      <p className="mt-1 text-sm text-fg-muted">{entry.item.body}</p>
-      {entry.item.sponsorName ? (
-        <p className="mt-2 text-xs text-fg-subtle">Veren: {entry.item.sponsorName}</p>
+
+      {item.imageSeed && item.imageGlyph ? (
+        <CoverTile
+          seed={item.imageSeed}
+          glyph={item.imageGlyph}
+          height={96}
+          rounded="all"
+          className="mt-3"
+        />
+      ) : null}
+
+      <h3 className="mt-2 font-semibold leading-snug">{item.title}</h3>
+      <p className="mt-1 text-sm leading-relaxed text-fg-muted">{item.body}</p>
+
+      {placement ? (
+        <p className="mt-2 text-[0.68rem] text-fg-subtle">
+          {placement.widthPx}×{placement.heightPx} · {placement.label}
+        </p>
       ) : null}
     </>
   );
 
   const className =
-    'block h-full rounded-xl border-2 border-dashed border-signal-500 bg-signal-50 p-4 dark:bg-signal-900/25';
+    'block h-full border-t-2 border-dashed border-signal-500 bg-signal-50 p-4 dark:bg-signal-900/25';
 
-  return entry.href ? (
-    <Link href={entry.href} className={`${className} hover:border-signal-600`}>
-      {content}
-    </Link>
-  ) : (
-    <div className={className}>{content}</div>
-  );
+  if (entry.href) {
+    return (
+      <Link href={entry.href} className={`${className} transition-colors hover:bg-signal-100 dark:hover:bg-signal-900/40`}>
+        {body}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{body}</div>;
 }

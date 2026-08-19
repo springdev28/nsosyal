@@ -171,13 +171,29 @@ test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
     await page.goto('/newspaper');
 
     await expect(page.getByRole('heading', { name: 'nGazete', level: 1 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Ücretli alanlar' })).toBeVisible();
+
+    // Sponsorlu kartlar gazete grid'inin ICINDE durur. Spec 7.9 ayri bir
+    // "ucretli alanlar" listesini ismen yasakliyor; o basligin geri gelmesi
+    // kurali sessizce bozardi.
+    await expect(page.getByRole('heading', { name: 'Ücretli alanlar' })).toHaveCount(0);
 
     const sponsored = page.getByText('Sponsorlu');
     expect(await sponsored.count()).toBeGreaterThan(0);
 
     await page.getByRole('link', { name: /Demo Günü başvuruları açık/ }).first().click();
     await expect(page).toHaveURL(/\/events\//);
+  });
+
+  test('gazete kart listesi değil, gerçek bir gazete kompozisyonu', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/newspaper');
+
+    // Masthead: sayi numarasi ve tarih (spec 17.18/8).
+    await expect(page.getByText(/Sayı \d+/)).toBeVisible();
+    // Bolum etiketleri.
+    await expect(page.getByText('Gündem').first()).toBeVisible();
+    // Gelir modeli aciklamasi okuyucu arayuzunde YASAMAZ (spec 7.9).
+    await expect(page.getByText('Gelir modeli nasıl çalışıyor?')).toHaveCount(0);
   });
 
   test('akışta sponsorlu içerik bulunmaz', async ({ page }) => {

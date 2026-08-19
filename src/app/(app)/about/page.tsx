@@ -133,6 +133,36 @@ export default async function AboutPage() {
           değiştirilemez. Kod düzeyinde de bu ayrım korunur: gazete modülü ile sıralama modülü arasında
           bağımlılık yoktur.
         </p>
+
+        <h3 className="mt-4 font-semibold">Fiyat nasıl hesaplanıyor?</h3>
+        <p className="mt-1 text-fg-muted">
+          Reklamveren bir “ilan türü” değil, gazetenin grid’inde belirli bir <strong>alan</strong> satın
+          alır. Fiyat da oradan türer:
+        </p>
+        <p className="mt-2 rounded-lg bg-bg-sunken px-3 py-2 font-mono text-sm">
+          fiyat = taban × alan × yerleşim × yayın sayısı × talep × abonelik indirimi
+        </p>
+        <ul className="mt-2 space-y-1 text-sm text-fg-muted">
+          <li>
+            <strong className="text-fg">Alan:</strong> satın alınan {`width_px × height_px`} (veya eşdeğer
+            grid alanı), 300×250 kutusu 1.0 kabul edilerek.
+          </li>
+          <li>
+            <strong className="text-fg">Yerleşim:</strong> kapak, üst bölüm, bölüm içi veya alt bölüm
+            görünürlüğü.
+          </li>
+          <li>
+            <strong className="text-fg">Yayın sayısı:</strong> tek sayı ya da tekrar eden kampanya.
+          </li>
+          <li>
+            <strong className="text-fg">Abonelik:</strong> tanımlı boyut, yerleşim ve sıklık hakkı verir;
+            her sayıda sınırsız alan anlamına gelmez.
+          </li>
+        </ul>
+        <p className="mt-2 text-sm text-fg-subtle">
+          Gerçek tahsilat prototip kapsamı dışındadır. Başvuru anındaki fiyat bir anlık görüntü olarak
+          saklanır: katsayılar sonradan değişse bile verilen teklif değişmez.
+        </p>
       </Card>
 
       <Card className="p-4" id="veri">

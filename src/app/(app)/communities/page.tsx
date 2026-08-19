@@ -181,8 +181,7 @@ export default async function CommunitiesPage({
 
       <div className="mt-5">
         <InfoNote icon="shield">
-          Topluluk açma başvuruları moderatör incelemesinden geçer. Bu, benzer toplulukların çoğalmasını ve
-          kurallara aykırı alanların açılmasını önler.
+          Topluluk açma başvuruları moderatör incelemesinden geçer.
         </InfoNote>
       </div>
     </div>

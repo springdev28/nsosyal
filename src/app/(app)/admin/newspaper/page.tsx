@@ -97,7 +97,7 @@ export default async function AdminNewspaperPage() {
                       <select
                         id={`issue-${entry.request.id}`}
                         name="issueDate"
-                        defaultValue={entry.request.requestedIssueDate ?? issues[0]?.issue.issueDate}
+                        defaultValue={entry.request.requestedIssueStart ?? issues[0]?.issue.issueDate}
                         className="min-h-11 w-full rounded-xl border border-line bg-bg-raised px-3 sm:max-w-xs"
                       >
                         {issues.map((issue) => (

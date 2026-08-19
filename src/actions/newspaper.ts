@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { getViewer, isAdmin } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import type { AdRequest, ModerationStatus } from '@/types/domain';
+import { placementByCode, priceFor, subscriptionByPlan } from '@/lib/newspaper/inventory';
 
 /**
  * nGazete ilan akisi (PROJECT_SPEC 7.9 / 17.12).
@@ -41,15 +42,38 @@ export async function submitAdRequest(_prev: AdRequestState, formData: FormData)
     return { error: 'Geçerli bir iletişim e-postası gir.' };
   }
 
+  // Fiyat ILAN TURUNDEN degil, satin alinan ALANDAN turer (PROJECT_SPEC 10.1.1).
+  const placementCode = String(formData.get('requestedPlacement') ?? '');
+  const placement = placementByCode(placementCode);
+  if (!placement) return { error: 'Geçerli bir yerleşim alanı seç.' };
+
+  const plan = String(formData.get('subscriptionPlan') ?? 'tek-sayi');
+  const subscription = subscriptionByPlan(plan);
+  if (!subscription) return { error: 'Geçerli bir yayın paketi seç.' };
+
+  const price = priceFor({
+    placementCode: placement.code,
+    issueCount: subscription.issueCount,
+    subscriptionPlan: subscription.plan,
+  });
+
   getStore().submitAdRequest({
     organizationId: viewer.id,
     contactEmail,
     placementType: (String(formData.get('placementType') ?? 'org_ad') as AdRequest['placementType']),
-    requestedIssueDate: String(formData.get('requestedIssueDate') ?? '') || null,
+    requestedPlacement: placement.code,
+    widthPx: placement.widthPx,
+    heightPx: placement.heightPx,
+    requestedIssueStart: String(formData.get('requestedIssueStart') ?? '') || null,
+    requestedIssueCount: subscription.issueCount,
+    subscriptionPlan: subscription.plan,
+    // Katsayilar sonradan degisse de verilen teklif degismesin diye dondurulur.
+    pricingSnapshot: price?.total ?? null,
     theme: String(formData.get('theme') ?? '') || null,
     title,
     body,
     creativeUrl: null,
+    creativeAlt: String(formData.get('creativeAlt') ?? '').trim() || null,
     linkUrl: String(formData.get('linkUrl') ?? '') || null,
   });
 

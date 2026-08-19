@@ -7,6 +7,7 @@ import type {
   IntentMode,
   Media,
   ModerationStatus,
+  NewspaperItem,
   Notification,
   Post,
   Profile,
@@ -41,6 +42,7 @@ import type {
 } from '@/types/view';
 
 import { districtName, provinceName, PROVINCES } from '@/lib/geo';
+import { placementByCode } from '@/lib/newspaper/inventory';
 import { rankPosts, type RankingViewer } from '@/lib/ranking/rank';
 import { buildDataset, type Dataset } from '@/lib/seed';
 import { uid } from '@/lib/seed/ids';
@@ -845,8 +847,13 @@ export class DemoStore {
     const issue = this.data.newspaperIssues.find((entry) => entry.id === issueId)!;
     const items = this.data.newspaperItems
       .filter((item) => item.issueId === issueId)
-      .sort((a, b) => a.position - b.position)
-      .map((item) => ({ item, href: this.newspaperItemHref(item.linkedEntityType, item.linkedEntityId) }));
+      .sort((a, b) => a.publicationOrder - b.publicationOrder)
+      .map((item) => ({
+        item,
+        // Ic baglanti oncelikli; yoksa kartin kendi hedef adresi kullanilir.
+        href:
+          this.newspaperItemHref(item.linkedEntityType, item.linkedEntityId) ?? item.targetUrl,
+      }));
     return { issue, items };
   }
 
@@ -1433,23 +1440,45 @@ export class DemoStore {
     request.reviewedAt = new Date().toISOString();
 
     if (decision === 'approved') {
-      const targetDate = issueDate ?? request.requestedIssueDate ?? toIstanbulDateKey(new Date());
+      const targetDate = issueDate ?? request.requestedIssueStart ?? toIstanbulDateKey(new Date());
       const issue = this.data.newspaperIssues.find((entry) => entry.issueDate === targetDate);
       if (issue) {
-        const position = this.data.newspaperItems.filter((item) => item.issueId === issue.id).length;
-        const item = {
+        const publicationOrder = this.data.newspaperItems.filter(
+          (item) => item.issueId === issue.id,
+        ).length;
+        // Onaylanan kreatif, gazetenin grid'inde satin alinan ALANA yerlesir:
+        // span ve olcu envanter kaydindan, fiyat basvurudaki snapshot'tan gelir
+        // (PROJECT_SPEC 7.9). Yeniden hesaplamiyoruz; teklif ne ise o kalir.
+        const placement = placementByCode(request.requestedPlacement);
+        const item: NewspaperItem = {
           id: this.nextId('newspaper-item'),
           issueId: issue.id,
           itemType: request.placementType,
+          section: request.placementType === 'event_ad' ? 'etkinlik' : 'topluluk',
           title: request.title,
+          standfirst: null,
           body: request.body,
+          imageSeed: request.creativeUrl ? request.id : null,
+          imageGlyph: request.creativeUrl ? '📣' : null,
+          imageAlt: request.creativeAlt,
+          sourceOrAuthor: null,
+          targetUrl: request.linkUrl,
           linkedEntityType: null,
           linkedEntityId: null,
+          layoutVariant: 'placement',
+          gridColumnSpan: placement?.gridColumnSpan ?? 1,
+          gridRowSpan: placement?.gridRowSpan ?? 1,
+          priority: 50,
+          publicationOrder,
           sponsored: true,
           sponsorName: this.getProfile(request.organizationId)?.displayName ?? 'Sponsor',
-          position,
-        } as const;
-        this.data.newspaperItems.push({ ...item });
+          placementCode: request.requestedPlacement,
+          widthPx: request.widthPx,
+          heightPx: request.heightPx,
+          priceSnapshot: request.pricingSnapshot,
+          campaignId: request.id,
+        };
+        this.data.newspaperItems.push(item);
         request.publishedItemId = item.id;
       }
     }

@@ -312,18 +312,51 @@ export interface NewspaperIssue {
   status: 'draft' | 'published';
 }
 
+/** Gazete bolumleri; kart degil, editoryal bolum etiketi (PROJECT_SPEC 7.9). */
+export type NewspaperSection = 'gundem' | 'yerel' | 'proje' | 'topluluk' | 'etkinlik' | 'kaynak';
+
+/**
+ * Kartin gazete grid'indeki bicimi. Sosyal kart listesi degil, gazete
+ * kompozisyonu kurmak icin gerekli (spec 17.18/8).
+ */
+export type NewspaperLayout = 'lead' | 'feature' | 'standard' | 'brief' | 'placement';
+
 export interface NewspaperItem {
   id: UUID;
   issueId: UUID;
   itemType: 'lead' | 'editorial' | 'local' | 'project_showcase' | 'event_ad' | 'org_ad';
+  section: NewspaperSection;
   title: string;
+  /** Manset alti baslik. */
+  standfirst: string | null;
   body: string;
+  /**
+   * Gorsel. Repoda foto tutmuyoruz; sentetik kapak dokusu bu iki alandan
+   * uretilir (bkz. CoverTile). imageAlt erisilebilirlik icin zorunludur.
+   */
+  imageSeed: string | null;
+  imageGlyph: string | null;
+  imageAlt: string | null;
+  sourceOrAuthor: string | null;
+  /** Dis baglanti. Ic baglanti linkedEntity uzerinden cozulur. */
+  targetUrl: string | null;
   linkedEntityType: EntityType | null;
   linkedEntityId: UUID | null;
+  layoutVariant: NewspaperLayout;
+  gridColumnSpan: number;
+  gridRowSpan: number;
+  /** 1 en yuksek. Manset ve bolum sirasi bundan cikar. */
+  priority: number;
+  publicationOrder: number;
   /** true ise kart zorunlu olarak "Sponsorlu" etiketi tasir. */
   sponsored: boolean;
   sponsorName: string | null;
-  position: number;
+  /** Ucretli alan bilgileri; sponsored=false ise hepsi null. */
+  placementCode: string | null;
+  widthPx: number | null;
+  heightPx: number | null;
+  priceSnapshot: number | null;
+  campaignId: UUID | null;
 }
 
 export interface AdRequest {
@@ -331,11 +364,23 @@ export interface AdRequest {
   organizationId: UUID;
   contactEmail: string;
   placementType: 'event_ad' | 'org_ad' | 'project_showcase';
-  requestedIssueDate: string | null;
+  /**
+   * Satin alinmak istenen ALAN. Fiyat ilan turunden degil buradan turer
+   * (PROJECT_SPEC 10.1.1): envanter kodu, olculeri ve yayin adedi.
+   */
+  requestedPlacement: string;
+  widthPx: number;
+  heightPx: number;
+  requestedIssueStart: string | null;
+  requestedIssueCount: number;
+  subscriptionPlan: string;
+  /** Basvuru anindaki fiyat. Katsayilar sonradan degisse de teklif degismez. */
+  pricingSnapshot: number | null;
   theme: string | null;
   title: string;
   body: string;
   creativeUrl: string | null;
+  creativeAlt: string | null;
   linkUrl: string | null;
   status: ModerationStatus;
   createdAt: Timestamp;
