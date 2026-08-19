@@ -56,8 +56,10 @@ import { eventOverlaps, isWithin, toIstanbulDateKey, type DateRange } from '@/li
  * 1) Canli demo dis servise bagimli olmamali (PROJECT_SPEC 15.4).
  * 2) Jurinin depoyu klonlayip tek komutla calistirabilmesi gerekiyor.
  *
- * Ayni arayuz Supabase destekli bir uygulamayla degistirilebilsin diye tum
- * erisim `NsosyalRepository` sozlesmesi uzerinden yapilir (bkz. ./repository.ts).
+ * Sayfalar ve server action'lar veriye yalnizca bu sinifin metotlari uzerinden
+ * erisir; hicbiri seed modullerini dogrudan okumaz. Supabase'e gecerken ayni
+ * metot imzalarini koruyan bir uygulama yazmak yeterli olacak sekilde tutuldu
+ * (bkz. docs/architecture.md).
  */
 
 export interface FeedOptions {

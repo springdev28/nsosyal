@@ -59,7 +59,14 @@ export default async function AboutPage() {
           değiştirilebilir. Aşağıdaki değerler demo başlangıç değerleridir, ürün gerçeği iddiası taşımaz.
         </p>
 
-        <div className="scroll-x mt-3">
+        {/* Tablo dar ekranda yatay kayar; kaydirilabilir alan klavyeyle de
+            odaklanabilir olmali (WCAG 2.1.1). */}
+        <div
+          className="scroll-x mt-3"
+          tabIndex={0}
+          role="region"
+          aria-label="Niyet moduna göre sıralama ağırlıkları tablosu"
+        >
           <table className="w-full min-w-[540px] border-collapse text-sm">
             <caption className="sr-only">Niyet moduna göre sıralama ağırlıkları</caption>
             <thead>

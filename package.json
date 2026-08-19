@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "nSosyal 5N - baglamsal sosyal kesif katmani prototipi (TEKNOFEST nSosyal Inovasyon 2026)",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
