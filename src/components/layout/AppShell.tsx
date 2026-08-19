@@ -75,7 +75,7 @@ export function AppShell({
         </aside>
       </div>
 
-      <MobileNav hasNewIssue={hasNewIssue} />
+      <MobileNav hasNewIssue={hasNewIssue} viewer={viewer} />
     </div>
   );
 }

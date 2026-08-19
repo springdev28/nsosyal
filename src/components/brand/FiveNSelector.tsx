@@ -48,22 +48,34 @@ const DIMENSIONS: Dimension[] = [
   { id: 'neden', label: 'Neden', hint: 'Motivasyon', icon: 'spark', href: '/explore/why' },
 ];
 
-/** Yay yaricapi (px) ve yarim yayin acikligi (derece). Yarim yay: 180. */
-const RADIUS = 104;
-const ARC_SPAN = 180;
 /**
- * Ogeler arasi acisal mesafe.
- *
- * ARC_SPAN / (n-1) = 45 derece secilirse bes oge yarim yayi TAM doldurur ve
- * iki uctaki oge her zaman tam olarak 0 opaklikta kalir - yani hicbir zaman
- * gorunmez. Daha dar bir adim ogeleri secim noktasinin cevresinde toplar;
- * uclara dogru solma korunur ama yay acildiginda birden fazla oge okunur.
+ * Yay olculeri, tasarim dosyasindaki "5N Selector" bileseninden alindi
+ * (QiXXYwqSFvcx2N2hHLw8DP, 18:186). Bilesende aktif oge secim noktasinda,
+ * komsulari +/-54 derecede, uzaktakiler +/-102 derecede duruyor; yaricap
+ * ~139px. Buradaki degerler o yerlesimi yeniden uretir.
  */
-const STEP = 30;
-/** Secim noktasi: isaretin tam sagi. */
-const SELECT_ANGLE = 0;
+const RADIUS = 140;
+const ARC_SPAN = 180;
+/** Ogeler arasi acisal mesafe (tasarimda ~52 derece). */
+const STEP = 52;
+
+/**
+ * Oge kademeleri. Tasarim ogeleri surekli bir formulle degil, secim
+ * noktasindan kac adim uzakta olduklarina gore uc kademede gosteriyor:
+ * aktif 48px/tam opak, komsu 34px/%50, uzak 28px/%12.
+ */
+const TIERS = [
+  { size: 48, icon: 28, opacity: 1, border: 2 },
+  { size: 34, icon: 20, opacity: 0.5, border: 1 },
+  { size: 28, icon: 14, opacity: 0.12, border: 1 },
+] as const;
+
+/** Tasarimdaki nSosyal/Glow/SelectorActive efekti. */
+const ACTIVE_GLOW = '0 0 16px 0 rgba(167,139,250,0.38)';
+/** Tasarimdaki nSosyal/Glow/Brand efekti (N tetikleyicisi). */
+const TRIGGER_GLOW = '0 0 36px 0 rgba(61,155,255,0.28), 0 0 18px 0 rgba(53,214,238,0.32)';
 /** Oge dairesinin yaricapi; capa kenetlemesinde pay olarak da kullanilir. */
-const ITEM_RADIUS = 22;
+const ITEM_RADIUS = 24;
 
 const HINT_STORAGE_KEY = 'nsosyal-5n-selector-hint';
 
@@ -84,7 +96,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
    * kolonun disina TASAMIYORDU. Bu yuzden yay bir portal ile body'ye cizilir
    * ve isaretin ekran koordinatina sabitlenir.
    */
-  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number; radius: number } | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,15 +122,14 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     const measure = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      // Isaret ekranin tepesinde duruyor; yayin ust yarisi viewport disina
-      // tasmasin diye capa dikeyde iceri cekilir. Yay gorsel olarak isarete
-      // bagli kalir ama hicbir oge erisilemez hale gelmez.
-      const margin = 16;
-      const limit = RADIUS + ITEM_RADIUS + margin;
-      setAnchor({
-        x: Math.max(limit / 2, rect.left + rect.width / 2),
-        y: Math.min(Math.max(rect.top + rect.height / 2, limit), window.innerHeight - limit),
-      });
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      // Yay ISARETIN YANINDA acilir (spec 4.4/2), yani capa isaretten
+      // kaydirilamaz. Isaret ekranin tepesine yakinsa capayi tasimak yerine
+      // yaricapi kisaltiyoruz: yay isarete bagli kalir, hicbir oge de
+      // viewport disina dusmez.
+      const room = Math.min(cy, window.innerHeight - cy) - ITEM_RADIUS - 12;
+      setAnchor({ x: cx, y: cy, radius: Math.max(72, Math.min(RADIUS, room)) });
     };
     measure();
     window.addEventListener('resize', measure);
@@ -271,8 +282,9 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
         aria-controls={open ? menuId : undefined}
         aria-label="5N boyut seçici"
         className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-accent transition-colors hover:bg-bg-hover"
+        style={open ? { boxShadow: TRIGGER_GLOW } : undefined}
       >
-        <FiveNMark size={38} animated={open && !reducedMotion} />
+        <FiveNMark size={44} animated={open && !reducedMotion} />
       </button>
 
       {open && anchor
@@ -293,25 +305,14 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
           className="fixed z-50 h-0 w-0"
           style={{ left: anchor.x, top: anchor.y, touchAction: 'none' }}
         >
-          {/*
-            Yay sayfa icerigin uzerinde yuzuyor. Ince bir perde hem ogelerin
-            kontrastini garanti eder hem de secicinin gecici bir katman
-            oldugunu gosterir. Aciklama metni degildir; sadece zemin.
-          */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none fixed inset-0 bg-bg/50"
-            style={{ left: -anchor.x, top: -anchor.y, width: '100vw', height: '100vh' }}
-          />
-
           {/* Yay izi. Iki ucu maskeyle saydamlasir (spec 4.4/2). */}
           <svg
             aria-hidden="true"
-            width={RADIUS * 2 + 60}
-            height={RADIUS * 2 + 60}
-            viewBox={`0 0 ${RADIUS * 2 + 60} ${RADIUS * 2 + 60}`}
+            width={anchor.radius * 2 + 60}
+            height={anchor.radius * 2 + 60}
+            viewBox={`0 0 ${anchor.radius * 2 + 60} ${anchor.radius * 2 + 60}`}
             className="pointer-events-none absolute"
-            style={{ left: -(RADIUS + 30), top: -(RADIUS + 30) }}
+            style={{ left: -(anchor.radius + 30), top: -(anchor.radius + 30) }}
           >
             <defs>
               <linearGradient id={`${menuId}-fade`} x1="0" y1="0" x2="0" y2="1">
@@ -322,7 +323,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
               </linearGradient>
             </defs>
             <path
-              d={halfArcPath(RADIUS + 30, RADIUS + 30, RADIUS)}
+              d={halfArcPath(anchor.radius + 30, anchor.radius + 30, anchor.radius)}
               fill="none"
               stroke={`url(#${menuId}-fade)`}
               strokeWidth="1.5"
@@ -332,25 +333,16 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
 
           {DIMENSIONS.map((dimension, index) => {
             // Oge acisi secim noktasina GOREdir: aktif oge 0 derecede durur,
-            // komsulari +/-STEP'te, uclara dogru gidenler ARC_SPAN/2'de tamamen
-            // solup yaydan cikar. (Onceki surumde buraya -ARC_SPAN/2 ofseti
-            // giriyordu; aktif oge -90 dereceye dusuyor ve opaklik 0 oldugu icin
-            // secili oge GORUNMUYORDU.)
-            const angle = index * STEP + rotation;
-            const distance = Math.abs(angle - SELECT_ANGLE);
-            const isActive = index === activeIndex;
+            // komsulari +/-STEP'te, uzaktakiler +/-2*STEP'te.
+            const steps = index - activeIndex;
+            const angle = steps * STEP;
+            const tier = TIERS[Math.min(TIERS.length - 1, Math.abs(steps))];
+            const isActive = steps === 0;
             const isConfirming = confirming === dimension.id;
 
-            // Uclara yaklasan ogeler solar; secim noktasindaki buyur. Yayin
-            // disina cikan oge tamamen kaybolur (ve tiklanamaz olur); yayin
-            // icinde kalan hicbir oge ise okunamayacak kadar solmaz.
-            const withinArc = distance <= ARC_SPAN / 2;
-            const opacity = withinArc ? Math.max(0.22, 1 - distance / (ARC_SPAN / 2)) : 0;
-            const scale = isActive ? 1.16 : 0.9;
-
             const radians = (angle * Math.PI) / 180;
-            const x = Math.cos(radians) * RADIUS;
-            const y = Math.sin(radians) * RADIUS;
+            const x = Math.cos(radians) * anchor.radius;
+            const y = Math.sin(radians) * anchor.radius;
 
             return (
               <button
@@ -362,27 +354,41 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                 onClick={() => commit(dimension)}
                 onFocus={() => setRotation(-index * STEP)}
                 aria-label={`${dimension.label} — ${dimension.hint}`}
-                className="absolute flex min-h-11 min-w-11 items-center justify-center rounded-full border bg-bg-raised text-fg shadow-pop outline-offset-2"
+                className="absolute flex items-center justify-center rounded-full border-solid bg-bg-raised outline-offset-2"
                 style={{
                   left: x,
                   top: y,
-                  transform: `translate(-50%, -50%) scale(${scale})`,
-                  opacity,
-                  // Tamamen solmus oge tiklanamaz olmali.
-                  pointerEvents: opacity < 0.2 ? 'none' : 'auto',
-                  borderColor: isActive ? 'var(--accent)' : 'var(--border)',
-                  borderWidth: isActive ? 2 : 1,
-                  color: isActive ? 'var(--accent)' : 'var(--fg-muted)',
-                  boxShadow: isConfirming ? '0 0 0 6px var(--accent-soft)' : undefined,
+                  width: tier.size,
+                  height: tier.size,
+                  transform: 'translate(-50%, -50%)',
+                  opacity: tier.opacity,
+                  // Tasarimda uzak kademe %12 opaklikta; okunamayacak kadar
+                  // soluk olan bir hedefi tiklanabilir birakmiyoruz.
+                  pointerEvents: tier.opacity < 0.2 ? 'none' : 'auto',
+                  borderWidth: tier.border,
+                  borderColor: 'var(--accent)',
+                  color: 'var(--accent)',
+                  boxShadow: isActive || isConfirming ? ACTIVE_GLOW : undefined,
                   transition: reducedMotion
                     ? 'none'
-                    : 'transform 150ms ease, opacity 150ms ease, box-shadow 120ms ease',
+                    : 'left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease, opacity 180ms ease',
                 }}
               >
-                <Icon name={dimension.icon} size={20} />
+                <Icon name={dimension.icon} size={tier.icon} />
               </button>
             );
           })}
+
+          {/* Hizalama isareti: secim noktasini gosteren kisa cizgi. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute h-[3px] w-6 rounded-sm bg-accent"
+            style={{
+              left: anchor.radius + ITEM_RADIUS + 14,
+              top: -1.5,
+              boxShadow: ACTIVE_GLOW,
+            }}
+          />
 
           {/*
             Secim noktasindaki ogenin adi. Surekli gorunen bir liste degil:
@@ -390,17 +396,16 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
           */}
           <p
             aria-hidden="true"
-            className="pointer-events-none absolute whitespace-nowrap rounded-full bg-bg-raised px-3 py-1.5 text-sm font-semibold text-accent ring-1 ring-[var(--accent-line)]"
-            style={{ left: RADIUS + ITEM_RADIUS + 12, top: -16 }}
+            className="pointer-events-none absolute whitespace-nowrap text-[16px] font-semibold text-accent"
+            style={{ left: anchor.radius + ITEM_RADIUS + 14, top: 22 }}
           >
             {active.label}
-            <span className="ml-1.5 font-normal text-fg-subtle">{active.hint}</span>
           </p>
 
           {showHint ? (
             <p
               className="pointer-events-none absolute w-56 whitespace-normal rounded-xl bg-bg-raised px-3 py-2 text-xs text-fg-muted shadow-pop ring-1 ring-[var(--border)]"
-              style={{ left: RADIUS + ITEM_RADIUS + 12, top: 34 }}
+              style={{ left: anchor.radius + ITEM_RADIUS + 14, top: 54 }}
             >
               Yayı çevir, boyutu seç.
             </p>
@@ -422,9 +427,10 @@ function clampIndex(index: number): number {
  * Tam daire degil: -90 dereceden +90 dereceye.
  */
 function halfArcPath(cx: number, cy: number, r: number): string {
-  const startX = cx + r * Math.cos((-90 * Math.PI) / 180);
-  const startY = cy + r * Math.sin((-90 * Math.PI) / 180);
-  const endX = cx + r * Math.cos((90 * Math.PI) / 180);
-  const endY = cy + r * Math.sin((90 * Math.PI) / 180);
+  const half = ARC_SPAN / 2;
+  const startX = cx + r * Math.cos((-half * Math.PI) / 180);
+  const startY = cy + r * Math.sin((-half * Math.PI) / 180);
+  const endX = cx + r * Math.cos((half * Math.PI) / 180);
+  const endY = cy + r * Math.sin((half * Math.PI) / 180);
   return `M ${startX} ${startY} A ${r} ${r} 0 0 1 ${endX} ${endY}`;
 }

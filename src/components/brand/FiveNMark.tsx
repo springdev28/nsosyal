@@ -1,109 +1,117 @@
 /**
- * nSosyal 5N baglanti isareti (PROJECT_SPEC 8.1.1 / 17.18-2).
+ * nSosyal 5N baglanti isareti (PROJECT_SPEC 4.4 / 8.1.1 / 17.18-2).
  *
- * !!! YER TUTUCU GEOMETRI !!!
- * Spec, isaretin takimin Figma'da urettigi MASTER VECTOR'den gelmesini ve
- * ekran goruntusunden ya da yaklasik bir SVG path'ten yeniden CIZILMEMESINI
- * sart kosuyor. O dosya bu depoda yok. Bu yuzden burada spec'in sayisal
- * kisitlarini birebir saglayan bir yer tutucu duruyor; master vector
- * geldiginde bu dosyadaki <g> icerigi onunla degistirilmelidir. Bilesenin
- * disa acik yuzeyi (props) degismek zorunda kalmaz.
+ * KAYNAK: takimin Figma master vector'u, "Brand Mark" bileseni
+ * (dosya QiXXYwqSFvcx2N2hHLw8DP, State=Static dugumu 17:2). Asagidaki uc path
+ * o bilesenden SVG olarak disa aktarilip birebir kopyalanmistir; disa aktarilan
+ * dosyanin kendisi de provenans icin `public/brand/nsosyal-5n-mark.svg`
+ * altinda duruyor. Spec bu noktada kesin: isaret ekran goruntusunden veya
+ * yaklasik bir SVG path'ten YENIDEN CIZILMEZ. Geometriyi elle duzeltmeyin;
+ * marka degisirse master'dan yeniden disa aktarip bu sabitleri degistirin.
  *
- * Spec'in sayisal kisitlari ve burada nasil saglandiklari:
+ * Isaretin yapisi: sol altta ve sag ustte geometrik olarak esdeger iki halka
+ * (ikisi de r=18, stroke 8) ve bunlari birlestiren tek surekli egri. Egri sabit
+ * kalinliktadir; taper yoktur.
  *
- *   "Iki halkanin dis capi, ic capi ve stroke'u AYNIDIR."
- *      -> iki <circle> de r=RING_R, strokeWidth=STROKE. Tek kaynak sabit;
- *         birini degistirmeden digerini degistirmek mumkun degil.
- *
- *   "Baglanti cizgisi bastan sona AYNI KALINLIKTADIR."
- *      -> tek bir <line>, sabit strokeWidth=STROKE, linecap="butt".
- *         Taper, degisken genislik veya gradient genislik YOK.
- *
- *   "Bir halka buyuk, digeri kucuk; bir taraf kalin, diger taraf ince
- *    tasarlanmaz."
- *      -> iki halkanin merkezleri y ekseninde ayni, yaricaplari ayni.
- *
- *   "Statik kullanimda logo effectsiz calisabilmelidir."
- *      -> varsayilan render'da filtre, glow ve gradient yok; tek renk
- *         currentColor. Isiltili parcacik AYRI bir motion katmanidir ve
- *         yalnizca `animated` ile gelir.
+ * Renk: master #3D9BFF kullaniyor - bu zaten spec 8.1.1'in vurgu rengi. Burada
+ * `currentColor` ile cizilir, cunku acik temada ayni ton zemine karsi AA'yi
+ * gecemiyor; cagri yerleri `text-accent` verir ve tema degiskeni dogru degeri
+ * secer. Geometri degismez, yalnizca boya devralinir.
  */
 
-/** Halkanin cizgi ekseni yaricapi. */
-const RING_R = 11;
-/** Hem halkalarin hem baglanti hattinin kalinligi. Tek kaynak. */
-const STROKE = 4;
+/** Master'dan birebir: baglanti egrisi (alt dugumden ust dugume). */
+const LINK_PATH =
+  'M32 70C32 34 47 17 64 22C86 29 88 87 104 96C121 106 128 73 128 50';
+/** Master'dan birebir: sol alt halka. */
+const RING_LOWER =
+  'M32 106C41.9411 106 50 97.9411 50 88C50 78.0589 41.9411 70 32 70C22.0589 70 14 78.0589 14 88C14 97.9411 22.0589 106 32 106Z';
+/** Master'dan birebir: sag ust halka. */
+const RING_UPPER =
+  'M128 50C137.941 50 146 41.9411 146 32C146 22.0589 137.941 14 128 14C118.059 14 110 22.0589 110 32C110 41.9411 118.059 50 128 50Z';
 
-const LEFT_CX = 13;
-const RIGHT_CX = 51;
-const CY = 16;
+const VIEW_W = 160;
+const VIEW_H = 120;
 
-/** Halkanin dis kenari: baglanti hatti tam buradan baslar ve biter. */
-const RING_OUTER = RING_R + STROKE / 2;
-const LINK_START = LEFT_CX + RING_OUTER;
-const LINK_END = RIGHT_CX - RING_OUTER;
+/** Master'daki parcacik: r=4, camgobegi, kendi renginde glow. */
+const PARTICLE_FILL = '#35D6EE';
 
 export function FiveNMark({
-  size = 32,
+  size = 40,
   animated = false,
   className = '',
   title,
 }: {
-  /** Genislik (px). Yukseklik oranla hesaplanir. */
+  /** Genislik (px). Yukseklik master'in 4:3 oranindan hesaplanir. */
   size?: number;
   /**
-   * Isiltili parcacik katmanini acar. Spec: parcacik logonun geometrisi
-   * degildir, ayri bir motion katmanidir; alt dugumden baslar, baglanti
-   * hattinin MERKEZINI takip eder ve varista kisa bir pulse yapar.
-   * prefers-reduced-motion'da hareket yerine sade bir state kalir.
+   * Isiltili parcacik katmanini acar.
+   *
+   * Spec 4.4 ve kapak sayfasi: parcacik logonun geometrisi degildir, ayri bir
+   * motion katmanidir; ALT dugumden baslar, EGRIYI izleyerek UST dugume ulasir.
+   * Burada parcacik baglanti egrisinin ta kendisi uzerinde hareket eder
+   * (`animateMotion` + ayni path), yani yol yaklasik degil birebirdir.
+   * prefers-reduced-motion'da hareket kalkar, isaret sade haliyle kalir.
    */
   animated?: boolean;
   className?: string;
   /** Verilirse isaret anlamli bir gorsel olur; verilmezse dekoratiftir. */
   title?: string;
 }) {
-  const height = Math.round((size * 32) / 64);
+  const height = Math.round((size * VIEW_H) / VIEW_W);
+  const glowId = 'ns-mark-glow';
 
   return (
     <svg
       width={size}
       height={height}
-      viewBox="0 0 64 32"
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       fill="none"
       role={title ? 'img' : undefined}
       aria-hidden={title ? undefined : true}
       aria-label={title}
       className={className}
     >
-      {/* --- Statik isaret: tek renk, efektsiz --- */}
-      <g stroke="currentColor" strokeWidth={STROKE} fill="none">
-        <circle cx={LEFT_CX} cy={CY} r={RING_R} />
-        <circle cx={RIGHT_CX} cy={CY} r={RING_R} />
-        <line x1={LINK_START} y1={CY} x2={LINK_END} y2={CY} strokeLinecap="butt" />
+      {/* --- Statik isaret: efektsiz, tek renk --- */}
+      <g stroke="currentColor" strokeWidth={8} fill="none">
+        <path d={LINK_PATH} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={RING_LOWER} />
+        <path d={RING_UPPER} />
       </g>
 
       {/* --- Motion katmani: geometrinin parcasi degil --- */}
       {animated ? (
-        <circle className="ns-mark-spark" cx={LINK_START} cy={CY} r={2.4} fill="currentColor">
-          <animate
-            attributeName="cx"
-            values={`${LINK_START};${LINK_END}`}
-            dur="1.6s"
-            repeatCount="indefinite"
-          />
-          <animate attributeName="opacity" values="0;1;1;0" dur="1.6s" repeatCount="indefinite" />
-        </circle>
+        <>
+          <defs>
+            <filter id={glowId} x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <circle r="4" fill={PARTICLE_FILL} filter={`url(#${glowId})`}>
+            <animateMotion dur="1.9s" repeatCount="indefinite" path={LINK_PATH} />
+            <animate
+              attributeName="opacity"
+              values="0;1;1;0"
+              keyTimes="0;0.12;0.85;1"
+              dur="1.9s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </>
       ) : null}
     </svg>
   );
 }
 
 /**
- * Isaret + kelime markasi. Gezinmede ve ust barda kullanilir.
- * Kelime markasi ayri bir metin dugumudur; isaretin icine cizilmez.
+ * Isaret + kelime markasi. Kelime markasi ayri bir metin dugumudur; isaretin
+ * icine cizilmez.
  */
 export function FiveNWordmark({
-  size = 30,
+  size = 34,
   className = '',
 }: {
   size?: number;
@@ -112,9 +120,7 @@ export function FiveNWordmark({
   return (
     <span className={`flex items-center gap-2.5 ${className}`}>
       <FiveNMark size={size} className="text-accent" />
-      <span className="text-base font-extrabold leading-none">
-        nSosyal <span className="text-accent">5N</span>
-      </span>
+      <span className="text-base font-extrabold leading-none">nSosyal</span>
     </span>
   );
 }

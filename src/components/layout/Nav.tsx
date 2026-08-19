@@ -91,6 +91,15 @@ export function MainNav({
 
   const items: NavItem[] = [
     ...NAV_ITEMS.slice(0, 6),
+    // Spec 4.3 ana gezinmede Profil'i alti bolumden biri olarak sayiyor;
+    // profile yalnizca sag paneldeki avatardan ulasilmasi eksikti.
+    {
+      href: viewer ? `/profile/${viewer.username}` : '/login',
+      label: 'Profil',
+      icon: 'users',
+      mobile: true,
+      match: (p) => p.startsWith('/profile') && !p.includes('kaydedilenler'),
+    },
     {
       href: viewer ? `/profile/${viewer.username}?tab=kaydedilenler` : '/feed',
       label: 'Kaydedilenler',
@@ -232,14 +241,29 @@ function ThemeToggle() {
   );
 }
 
-export function MobileNav({ hasNewIssue }: { hasNewIssue: boolean }) {
+export function MobileNav({
+  hasNewIssue,
+  viewer,
+}: {
+  hasNewIssue: boolean;
+  viewer: Profile | null;
+}) {
   const pathname = usePathname();
+  // Spec 4.3'teki alti ana bolum: Ana Akis, Kesfet, Olustur, Topluluklar,
+  // nGazete, Profil.
   const items = [
     NAV_ITEMS[0],
     NAV_ITEMS[2],
     { href: '/create', label: 'Oluştur', icon: 'plus' as IconName, mobile: true, match: (p: string) => p.startsWith('/create') },
     NAV_ITEMS[3],
     NAV_ITEMS[5],
+    {
+      href: viewer ? `/profile/${viewer.username}` : '/login',
+      label: 'Profil',
+      icon: 'users' as IconName,
+      mobile: true,
+      match: (p: string) => p.startsWith('/profile'),
+    },
   ];
 
   return (
