@@ -42,7 +42,12 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
       .first()
       .getByRole('link', { name: 'Keşfet', exact: true })
       .click();
-    await page.getByRole('link', { name: /Haritadan keşfet/ }).click();
+
+    // Nerede paneline 5N seciciden gidilir. Onceki surumde Kesfet'in ustunde
+    // "Haritadan kesfet" diye sabit bir kart duruyordu; spec 4.4 bu bes sabit
+    // kart/buton bicimini yasakladigi icin kaldirildi ve yerini yay aldi.
+    await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
+    await page.getByRole('menuitem', { name: /^Nerede —/ }).click();
     await expect(page).toHaveURL(/\/explore\/map/);
 
     // Haritanin klavyeyle kullanilabilen esdegeri: il listesi.

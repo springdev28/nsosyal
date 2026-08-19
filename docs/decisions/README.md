@@ -17,6 +17,7 @@ işaret edin.
 | [0003](0003-yerel-geojson-ile-tile-sunucusuz-harita.md) | Yerel GeoJSON ile tile sunucusuz harita | Kabul edildi |
 | [0004](0004-ucretli-gorunurluk-yalnizca-ngazetede.md) | Ücretli görünürlük yalnızca nGazete'de | Kabul edildi |
 | [0005](0005-sentetik-demo-medyasi.md) | Sentetik ama gerçek oynatılabilir demo medyası | Kabul edildi |
-| [0006](0006-tasarim-dilini-canli-siteden-almak.md) | Tasarım dilini canlı siteden almak, emoji yerine ikon seti | Kabul edildi |
+| [0006](0006-tasarim-dilini-canli-siteden-almak.md) | Tasarım dilini canlı siteden almak, emoji yerine ikon seti | Değiştirildi |
 | [0007](0007-zaman-ekseni-europe-istanbul.md) | Ürünün günü Europe/Istanbul günüdür | Kabul edildi |
 | [0008](0008-erisilebilirligi-testle-sabitlemek.md) | Erişilebilirliği ölçüp testle sabitlemek | Kabul edildi |
+| [0009](0009-tasarim-kaynagi-figma-master-dosyasi.md) | Tasarımın kaynağı takımın Figma dosyasıdır | Kabul edildi |

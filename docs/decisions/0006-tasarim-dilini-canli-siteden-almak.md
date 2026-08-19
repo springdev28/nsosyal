@@ -1,6 +1,6 @@
 # 0006 — Tasarım dilini canlı siteden almak, emoji yerine ikon seti
 
-**Durum:** Kabul edildi
+**Durum:** Değiştirildi — bkz. [0009](0009-tasarim-kaynagi-figma-master-dosyasi.md)
 
 ## Bağlam
 

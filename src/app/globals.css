@@ -226,6 +226,22 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+
+    /*
+      Mobilde alt gezinme cubugu `fixed` duruyor. Bir baglantiya odaklanildiginda
+      ya da kaydirilarak ulasildiginda hedef bu cubugun ALTINDA kalabiliyordu:
+      WCAG 2.2 2.4.11 (Focus Not Obscured) tam olarak bunu yasakliyor ve pratikte
+      de tiklanamayan bir bag ortaya cikiyordu. Kaydirma dolgusu, hedefin her
+      zaman cubugun ustunde durmasini saglar.
+    */
+    scroll-padding-bottom: 5.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      /* Masaustunde alt cubuk yok. */
+      scroll-padding-bottom: 0;
+    }
   }
 
   body {
