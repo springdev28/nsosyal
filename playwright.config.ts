@@ -1,8 +1,24 @@
+import { existsSync } from 'node:fs';
+
 import { defineConfig, devices } from '@playwright/test';
 
-// The sandboxed CI image ships a Chromium build that does not match the revision
-// Playwright would download, so we point at it explicitly when it is present.
-const systemChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
+/*
+ * Chromium'u nereden alacagiz?
+ *
+ * Gelistirme sanaligi kendi Chromium'unu /opt/pw-browsers altinda hazir
+ * getiriyor ve `playwright install` calistirilmamasi gerekiyor. GitHub
+ * Actions'ta ise tam tersi: Playwright kendi surumunu indiriyor ve o yol yok.
+ *
+ * Onceki surum yolu KOSULSUZ pinliyordu; yorumda "when it is present" yazsa da
+ * kod varligi hic kontrol etmiyordu. Sonuc: CI'da her testin ilk adimi
+ * "executable doesn't exist at /opt/pw-browsers/chromium" ile dusuyordu -
+ * uygulamayla ilgisi olmayan 116 kirmizi.
+ *
+ * Simdi pin yalnizca dosya gercekten oradaysa uygulanir; degilse Playwright
+ * kendi indirdigi tarayiciyi kullanir.
+ */
+const pinnedChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
+const launchOptions = existsSync(pinnedChromium) ? { executablePath: pinnedChromium } : {};
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -28,14 +44,14 @@ export default defineConfig({
       name: 'desktop-chromium',
       use: {
         ...devices['Desktop Chrome'],
-        launchOptions: { executablePath: systemChromium },
+        launchOptions,
       },
     },
     {
       name: 'mobile-chromium',
       use: {
         ...devices['Pixel 7'],
-        launchOptions: { executablePath: systemChromium },
+        launchOptions,
       },
     },
   ],
