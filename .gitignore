@@ -24,3 +24,9 @@ test-results/
 *.tsbuildinfo
 next-env.d.ts
 .cache/
+
+# Gecici hata ayiklama betikleri. Depo kokunde duruyorlar cunku node_modules
+# cozumlemesi icin orada olmalari gerekiyor; kalici olmalari gerekmiyor.
+/.shot*.mjs
+/.live.mjs
+/.render.mjs
