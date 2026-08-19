@@ -1,220 +1,283 @@
-# nSosyal 5N — teknik özet
+# nSosyal 5N - ürün ve teknik sözleşme
 
-Bu dosya, ürün raporunun geliştirme sırasında kaynak alınan kısa hâlidir. Uzun
-rapordaki bölüm numaraları korunmuştur; kod içindeki `PROJECT_SPEC 7.1` gibi
-yorumlar bu numaralara işaret eder.
+Bu dosya, geliştirme sırasında coding agent ve geliştiricilerin kullanacağı kısa ürün sözleşmesidir. Ayrıntılı kaynak Google Docs'taki **nSosyal 5N - Prototip Geliştirme ve Ürün Spesifikasyonu** belgesidir.
 
----
+## 0. Kaynak önceliği
 
-## 1. Karar ilkeleri
+Çelişki olduğunda şu sıra geçerlidir:
 
-- Ürün cümlesi tek: **bilim, teknoloji ve inovasyon topluluklarını bağlamıyla
-  birlikte buluşturan sosyal keşif katmanı.**
-- Prototipin görevi tüm sosyal ağ özelliklerini taşımak değil, farkı gösteren
-  akışları eksiksiz çalıştırmaktır.
-- Belirsizlikte tahmin değil, spec ve mevcut kod kaynak alınır.
-- Ürüne sırf etiket olsun diye yapay zekâ eklenmez; geliştirmede kullanılabilir.
+1. Kullanıcının/takımın en güncel açık ürün kararı ve güncel Figma master tasarımı.
+2. Ana geliştirme spesifikasyonu.
+3. Bu dosya, `AGENTS.md` ve `CLAUDE.md`.
+4. Mevcut implementasyon.
 
-## 2. Ürün konumlandırması
+Mevcut kod bir özelliği başka türlü yapıyor diye o davranışı otomatik olarak ürün gerçeği kabul etme. Önce üst kaynaklarla karşılaştır.
 
-**Değildir:** LinkedIn (kariyer vitrini), X (hız ve tartışma), Discord (kapalı
-sohbet), etkinlik platformu (tek amaçlı bilet/kayıt).
+## 1. Ürün tezi
 
-**Odur:** bir kişinin *ne* yaptığını, *nerede* ve *ne zaman* olduğunu, *nasıl*
-öğrenildiğini ve *neden* başladığını aynı yerde tutan; hem gündelik hem üretken
-sosyalliğe izin veren keşif katmanı.
+nSosyal 5N, bilim, teknoloji ve inovasyon çevresindeki gündelik sosyalliği, toplulukları, öğrenmeyi, projeleri, etkinlikleri ve yerel ekosistem keşfini tek sosyal kimlik altında bağlayan bir keşif katmanıdır.
 
-Duygusal vaat: "burada yalnız değilim, benimle aynı şeyi merak eden insanlar var
-ve nereden başlayacağımı görüyorum."
+Ürün yalnızca kariyer, yarışma veya proje platformu değildir. Mizah, sohbet, soru, kısa video ve gündelik paylaşım birinci sınıf içeriktir.
 
-## 3. Kullanıcılar
+5N'nin veri dili:
 
-| Persona | İhtiyaç |
-| --- | --- |
-| Meraklı öğrenci | Nereden başlayacağını görmek, yakınındaki topluluğu bulmak |
-| Üreten genç | Bitmemiş işi paylaşabilmek, geri bildirim ve ekip bulmak |
-| Topluluk yürüteni | Üyeye ulaşmak, etkinlik duyurmak, kaynak biriktirmek |
-| Kurum / teknopark | Doğru kitleye görünmek, etkinlik ve ilan duyurmak |
-| Moderatör | Topluluk kalitesini ve güvenliğini korumak |
-
-## 4. 5N bilgi mimarisi
-
-5N bir menü değil, **ortak veri dili**dir:
-
-| Boyut | Anlamı | Veri karşılığı |
+| Boyut | Anlam | Örnek veri |
 | --- | --- | --- |
-| Ne | konu / alan | `topics`, `post_topics` |
-| Nerede | il / ilçe / çevrim içi | `province_code`, `district_code`, `is_online` |
-| Ne zaman | tarih, süre, son başvuru | `events.starts_at`, `deadline_at` |
-| Nasıl | öğrenme yolu, kaynak | `resources` (tür, seviye, süre) |
-| Neden | motivasyon hikâyesi | `why_stories` |
-| Kim | kişi, ekip, kurum | `profiles`, `project_members` |
+| Ne | konu / içerik / varlık | topic, post type, project, event |
+| Nerede | coğrafi bağlam | il, ilçe, çevrim içi |
+| Ne zaman | zaman bağlamı | created_at, starts_at, deadline, milestone |
+| Nasıl | yöntem / kaynak / öğrenme yolu | resources, process, tools |
+| Neden | motivasyon / arka plan | why_stories |
+| Kim | sosyal kimlik katmanı | profile, team, institution, community |
 
-Bir gönderi yalnızca sahip olduğu bağlamları taşır; beş alanı doldurmak zorunlu
-değildir. Bağlam çipleri (arayüzdeki renkli etiketler) yalnızca gerçekten var olan
-bağlamlar için gösterilir.
+Bir içerik yalnızca sahip olduğu bağlamları taşır. Beş alanı doldurmak zorunlu değildir.
 
-## 5. Kapsam
+## 2. Marka işareti ve 5N selector
 
-**P0 (prototipte çalışan çekirdek):** demo girişi ve onboarding, karışık ana akış,
-niyet modları, kısa video, topluluk sistemi ve moderatör onayı, Nerede haritası,
-Ne zaman keşfi, Neden panosu, Nasıl kaynakları, proje sayfaları, nGazete ve ilan
-akışı, bildirimler, ayarlar, yönetim paneli.
+Marka işaretinin geometrik kaynağı takımın Figma'da oluşturduğu **master vector**dür. Ekran görüntüsünden veya yaklaşık SVG path'ten tekrar çizilmez.
 
-**P1 (kısmen):** arama, rozet/ilerleme, gelişmiş analitik.
+Değişmez logo kuralları:
 
-**P2 (final sonrası):** mesajlaşma, canlı yayın, gerçek ödeme entegrasyonu, mobil
-uygulama.
+- iki uç halka geometrik olarak eşdeğerdir;
+- dış çap, iç çap ve stroke kalınlığı aynıdır;
+- bağlantı hattı tek sürekli monoline path'tir ve baştan sona aynı kalınlıktadır;
+- büyük/küçük düğüm hiyerarşisi veya taper kullanılmaz;
+- statik logo particlesız ve glowsuz çalışabilmelidir;
+- ışıklı parçacık kullanılırsa ayrı motion layer'dır ve hattın merkezini izler.
 
-## 6. Ana akışlar
+5N selector klasik bir radial menu veya tam çark değildir:
 
-- **A —** gündelik akış → ilgi çeken gönderi → topluluğa katılma.
-- **B —** Keşfet → Nerede (il seçimi) → Ne zaman (tarih filtresi) → etkinlik →
-  hatırlatma.
-- **C —** Neden hikâyesi → bağlı proje sayfası.
-- **D —** proje oluşturma → kısa pitch videosu.
-- **E —** nGazete → sponsorlu alan → ilan başvurusu.
+1. Kapalı durumda yalnızca N bağlantı işareti görünür.
+2. N'ye basınca işaretin yanında **yarım bir yay** açılır.
+3. Yay iki uca doğru opacity ile fade olur. Tam daire hiçbir zaman gösterilmez.
+4. Ne, Nerede, Ne zaman, Nasıl ve Neden ikonları yay üzerinde hareket eder.
+5. Kullanıcı mouse/touch/trackpad ile yayı döndürür veya kaydırır.
+6. Seçenek seçim noktasına yaklaşınca belirginleşir, uçlara yaklaşınca kaybolur.
+7. Hizalanınca kısa snap/confirm olur.
+8. Seçim tamamlanınca selector bütünüyle kaybolur ve ilgili **işlevsel panel** açılır.
+9. Başka boyut için kullanıcı N'ye tekrar basar.
+10. Kalıcı `çevir`, `seçim noktası`, `çark kaybolur` gibi öğretici metinler kullanma.
+11. Reduced-motion ve klavye eşdeğeri zorunludur.
 
-## 7. Özellik notları
+## 3. Görsel dil
 
-### 7.1 Ana akış
-Gönderi türleri: metin, görsel, video, soru, proje güncellemesi, etkinlik duyurusu,
-kaynak önerisi, Neden bağlantısı. Kart alanları: yazar, zaman, gövde, medya, bağlam
-çipleri, etkileşim satırı, "Neden gösteriliyor?" açıklaması.
+Mevcut nSosyal görsel ailesini geliştir, başka bir ürün estetiği icat etme.
 
-Niyet modları akışın ağırlıklarını değiştirir: **Sosyalleş, Keşfet, Öğren, Üret.**
+Dark-first örnek tokenlar:
 
-### 7.2 Kısa video
-Dikey ve kısa: en fazla 90 saniye, 50 MB, MP4 veya WebM. Ses varsayılan kapalıdır,
-metin karşılığı her videoda bulunur ve otomatik oynatma `prefers-reduced-motion`
-tercihinde devre dışı kalır. Sınırlar hem formda hem sunucuda uygulanır.
+- base: `#0A0F1A`
+- raised: `#131B28`
+- sunken: `#0E1420`
+- hover/selected surface: `#1A2333`
+- primary text: `#E9EFF7`
+- secondary text: `#94A3B8`
+- border: `#1F2937`
+- accent: `#3D9BFF`
 
-### 7.3 Topluluklar
-Kök topluluk (geniş alan) + dal topluluk (şehir, okul, alt konu). **Topluluk
-oluşturmak moderatör onayına tabidir**; başvuru kuyruğu ve denetim kaydı vardır.
-Sekmeler: Akış, Etkinlikler, Kaynaklar, Üyeler, Hakkında.
+Canlı uygulamadaki mevcut tokenlar farklıysa mevcut nSosyal kaynağı kazanır. 5N boyutları için purple/green/red/yellow rainbow sistemi kurma. Aynı blue/cyan family içinde kal; ayrımı ikon, label ve state ile yap.
 
-### 7.4 Nerede
-MapLibre + yerel GeoJSON. İl seçimi haritadan veya listeden yapılabilir; **harita
-sonuçları her zaman eşdeğer bir liste görünümüyle birlikte sunulur.** Pilot ilde
-(İzmir) ilçe katmanı açılır.
+Ana UI bir teknik rapor değildir. **Göster, açıklama.** Uzun ürün gerekçeleri Hakkında/Yardım/admin/reklamveren/dokümantasyona taşınır. Sponsor etiketi, privacy/security mesajı ve form hata metni gibi kullanıcı kararını etkileyen açıklamalar görünür kalır.
 
-### 7.5 Ne zaman
-Geçmiş / bugün / gelecek üç bölmesi, tarih aralığı ön ayarları, son başvuru
-uyarısı, etkinliğe hatırlatma kurma.
+## 4. Kişiselleştirme
 
-### 7.6 Neden
-Motivasyon panosu; bir kişiyi alana getiren gerçek deneyim. **Motivasyon sözü
-duvarı değildir.** Hikâye kartı projeye, topluluğa veya kaynağa bağlanabilir.
+Tek `intentMode` bütün kişiselleştirme değildir.
 
-### 7.7 Nasıl
-Topluluk kaynakları: tür, seviye (başlangıç/orta/ileri), tahmini süre, moderatör
-doğrulaması.
+### Kalıcı profil tercihleri
 
-### 7.8 Projeler
-Özet, ekip, ilerleme günlüğü, bağlı Neden hikâyesi, kısa pitch videosu, bağlı
-topluluk ve konular.
+Kullanıcı Ayarlar'dan birden fazla uzun dönem amacı düzenleyebilir. Örnekler:
 
-### 7.9 nGazete
-Günlük sayı; oturumda bir kez açılır ve kapatma düğmesi kısa bir gecikmeden sonra
-etkinleşir (erişilebilirlik tercihinde gecikme kalkar). Ücretli yerleşim yalnızca
-burada yaşar; her sponsorlu kart açıkça etiketlenir.
+- sosyalleşmek / yeni insanlarla tanışmak
+- topluluk bulmak
+- etkinlik keşfetmek
+- proje keşfetmek veya proje paylaşmak
+- ekip / iş birliği bulmak
+- öğrenmek ve kaynak bulmak
+- gelişmeleri takip etmek
+- yerel ekosistemi ve kurumları keşfetmek
+- fırsatları görmek
+- gündelik içerik ve tartışma takip etmek
+- üretim süreçlerini / Neden hikâyelerini görmek
+- bilgili kişileri keşfetmek
 
-## 8. Tasarım ve erişilebilirlik
+Ayrıca interests, content/feed preferences, location/privacy, notifications, accessibility ve nGazete preferences düzenlenebilir olmalıdır.
 
-Koyu tema varsayılan, üç kolonlu masaüstü düzeni, alt gezinme çubuğu ile mobil.
-Hedef **WCAG 2.2 AA**:
+### Geçici niyet
 
-- tüm kontroller klavyeyle erişilebilir, odak göstergesi gizlenmez;
-- renk tek başına durum iletmez (ikon/metin/işaret eşlik eder);
-- ikon düğmelerinde erişilebilir isim, form alanlarında ilişkilendirilmiş hata;
-- video için metin karşılığı, harita için liste eşdeğeri;
-- `prefers-reduced-motion` tercihinde animasyon ve otomatik oynatma azalır;
-- dokunma hedefleri en az 24 px.
+`Sosyalleş`, `Keşfet`, `Öğren`, `Üret` yalnızca o andaki sıralama/keşif ağırlıklarını etkileyen geçici modlardır. Kalıcı profil amaçlarını silmez veya onların yerine geçmez.
 
-## 9. Mimari
+Onboarding bu tercihlerin başlangıç değerlerini toplar. Hepsi daha sonra Settings'ten değiştirilebilir.
 
-Next.js App Router + TypeScript tek repoda; UI Tailwind; veri Supabase Postgres;
-yetki Row Level Security; harita MapLibre + yerel GeoJSON; test Vitest + Playwright
-+ axe-core.
+## 5. Nerede: Türkiye yoğunluk keşfi
 
-Prototip iki modda çalışır:
+İzmir yalnızca örnek veri olabilir. Ürün veya bilgi mimarisi hiçbir şehri özel pilot olarak kabul etmez.
 
-- `DEMO_MODE=true` (varsayılan): veri sunucu belleğinde üretilir, dış servis yok.
-- `DEMO_MODE=false`: `supabase/migrations/` altındaki şema ve RLS politikaları
-  kullanılır.
+Nerede ekranının ana sorusu:
 
-Ortam değişkenleri `.env.example` içinde. **Service role anahtarı yalnızca sunucu
-tarafındadır; `NEXT_PUBLIC_` önekiyle tanımlanmaz.**
+> Seçtiğim alanda veya varlık türünde Türkiye'nin nerelerinde daha fazla hareket var?
 
-## 10. Veri modeli
+Gereksinimler:
 
-Ana tablolar: `profiles`, `topics`, `follows`, `communities`, `community_members`,
-`community_applications`, `posts`, `comments`, `post_likes`, `post_saves`, `media`,
-`post_media`, `projects`, `project_members`, `project_updates`, `events`,
-`reminders`, `why_stories`, `resources`, `newspaper_issues`, `newspaper_items`,
-`ad_requests`, `notifications`, `reports`, `moderation_actions`, `analytics_events`.
+- ana bileşen gerçek Türkiye haritasıdır;
+- il bazında **yoğunluk/choropleth** gösterilir;
+- yoğunluk tek nSosyal blue/cyan skalasında düşükten yükseğe okunur;
+- legend görünürdür;
+- hover/tıklama bölgesel değeri/sayıyı gösterir;
+- filtreler: topic, entity/metric, time range, participation/online-hybrid gibi gerekli bağlamlar;
+- seçilebilir metrikler en az communities, events, projects, institutions ve uygun olduğunda people/posts/resources/opportunities;
+- il seçilince bölge detay paneli açılır;
+- ilçe verisi olan bölgelerde aynı mimari ilçe düzeyine iner;
+- kullanıcı kendi konumunu paylaşmadan haritayı keşfedebilir;
+- bireysel kesin koordinat veya canlı konum gösterilmez;
+- haritadaki sonuçların erişilebilir liste eşdeğeri vardır.
 
-5N bağlam tabloları içeriği konuya, topluluğa ve yere bağlar: `post_topics`,
-`project_topics`, `event_topics`, `resource_topics`, `why_story_topics`,
-`project_communities` ve varlıkların üzerindeki il/ilçe alanları
-(`provinces`, `districts`).
+Yoğunluk nüfus değildir. Seçili platform varlıklarının sayısı veya normalize edilmiş skoru üzerinden hesaplanır. Renk tek başına state taşımamalıdır.
 
-Roller: `user`, `organization`, `moderator`, `admin`. Rol yükseltme yalnızca
-yönetici tarafından yapılabilir ve tetikleyiciyle korunur.
+## 6. Ana ürün kapsamı
 
-## 11. Güvenlik, mahremiyet, moderasyon
+### P0
 
-- **Konum isteğe bağlıdır ve kullanıcı denetimindedir.** En ince ayrıntı ilçe
-  düzeyidir; kesin adres veya canlı konum yoktur. Konum paylaşmamak keşfi
-  engellemez, yalnızca kişinin yerel kişi sonuçlarında görünmesini engeller.
-- Topluluk oluşturma moderatör onayına tabidir; her karar denetim kaydına yazılır.
-- Raporlama akışı ve moderasyon kuyruğu vardır.
-- Tüm tablolarda RLS açıktır; admin işlemleri sunucu tarafındadır.
+- demo giriş + çok katmanlı onboarding
+- editable interests + long-term platform goals
+- karışık sosyal feed
+- geçici niyet modları
+- kısa video
+- kök/dal topluluklar + moderator approval
+- 5N half-fade selector
+- Türkiye yoğunluk haritası
+- Ne zaman + event reminder
+- Neden stories
+- Nasıl resources
+- yaşayan project pages
+- nGazete gerçek editorial layout + ad inventory
+- notifications, search/saved, profile/settings
+- moderation/admin
 
-## 12. Sıralama ve keşif
+### P1
 
-Akış skoru **açıklanabilir ağırlıklı toplam**dır (makine öğrenmesi yok):
+- gelişmiş arama
+- badges/progress
+- gelişmiş analytics
+- richer recommendation tuning
 
-| Sinyal | Ağırlık |
-| --- | --- |
-| Konu eşleşmesi | 0.30 |
-| Takip edilen kaynak | 0.20 |
-| Topluluk eşleşmesi | 0.15 |
-| Niyet uyumu | 0.10 |
-| Tazelik | 0.10 |
-| Konum eşleşmesi | 0.10 |
-| Keşif bonusu | 0.05 |
+### P2
 
-Niyet modu bu ağırlıkları yeniden dağıtır; toplam her modda 1.0'da kalır. Yeni
-seslere küçük bir keşif payı ayrılır.
+- gerçek ödeme/faturalandırma
+- tam video transcoding/CDN
+- native apps
+- real-time messaging/live
+- production-scale semantic search
 
-"Neden gösteriliyor?" açıklaması yalnızca beş sinyalden en güçlüsünü söyler: konu,
-takip, topluluk, konum, keşif.
+## 7. Feed
 
-> **Değişmez kural:** ücretli yerleşim kişisel akış sıralamasını hiçbir koşulda
-> etkilemez. Sıralama modülü sponsorluk kavramını bilmez.
+Feed karışık sosyal ürün gibi davranır: text, image, short video, question, casual/humour, project update, event, resource ve Why-linked content.
 
-## 13. Test
+Explainable ranking başlangıç sinyalleri: topic match, followed source, community match, long-term profile preference match, transient intent match, recency, optional location match, exploration bonus.
 
-- **Birim (Vitest):** sıralama, zaman yardımcıları, veri deposu — 97 test.
-- **E2E (Playwright):** yarışma için kritik yedi akış + ek senaryolar.
-- **Erişilebilirlik (axe-core):** tüm ana sayfalar, açık ve koyu tema, masaüstü ve
-  mobil görünüm.
+Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ürün gerçeği değildir.
 
-## 14. Git akışı
+> **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 
-Küçük, anlamlı commit'ler; her değişiklikten sonra typecheck + lint + ilgili
-testler. `main` her zaman demo edilebilir durumda tutulur.
+## 8. Topluluklar
 
-## 15. Demo
+Kök topluluklar platform tarafından açılır. Kullanıcı yerel/niş dal topluluğu önerebilir. Community create doğrudan publish olmaz, moderator approval gerekir ve karar audit log'a yazılır.
 
-Sentetik seed veri seti (21 profil, 18 topluluk, 60 gönderi, 21 video, 9 proje,
-12 etkinlik, 12 Neden hikâyesi, 15 kaynak, 3 gazete sayısı, 4 ilan başvurusu) ve
-tek tıkla giriş yapılan dört demo hesabı. Sunum sırası ve dayanıklılık notları:
-[docs/demo.md](docs/demo.md).
+Sekmeler: Akış, Etkinlikler, Kaynaklar/Nasıl, Üyeler, Hakkında. Proje ilişkileri ilgili içeriklerde görünür olabilir.
 
-## 16. Ajanla çalışma
+## 9. Neden ve Nasıl
 
-Repo kuralları [AGENTS.md](AGENTS.md) ve [CLAUDE.md](CLAUDE.md) dosyalarındadır.
-Karar kayıtları `docs/decisions/` altındadır.
+**Neden:** motivasyon sözü duvarı değildir. Bir kişiyi alana, projeye, probleme veya başarıya götüren gerçek deneyim/merak/düşünceyi anlatır ve bağlı profile/project/community'ye geçiş sağlar.
+
+**Nasıl:** ayrı kurs platformu değildir. Topluluk deneyiminden üretilen guide, link, video, checklist, Q&A ve process kaynaklarını sosyal bağlam içinde toplar.
+
+## 10. Projects
+
+Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
+
+Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
+
+Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
+
+## 11. nGazete
+
+nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
+
+- masthead
+- issue/date
+- hero/headline hierarchy
+- article images + alt text
+- sections
+- columns/grid
+- internal/external links
+- editorial priority/layout variants
+
+Sponsorlu alanlar ayrı `Ücretli alanlar` listesinin altında toplanmaz. Gazetenin grid'inde tanımlı spatial inventory satın alır ve açık `Sponsorlu` etiketi taşır.
+
+Örnek envanter ölçüleri: `300x250`, `728x90`, `300x600`, `600x400`, `970x250`. Bunlar sabit zorunlu liste değildir. Responsive için `grid_column_span`, `grid_row_span` veya `aspect_ratio` da tutulur.
+
+Pricing modeli açıklanabilir olmalıdır:
+
+`price = base × area_factor × placement_factor × issue_count_or_duration × demand_factor × subscription_discount`
+
+Tek issue, 4 issue, monthly/weekly recurring ve organization subscription gibi paketler desteklenebilir. Subscription sınırsız alan değildir, tanımlı size/placement/frequency hakkıdır.
+
+Advertiser request en az creative image, alt text, target URL, requested size/grid area, placement, issue start/count, plan ve pricing snapshot taşımalıdır.
+
+Reader UI'da `Gelir modeli nasıl çalışıyor?` gibi eğitim kartları yoktur. Ayrıntılar advertiser/admin/About/docs'ta yaşar.
+
+## 12. Veri modeli hedefleri
+
+Mevcut şemanın yanında aşağıdaki hedefler hesaba katılmalıdır:
+
+- `profile_goals(profile_id, goal_key, weight, created_at)` veya eşdeğer açıklanabilir model;
+- `newspaper_items`: image, alt, source/author, link, section, layout variant, grid spans, priority, sponsored metadata, placement, width/height, price snapshot, campaign;
+- `ad_requests`: creative, alt, target, size, placement, issue range/count, subscription plan, pricing snapshot, organization/contact/status.
+
+Migration gerektiğinde yeni migration ekle, geçmiş migration'ı değiştirme.
+
+## 13. Güvenlik ve erişilebilirlik
+
+- location optional, district finest user granularity;
+- no exact/live individual location;
+- RLS enabled and forced where appropriate;
+- service-role server-only;
+- moderator/admin routes server-authorized;
+- keyboard operation + visible focus;
+- accessible names and labelled errors;
+- no colour-only state;
+- reduced motion;
+- video text/caption equivalent;
+- map list equivalent;
+- mobile touch targets and overflow verified.
+
+## 14. Teknik stack
+
+Next.js App Router + React + TypeScript + Tailwind, Supabase Postgres/Auth/Storage/RLS production path, `DemoStore` synthetic offline demo path, MapLibre + local GeoJSON, Vitest + Playwright + axe-core.
+
+## 15. Test ve belge doğruluğu
+
+README veya dokümanda test sayısı bulunabilir, ancak **testleri bu görevde gerçekten çalıştırmadıysan `passes` veya `all tests green` yazma**. Sayıyı test suite inventory olarak ifade et.
+
+Critical E2E hedefleri:
+
+- login/onboarding/profile goals
+- feed
+- N selector → Nerede density → region → time/event → reminder
+- community join/resources + moderator approval
+- Why → project
+- project create + validated pitch upload
+- nGazete reader + spatial sponsored placement + advertiser request/admin approval
+- location/privacy + accessibility states
+
+## 16. Coding-agent çalışma kuralı
+
+Kodlamadan önce:
+
+1. İlgili mevcut ekranı ve kodu incele.
+2. Üst kaynaklarla fark analizi yap.
+3. Kısa plan ve değişecek dosyaları yaz.
+4. İstenen kapsamı uygula.
+5. Typecheck/lint/relevant tests çalıştır.
+6. Görsel UI değişikliğini gerçek viewport'ta doğrula.
+7. Çalıştırmadığın testi geçmiş gibi raporlama.
+
+Ürün vizyonuyla mevcut implementasyon çelişiyorsa implementasyonu kaynak olarak kullanıp vizyonu değiştirme.
