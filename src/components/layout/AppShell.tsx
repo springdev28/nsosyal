@@ -2,7 +2,6 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { FiveNMark } from '@/components/brand/FiveNMark';
-import { FiveNSelector } from '@/components/brand/FiveNSelector';
 import { Avatar, Icon } from '@/components/ui';
 import type { Profile } from '@/types/domain';
 
@@ -148,17 +147,11 @@ function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadC
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
       <div className="flex items-center gap-2 px-3 py-2">
-        <Link href="/feed" className="flex items-center gap-2">
-          <FiveNMark size={30} className="text-accent" />
-          <span className="text-base font-extrabold">
-            nSosyal <span className="text-accent">5N</span>
-          </span>
+        <Link href="/feed" aria-label="nSosyal ana sayfa" className="flex items-center text-accent">
+          <FiveNMark size={34} />
         </Link>
 
         <div className="ml-auto flex items-center gap-1">
-          {/* Isaret panelin uzerinde erisilebilir kalir (spec 4.4/7). */}
-          <FiveNSelector />
-
           <Link
             href="/explore"
             aria-label="Ara"
