@@ -101,16 +101,18 @@
   --warning: #fbbf24;
   --warning-soft: #2e2208;
 
-  /* 5N boyut renkleri - her zaman ikon ve metinle birlikte kullanilir.
-     Temaya bagli: chip zemini bu rengin %12 karisimi oldugu icin acik temada
-     ayni parlak tonlar 1.5:1'e kadar dusuyordu. Her iki temada da en dusuk
-     olculen oran 4.8:1. */
-  --dim-ne: #35d6ee;
-  --dim-nerede: #a78bfa;
+  /* 5N boyut renkleri - tamami nSosyal mavi/cyan ailesinde kalir (ton araligi
+     187-218 derece). Spec 8.1.1 mor/yesil/kirmizi/sari gibi kopuk bir rainbow
+     sistemini acikca yasakliyor: boyutlar birbirinden ikon, etiket, konum ve
+     secili state ile ayrilir, renkle degil. Renk yalnizca ritim tasir.
+     Temaya bagli: chip zemini bu rengin %12 karisimi oldugu icin acik tema
+     ayri degerler kullanir. Bu temada olculen en dusuk oran 5.06:1. */
+  --dim-ne: #4fd8e6;
+  --dim-nerede: #62c4f0;
   --dim-nezaman: #3d9bff;
-  --dim-nasil: #4ade80;
-  --dim-neden: #fb7185;
-  --dim-kim: #fbbf24;
+  --dim-nasil: #86dbe4;
+  --dim-neden: #93baf9;
+  --dim-kim: #63aee0;
 }
 
 @media (prefers-color-scheme: light) {
@@ -142,12 +144,13 @@
     --warning: #9a6700;
     --warning-soft: #fff9e8;
 
+    /* Acik tema, ayni mavi/cyan ailesi. Olculen en dusuk oran 5.37:1. */
     --dim-ne: #0a5b70;
-    --dim-nerede: #5b21b6;
+    --dim-nerede: #0f5578;
     --dim-nezaman: #0a56b8;
-    --dim-nasil: #11632f;
-    --dim-neden: #a30f33;
-    --dim-kim: #7c3508;
+    --dim-nasil: #14607a;
+    --dim-neden: #1a4f9e;
+    --dim-kim: #10527f;
   }
 }
 
@@ -177,12 +180,13 @@
   --warning: #9a6700;
   --warning-soft: #fff9e8;
 
+  /* Acik tema, ayni mavi/cyan ailesi. Olculen en dusuk oran 5.37:1. */
   --dim-ne: #0a5b70;
-  --dim-nerede: #5b21b6;
+  --dim-nerede: #0f5578;
   --dim-nezaman: #0a56b8;
-  --dim-nasil: #11632f;
-  --dim-neden: #a30f33;
-  --dim-kim: #7c3508;
+  --dim-nasil: #14607a;
+  --dim-neden: #1a4f9e;
+  --dim-kim: #10527f;
 }
 
 @theme inline {

@@ -57,7 +57,7 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await expect(page.getByRole('link', { name: /Model Roket Atölyesi/ }).first()).toBeVisible();
   });
 
-  test('pilot ilde ilçe katmanı açılır', async ({ page }) => {
+  test('ilçe verisi olan ilde drill-down açılır', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/explore/map?province=35');
 

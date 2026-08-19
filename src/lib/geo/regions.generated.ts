@@ -89,8 +89,15 @@ export const PROVINCES: readonly Province[] = [
   { code: '81', name: 'Düzce', center: [31.2679, 40.8943] },
 ];
 
-/** Pilot il ilceleri (PROJECT_SPEC 7.4: ilce detayi bir pilot il icin yeterlidir). */
-export const PILOT_PROVINCE_CODE = '35';
+/**
+ * Ilce sinir verisi yuklu olan iller.
+ *
+ * Bu bir urun kisiti degil, veri kapsami bilgisidir: spec 17.18/6 "Izmir
+ * yalnizca ornek veri olabilir, urun kisiti veya ozel pilot sehir degildir"
+ * diyor. Ayni mimari, verisi eklenen her il icin degisiklik gerektirmeden
+ * calisir; liste buyudukce drill-down o illerde de acilir.
+ */
+export const DISTRICT_DATA_PROVINCES: readonly string[] = ['35'];
 
 export const DISTRICTS: readonly District[] = [
   { code: '35-01', provinceCode: '35', name: 'Aliağa' },

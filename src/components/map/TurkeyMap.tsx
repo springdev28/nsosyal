@@ -12,8 +12,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
  * - Arka planda hicbir tile servisi kullanilmaz. Stil tamamen yerel: bir arka
  *   plan rengi + public/geo altindaki GeoJSON katmanlari. Boylece harita
  *   internet olmadan da acilir (PROJECT_SPEC 15.4).
- * - Dolgular nufus gibi bir metrigi temsil etmez; yalnizca sonuc var/yok ve
- *   hover/secili durumlarini gosterir.
+ * - Dolgu, secili konu ve varlik turunun il bazindaki YOGUNLUGUNU tasir
+ *   (spec 17.18/6-7). Olcek tek renklidir: nSosyal mavi/cyan ailesinde koyudan
+ *   aciga giden bes duraklik sirali bir skala, yaninda dusuk-yuksek legend.
+ *   Yogunluk nufus ya da canli kisi konumu degil, secili platform
+ *   varliklarinin bolgesel dagilimidir.
+ * - Secili il yalnizca renkle degil kalin kenarlikla da isaretlenir; hover ve
+ *   secim degerleri okunur metin olarak da yazilir.
  * - Harita klavye kullanicilari icin tek basina yeterli degildir; sayfadaki
  *   liste gorunumu ayni sonuclari erisilebilir bicimde sunar (8.3).
  * - Bireysel kullanicilar hicbir zaman kesin koordinatla gosterilmez (11.1).
@@ -25,18 +30,37 @@ export interface ProvinceMetric {
   total: number;
 }
 
+/**
+ * Yogunluk skalasi. Tek renk ailesi (mavi -> camgobegi), sirali, bes durak.
+ * Harita dolgusu ve legend ayni diziyi okur; ikisi elle senkronlanmaz.
+ */
+const DENSITY_STOPS = [
+  { at: 0, color: '#101b2c' },
+  { at: 0.15, color: '#163553' },
+  { at: 0.4, color: '#1c5580' },
+  { at: 0.7, color: '#2a80b4' },
+  { at: 1, color: '#45c8e0' },
+] as const;
+
+const SELECTED_FILL = '#7fe4f0';
+const HOVER_FILL = '#5cc4e8';
+
+const LEGEND_GRADIENT = `linear-gradient(90deg, ${DENSITY_STOPS.map(
+  ({ at, color }) => `${color} ${Math.round(at * 100)}%`,
+).join(', ')})`;
+
 export function TurkeyMap({
   metrics,
   selectedProvince,
   selectedDistrict,
-  pilotProvinceCode,
+  districtDataProvinces,
   onSelectProvince,
   onSelectDistrict,
 }: {
   metrics: ProvinceMetric[];
   selectedProvince: string | null;
   selectedDistrict: string | null;
-  pilotProvinceCode: string;
+  districtDataProvinces: readonly string[];
   onSelectProvince: (code: string | null) => void;
   onSelectDistrict: (code: string | null) => void;
 }) {
@@ -45,6 +69,8 @@ export function TurkeyMap({
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [districtsLoaded, setDistrictsLoaded] = useState(false);
+  // Hover/secim degerini metin olarak da yaziyoruz: harita tek basina yeterli degil.
+  const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
 
   // Callback'ler her renderda degisebilir; harita olaylari icin sabit referans tutuyoruz.
   const selectProvinceRef = useRef(onSelectProvince);
@@ -111,15 +137,21 @@ export function TurkeyMap({
           type: 'fill',
           source: 'provinces',
           paint: {
+            // Tek renkli sirali skala: yogunluk arttikca koyu laciverten
+            // nSosyal camgobegine gider. Ara duraklar DENSITY_STOPS ile
+            // paylasilir, boylece legend ile harita asla ayrisamaz.
             'fill-color': [
               'case',
               ['boolean', ['feature-state', 'selected'], false],
-              '#35b8a9',
+              SELECTED_FILL,
               ['boolean', ['feature-state', 'hover'], false],
-              '#2d6a7f',
-              ['>', ['coalesce', ['feature-state', 'total'], 0], 0],
-              '#1f3f66',
-              '#16294a',
+              HOVER_FILL,
+              [
+                'interpolate',
+                ['linear'],
+                ['coalesce', ['feature-state', 'density'], 0],
+                ...DENSITY_STOPS.flatMap(({ at, color }) => [at, color]),
+              ],
             ],
             'fill-opacity': 0.92,
           },
@@ -133,8 +165,8 @@ export function TurkeyMap({
             'line-color': [
               'case',
               ['boolean', ['feature-state', 'selected'], false],
-              '#eafaf7',
-              '#3a5480',
+              '#eaf7ff',
+              '#33507a',
             ],
             // Secili il yalnizca renkle degil, kalin kenarlikla da belirtilir.
             'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2.6, 0.6],
@@ -155,6 +187,7 @@ export function TurkeyMap({
       }
       hovered = code;
       if (code) map.setFeatureState({ source: 'provinces', id: code }, { hover: true });
+      setHoveredProvince(code);
     };
 
     map.on('mousemove', 'province-fill', (event) => {
@@ -181,12 +214,18 @@ export function TurkeyMap({
     };
   }, []);
 
-  // Sonuc sayilarini feature-state olarak isle.
+  // Sonuc sayilarini ve normalize edilmis yogunlugu feature-state olarak isle.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
+    // Normalizasyon en yuksek ile deger uzerinden; boylece skala her filtrede
+    // kendi araligina oturur ve az sonuclu bir secimde harita bos gorunmez.
+    const max = metrics.reduce((peak, metric) => Math.max(peak, metric.total), 0);
     for (const metric of metrics) {
-      map.setFeatureState({ source: 'provinces', id: metric.code }, { total: metric.total });
+      map.setFeatureState(
+        { source: 'provinces', id: metric.code },
+        { total: metric.total, density: max > 0 ? metric.total / max : 0 },
+      );
     }
   }, [metrics, ready]);
 
@@ -227,7 +266,7 @@ export function TurkeyMap({
     const map = mapRef.current;
     if (!map || !ready) return;
 
-    const shouldShow = selectedProvince === pilotProvinceCode;
+    const shouldShow = selectedProvince !== null && districtDataProvinces.includes(selectedProvince);
 
     if (!shouldShow) {
       if (map.getLayer('district-line')) map.removeLayer('district-line');
@@ -242,7 +281,7 @@ export function TurkeyMap({
     let cancelled = false;
     void (async () => {
       try {
-        const response = await fetch('/geo/izmir-districts.geojson');
+        const response = await fetch(`/geo/districts-${selectedProvince}.geojson`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const districts = await response.json();
         if (cancelled || !mapRef.current) return;
@@ -253,13 +292,14 @@ export function TurkeyMap({
           type: 'fill',
           source: 'districts',
           paint: {
+            // Ilce katmani da ayni mavi/cyan ailesinde kalir.
             'fill-color': [
               'case',
               ['boolean', ['feature-state', 'selected'], false],
-              '#ffb54a',
+              SELECTED_FILL,
               ['boolean', ['feature-state', 'hover'], false],
-              '#66d2c4',
-              '#189b8d',
+              HOVER_FILL,
+              '#1c5580',
             ],
             'fill-opacity': 0.85,
           },
@@ -269,7 +309,7 @@ export function TurkeyMap({
           type: 'line',
           source: 'districts',
           paint: {
-            'line-color': '#eafaf7',
+            'line-color': '#eaf7ff',
             'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2.4, 0.7],
           },
         });
@@ -292,7 +332,7 @@ export function TurkeyMap({
     return () => {
       cancelled = true;
     };
-  }, [selectedProvince, pilotProvinceCode, ready]);
+  }, [selectedProvince, districtDataProvinces, ready]);
 
   // Secili ilce vurgusu.
   useEffect(() => {
@@ -305,6 +345,11 @@ export function TurkeyMap({
       map.setFeatureState({ source: 'districts', id: code }, { selected: code === selectedDistrict });
     }
   }, [selectedDistrict, districtsLoaded]);
+
+  // Hover varsa onu, yoksa secili ili yaz. Ayni sayi listede de var; bu yalnizca
+  // haritanin uzerinde dururken baglami kaybetmemek icin.
+  const readoutCode = hoveredProvince ?? selectedProvince;
+  const readout = readoutCode ? (metrics.find((m) => m.code === readoutCode) ?? null) : null;
 
   return (
     <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-line">
@@ -332,11 +377,29 @@ export function TurkeyMap({
         </p>
       ) : null}
 
-      {selectedProvince === pilotProvinceCode ? (
-        <p className="absolute bottom-2 left-2 rounded-lg bg-ink-950/85 px-2.5 py-1.5 text-xs text-white">
-          İlçe katmanı açık · pilot il
+      {/* Legend: yogunlugun ne demek oldugunu skalanin kendisiyle soyler. */}
+      <div className="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-ink-950/85 px-2.5 py-2">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-white/70">
+          Seçili filtrede yoğunluk
         </p>
-      ) : null}
+        <div className="mt-1 flex items-center gap-2">
+          <span className="text-[0.65rem] text-white/70">Düşük</span>
+          <span
+            aria-hidden="true"
+            className="h-2 w-24 rounded-full ring-1 ring-white/25"
+            style={{ background: LEGEND_GRADIENT }}
+          />
+          <span className="text-[0.65rem] text-white/70">Yüksek</span>
+        </div>
+        {readout ? (
+          <p className="mt-1.5 text-xs font-medium text-white">
+            {readout.name} · {readout.total.toLocaleString('tr-TR')} sonuç
+          </p>
+        ) : null}
+        {districtsLoaded ? (
+          <p className="mt-1 text-[0.65rem] text-white/70">İlçe katmanı açık</p>
+        ) : null}
+      </div>
     </div>
   );
 }

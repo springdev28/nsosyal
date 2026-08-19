@@ -23,12 +23,12 @@ export function MapExplorer({
   metrics,
   selectedProvince,
   selectedDistrict,
-  pilotProvinceCode,
+  districtDataProvinces,
 }: {
   metrics: ProvinceMetric[];
   selectedProvince: string | null;
   selectedDistrict: string | null;
-  pilotProvinceCode: string;
+  districtDataProvinces: readonly string[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,7 +67,7 @@ export function MapExplorer({
       metrics={metrics}
       selectedProvince={selectedProvince}
       selectedDistrict={selectedDistrict}
-      pilotProvinceCode={pilotProvinceCode}
+      districtDataProvinces={districtDataProvinces}
       onSelectProvince={handleProvince}
       onSelectDistrict={handleDistrict}
     />

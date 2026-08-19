@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
-import { DISTRICTS, PILOT_PROVINCE_CODE, PROVINCES } from '@/lib/geo';
+import { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES } from '@/lib/geo';
 
 import { OnboardingForm } from './OnboardingForm';
 
@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
         topics={getStore().getTopics()}
         provinces={[...PROVINCES]}
         districts={[...DISTRICTS]}
-        pilotProvinceCode={PILOT_PROVINCE_CODE}
+        districtDataProvinces={DISTRICT_DATA_PROVINCES}
         defaultUsername={viewer.username}
         defaultBio={viewer.bio}
       />

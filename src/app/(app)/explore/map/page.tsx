@@ -8,7 +8,7 @@ import { Avatar, Badge, Card, EmptyState, InfoNote, SectionHeader } from '@/comp
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import {
-  PILOT_PROVINCE_CODE,
+  DISTRICT_DATA_PROVINCES,
   districtByCode,
   districtsOfProvince,
   hasDistrictData,
@@ -84,7 +84,7 @@ export default async function MapPage({
         metrics={summaries.map((entry) => ({ code: entry.code, name: entry.name, total: entry.total }))}
         selectedProvince={filters.province}
         selectedDistrict={filters.district}
-        pilotProvinceCode={PILOT_PROVINCE_CODE}
+        districtDataProvinces={DISTRICT_DATA_PROVINCES}
       />
 
       {/* Haritanin erisilebilir esdegeri: ayni veriyi gosteren il listesi. */}
@@ -186,8 +186,7 @@ export default async function MapPage({
               </div>
             ) : (
               <p className="mt-3 text-sm text-fg-subtle">
-                Prototipte ilçe sınırları yalnızca pilot il ({provinceByCode(PILOT_PROVINCE_CODE)?.name}) için
-                yüklüdür. Diğer illerde il düzeyinde keşif yapabilirsin.
+                Bu il için ilçe sınırı henüz yüklü değil. İl düzeyinde keşfe devam edebilirsin.
               </p>
             )}
           </Card>

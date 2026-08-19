@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { signOut } from '@/actions/auth';
 import { Card, SectionHeader } from '@/components/ui';
 import { getViewer, prefersReducedMotion } from '@/lib/auth/session';
-import { DISTRICTS, PILOT_PROVINCE_CODE, PROVINCES } from '@/lib/geo';
+import { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES } from '@/lib/geo';
 
 import { SettingsForm } from './SettingsForm';
 
@@ -23,7 +23,7 @@ export default async function SettingsPage() {
       <SettingsForm
         provinces={[...PROVINCES]}
         districts={[...DISTRICTS]}
-        pilotProvinceCode={PILOT_PROVINCE_CODE}
+        districtDataProvinces={DISTRICT_DATA_PROVINCES}
         initial={{
           bio: viewer.bio,
           intentMode: viewer.intentMode,

@@ -1,7 +1,7 @@
 import type { District, Province } from '@/types/domain';
-import { DISTRICTS, PILOT_PROVINCE_CODE, PROVINCES } from './regions.generated';
+import { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES } from './regions.generated';
 
-export { DISTRICTS, PILOT_PROVINCE_CODE, PROVINCES };
+export { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES };
 
 const PROVINCE_BY_CODE = new Map(PROVINCES.map((p) => [p.code, p]));
 const DISTRICT_BY_CODE = new Map(DISTRICTS.map((d) => [d.code, d]));
@@ -28,9 +28,13 @@ export function districtsOfProvince(provinceCode: string): District[] {
   return DISTRICTS.filter((district) => district.provinceCode === provinceCode);
 }
 
-/** Pilot il disinda ilce verisi yoktur; arayuz bunu kullaniciya acikca soyler. */
+/**
+ * Ilce sinir verisi yuklu mu? Bu bir urun kisiti degil veri kapsamidir; il
+ * secimi her ilde calisir, drill-down yalnizca verisi olan illerde acilir.
+ */
 export function hasDistrictData(provinceCode: string | null | undefined): boolean {
-  return provinceCode === PILOT_PROVINCE_CODE;
+  if (!provinceCode) return false;
+  return DISTRICT_DATA_PROVINCES.includes(provinceCode);
 }
 
 /** Insan okunur konum etiketi. Konum yoksa null doner - "gizli" yazmayiz. */

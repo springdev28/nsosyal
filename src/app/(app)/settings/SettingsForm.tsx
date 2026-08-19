@@ -24,12 +24,12 @@ const INTENTS: Array<{ value: IntentMode; label: string }> = [
 export function SettingsForm({
   provinces,
   districts,
-  pilotProvinceCode,
+  districtDataProvinces,
   initial,
 }: {
   provinces: Province[];
   districts: District[];
-  pilotProvinceCode: string;
+  districtDataProvinces: readonly string[];
   initial: {
     bio: string;
     intentMode: IntentMode;
@@ -175,9 +175,9 @@ export function SettingsForm({
                     </option>
                   ))}
                 </select>
-                {provinceCode && provinceCode !== pilotProvinceCode ? (
+                {provinceCode && !districtDataProvinces.includes(provinceCode) ? (
                   <p className="mt-1 text-xs text-fg-subtle">
-                    Prototipte ilçe verisi yalnızca pilot il için yüklüdür.
+                    Bu il için ilçe sınırı henüz yüklü değil; il düzeyinde kalabilirsin.
                   </p>
                 ) : null}
               </div>

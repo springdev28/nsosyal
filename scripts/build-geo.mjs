@@ -111,7 +111,8 @@ const PLATE_CODES = {
 };
 
 /** Pilot il: demo senaryosu Izmir uzerinden ilerliyor (PROJECT_SPEC 15.3). */
-const PILOT_PROVINCE = { code: '35', name: 'İzmir' };
+// Ilce sinirlari indirilen iller. Liste buyutuldugunde drill-down o illerde de acilir.
+const DISTRICT_DATA_PROVINCE = { code: '35', name: 'İzmir' };
 const IZMIR_DISTRICTS = [
   'Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca',
   'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun',
@@ -294,13 +295,13 @@ async function fetchWithBackoff(url, options, attempts = 4) {
 }
 
 async function buildPilotDistricts() {
-  console.log(`Pilot il ilceleri indiriliyor (${PILOT_PROVINCE.name})...`);
+  console.log(`Ilce sinirlari indiriliyor (${DISTRICT_DATA_PROVINCE.name})...`);
   await mkdir(CACHE_DIR, { recursive: true });
   const features = [];
 
   for (const [index, district] of IZMIR_DISTRICTS.entries()) {
     const url = new URL('https://nominatim.openstreetmap.org/search');
-    url.searchParams.set('q', `${district}, ${PILOT_PROVINCE.name}, Türkiye`);
+    url.searchParams.set('q', `${district}, ${DISTRICT_DATA_PROVINCE.name}, Türkiye`);
     url.searchParams.set('format', 'jsonv2');
     url.searchParams.set('polygon_geojson', '1');
     // Nominatim ilk sirada tren istasyonu gibi noktalari dondurebiliyor;
@@ -358,8 +359,8 @@ async function buildPilotDistricts() {
     features.push({
       type: 'Feature',
       properties: {
-        code: `${PILOT_PROVINCE.code}-${String(index + 1).padStart(2, '0')}`,
-        provinceCode: PILOT_PROVINCE.code,
+        code: `${DISTRICT_DATA_PROVINCE.code}-${String(index + 1).padStart(2, '0')}`,
+        provinceCode: DISTRICT_DATA_PROVINCE.code,
         name: district,
         center: polygonCentroid(geometry),
       },
@@ -372,10 +373,10 @@ async function buildPilotDistricts() {
     type: 'FeatureCollection',
     attribution: '© OpenStreetMap katkıda bulunanlar (ODbL)',
     note: 'Görsel keşif amaçlı, sadeleştirilmiş sınırlar. Resmî idari sınır verisi değildir.',
-    provinceCode: PILOT_PROVINCE.code,
+    provinceCode: DISTRICT_DATA_PROVINCE.code,
     features,
   };
-  await writeFile(join(OUT_DIR, 'izmir-districts.geojson'), JSON.stringify(collection));
+  await writeFile(join(OUT_DIR, `districts-${DISTRICT_DATA_PROVINCE.code}.geojson`), JSON.stringify(collection));
   console.log(`  ${features.length} ilce yazildi.`);
   return features;
 }
@@ -408,7 +409,7 @@ ${provinceRows.join('\n')}
 ];
 
 /** Pilot il ilceleri (PROJECT_SPEC 7.4: ilce detayi bir pilot il icin yeterlidir). */
-export const PILOT_PROVINCE_CODE = '${PILOT_PROVINCE.code}';
+export const DISTRICT_DATA_PROVINCES = ['${DISTRICT_DATA_PROVINCE.code}'];
 
 export const DISTRICTS: readonly District[] = [
 ${districtRows.join('\n')}

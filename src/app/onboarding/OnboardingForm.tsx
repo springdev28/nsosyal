@@ -72,14 +72,14 @@ export function OnboardingForm({
   topics,
   provinces,
   districts,
-  pilotProvinceCode,
+  districtDataProvinces,
   defaultUsername,
   defaultBio,
 }: {
   topics: Topic[];
   provinces: Province[];
   districts: District[];
-  pilotProvinceCode: string;
+  districtDataProvinces: readonly string[];
   defaultUsername: string;
   defaultBio: string;
 }) {
@@ -248,9 +248,9 @@ export function OnboardingForm({
                       </option>
                     ))}
                   </select>
-                  {provinceCode && provinceCode !== pilotProvinceCode ? (
+                  {provinceCode && !districtDataProvinces.includes(provinceCode) ? (
                     <p className="mt-1 text-xs text-fg-subtle">
-                      Prototipte ilçe verisi yalnızca pilot il için yüklüdür. İl düzeyi seçebilirsin.
+                      Bu il için ilçe sınırı henüz yüklü değil; il düzeyi seçebilirsin.
                     </p>
                   ) : null}
                 </div>
