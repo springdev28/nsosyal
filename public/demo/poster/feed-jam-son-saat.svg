@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 960" width="540" height="960" role="img" aria-label="Jam’in son saati">
+  <defs>
+    <radialGradient id="g1" cx="30%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="72%" cy="78%" r="60%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="54" height="54" patternUnits="userSpaceOnUse">
+      <path d="M54 0H0V54" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="#04101f"/>
+  <rect width="100%" height="100%" fill="url(#g1)"/>
+  <rect width="100%" height="100%" fill="url(#g2)"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  <text x="44" y="86" font-family="system-ui, sans-serif" font-size="20" fill="#ffffff" fill-opacity="0.85">🎬 Sentetik demo klibi</text>
+  <text x="44" y="600" font-size="140">🕹️</text>
+  <text x="44" y="700" font-family="system-ui, sans-serif" font-size="46" font-weight="800" fill="#ffffff">Jam’in son saati</text>
+  <text x="44" y="742" font-family="system-ui, sans-serif" font-size="24" fill="#ffffff" fill-opacity="0.85">Gündelik · 22 sn</text>
+  <text x="44" y="904" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff" fill-opacity="0.8">nSosyal 5N</text>
+</svg>

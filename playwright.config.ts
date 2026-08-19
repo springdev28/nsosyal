@@ -6,10 +6,13 @@ const systemChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: true,
+  // Demo modunda tüm senaryolar aynı sunucu içi veri deposunu paylaşır.
+  // Testler arasında sızıntı olmaması için tek işçiyle ve sırayla çalışırlar;
+  // her test öncesi /api/demo/reset ile veri yeniden üretilir.
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 45_000,
   expect: { timeout: 10_000 },

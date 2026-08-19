@@ -3,18 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "description": "nSosyal 5N - baglamsal sosyal kesif katmani prototipi (TEKNOFEST nSosyal Inovasyon 2026)",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "verify": "npm run typecheck && npm run lint && npm run test",
-    "build:geo": "node scripts/build-geo.mjs"
+    "build:geo": "node scripts/build-geo.mjs",
+    "build:media": "tsx scripts/build-demo-media.ts",
+    "build:supabase-seed": "tsx scripts/build-supabase-seed.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -23,12 +28,13 @@
     "next": "^15.5.23",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@playwright/test": "^1.56.0",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.1",
@@ -39,7 +45,7 @@
     "eslint-config-next": "^15.5.23",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.2",
-    "tailwindcss": "^4.0.6",
+    "tailwindcss": "^4.3.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
