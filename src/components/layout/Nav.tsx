@@ -134,9 +134,9 @@ export function MainNav({
         <Link
           href="/feed"
           aria-label="nSosyal ana sayfa"
-          className="mb-3 inline-flex w-fit rounded-xl px-2 py-2 text-accent"
+          className="mb-3 inline-flex w-fit rounded-xl px-2 py-2"
         >
-          <FiveNMark size={44} />
+          <FiveNMark size={44} animated />
         </Link>
 
         <ul className="space-y-0.5">

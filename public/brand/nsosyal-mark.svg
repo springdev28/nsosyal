@@ -1,0 +1,31 @@
+<!--
+  nSosyal baglanti isareti - takimin Figma master dosyasindan disa aktarildi.
+  Dosya: QiXXYwqSFvcx2N2hHLw8DP
+  Dugum: 82:73  ("00 - Cover" > "Logo Concept" > "Connected Logo Hero" > "Group 1")
+  Kapak zemini ve pano dikdortgenleri cikarildi; geometri ve gradyanlar
+  master ile birebir aynidir. Kod karsiligi: src/components/brand/FiveNMark.tsx
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 17 155 149" fill="none">
+  <defs>
+    <radialGradient id="ns-line" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(98.3876 93) rotate(-90) scale(104 47.3725)">
+      <stop offset="0.1875" stop-color="#0B3158"/>
+      <stop offset="0.303474" stop-color="#0F3359"/>
+      <stop offset="0.6" stop-color="#205995"/>
+      <stop offset="0.7" stop-color="#2769B0"/>
+      <stop offset="0.8" stop-color="#2E7ACA"/>
+      <stop offset="0.9" stop-color="#368AE5"/>
+      <stop offset="1" stop-color="#3D9BFF"/>
+    </radialGradient>
+    <linearGradient id="ns-upper" x1="151.414" y1="20.2138" x2="151.414" y2="62.2138" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B4E83"/>
+      <stop offset="1" stop-color="#3D9BFF"/>
+    </linearGradient>
+    <linearGradient id="ns-lower" x1="43.8876" y1="121" x2="43.8876" y2="163" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3D9BFF"/>
+      <stop offset="1" stop-color="#255D99"/>
+    </linearGradient>
+  </defs>
+  <path d="M43.5608 124.714L43.5608 56.6766C43.5608 41.3912 55.952 29 71.2373 29C86.5227 29 98.9139 41.3912 98.9139 56.6766L98.9139 132.464C98.9139 146.961 110.666 158.714 125.164 158.714C139.661 158.714 151.414 146.961 151.414 132.464L151.414 60.2139" stroke="url(#ns-line)" stroke-width="5"/>
+  <path d="M151.414 22.7138C161.299 22.7138 169.414 30.9394 169.414 41.2138C169.414 51.4882 161.299 59.7138 151.414 59.7138C141.529 59.7138 133.414 51.4882 133.414 41.2138C133.414 30.9394 141.529 22.7138 151.414 22.7138Z" stroke="url(#ns-upper)" stroke-width="5"/>
+  <path d="M43.8876 123.5C53.7722 123.5 61.8876 131.726 61.8876 142C61.8876 152.274 53.7722 160.5 43.8876 160.5C34.0029 160.5 25.8876 152.274 25.8876 142C25.8876 131.726 34.0029 123.5 43.8876 123.5Z" stroke="url(#ns-lower)" stroke-width="5"/>
+</svg>

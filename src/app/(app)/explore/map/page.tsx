@@ -81,7 +81,7 @@ export default async function MapPage({
       <DiscoveryFilterBar base={currentPath} state={filters} topics={topics} />
 
       <MapExplorer
-        metrics={summaries.map((entry) => ({ code: entry.code, name: entry.name, total: entry.total }))}
+        metrics={summaries}
         selectedProvince={filters.province}
         selectedDistrict={filters.district}
         districtDataProvinces={DISTRICT_DATA_PROVINCES}

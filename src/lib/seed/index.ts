@@ -32,6 +32,7 @@ import { buildAdRequests, buildNewspaper } from './newspaper';
 import { buildPosts, postId } from './posts';
 import { buildProfiles, profileId } from './profiles';
 import { buildProjectMembers, buildProjectUpdates, buildProjects } from './projects';
+import { buildRegional } from './regional';
 import { buildResources } from './resources';
 import { TOPICS } from './topics';
 import { buildWhyStories } from './why';
@@ -186,10 +187,22 @@ const COMMENTS: Array<{ post: string; author: string; body: string; hoursAgo: nu
 
 export function buildDataset(now: Date): Dataset {
   const profiles = buildProfiles(now);
-  const communities = buildCommunities(now);
-  const posts = buildPosts(now);
-  const projects = buildProjects(now);
-  const events = buildEvents(now);
+
+  /*
+   * Elle yazilmis icerik + Turkiye geneli sentetik dagilim.
+   *
+   * Elle yazilmis kayitlar yalnizca Izmir, Istanbul ve Ankara'yi dolduruyordu;
+   * Nerede haritasi 81 ilin 78'ini ayni renkte ciziyor, yani bir "yogunluk
+   * haritasi" hicbir yogunluk gostermiyordu. `buildRegional` kalan illere
+   * agirliklarina gore topluluk, etkinlik, proje ve paylasim ekler. Elle
+   * yazilmis anlatiyi DEGISTIRMEZ, ustune biner.
+   */
+  const regional = buildRegional(now);
+
+  const communities = [...buildCommunities(now), ...regional.communities];
+  const posts = [...buildPosts(now), ...regional.posts];
+  const projects = [...buildProjects(now), ...regional.projects];
+  const events = [...buildEvents(now), ...regional.events];
   const whyStories = buildWhyStories(now);
   const resources = buildResources(now);
   const { issues, items } = buildNewspaper(now);

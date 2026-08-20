@@ -31,3 +31,4 @@ next-env.d.ts
 /.live.mjs
 /.render.mjs
 /.dbg.mjs
+/.dbg-audit.mjs

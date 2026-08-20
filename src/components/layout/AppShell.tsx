@@ -147,8 +147,8 @@ function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadC
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
       <div className="flex items-center gap-2 px-3 py-2">
-        <Link href="/feed" aria-label="nSosyal ana sayfa" className="flex items-center text-accent">
-          <FiveNMark size={34} />
+        <Link href="/feed" aria-label="nSosyal ana sayfa" className="flex items-center">
+          <FiveNMark size={34} animated />
         </Link>
 
         <div className="ml-auto flex items-center gap-1">

@@ -382,6 +382,64 @@
   font-size: 0.7rem;
 }
 
+/* Harita ipucu balonu. MapLibre kendi acik temali varsayilanini cizer; bu
+   kutu haritanin koyu tuvalinin uzerinde durdugu icin uygulamanin degil
+   HARITANIN paletini kullanir - aksi halde acik temada beyaz zemine beyaz
+   yazi dusuyordu. */
+.ns-map-popup .maplibregl-popup-content {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.6rem;
+  background: rgb(10 15 26 / 0.95);
+  color: #fff;
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.8);
+  border: 1px solid rgb(120 200 230 / 0.35);
+  min-width: 9.5rem;
+}
+
+.ns-map-popup .maplibregl-popup-tip {
+  border-top-color: rgb(10 15 26 / 0.95);
+  border-bottom-color: rgb(10 15 26 / 0.95);
+}
+
+.ns-map-popup__title {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ns-map-popup__total {
+  display: block;
+  font-size: 0.7rem;
+  color: #7fe4f0;
+  margin-top: 0.1rem;
+}
+
+.ns-map-popup__grid {
+  display: grid;
+  gap: 0.1rem;
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  font-size: 0.7rem;
+}
+
+.ns-map-popup__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgb(255 255 255 / 0.78);
+}
+
+.ns-map-popup__row b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.ns-map-popup__empty {
+  color: rgb(255 255 255 / 0.6);
+}
+
 /* 5N secicinin acilma hareketi. Yarim disk sol kenardan yayilir.
    prefers-reduced-motion'da bilesen animasyonu hic uygulamaz. */
 @keyframes ns-arc-in {

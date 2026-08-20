@@ -24,3 +24,4 @@ yeni kayıtla ilişkisi açıkça belirtilir.
 | [0010](0010-kalici-profil-hedefleri-ve-gecici-niyet.md) | Kalıcı profile goals ve transient intent ayrımı | Kabul edildi |
 | [0011](0011-dagitim-hattini-kurmak.md) | Dağıtım bir hat olmalı, elle yükleme değil | Kabul edildi |
 | [0012](0012-5n-secici-kenara-yaslanan-yarim-disk.md) | 5N seçici: kenara yaslanan yarım disk, pencereli yay | Kabul edildi, 0006'yı genişletir |
+| [0013](0013-gercek-marka-vektoru-yogunluk-verisi-ve-gazete-sayfalari.md) | Gerçek marka vektörü, gerçek yoğunluk verisi, gerçek gazete sayfaları | Kabul edildi |

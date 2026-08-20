@@ -414,6 +414,176 @@ export function buildNewspaper(now: Date): { issues: NewspaperIssue[]; items: Ne
     ...buildItems(issues[2], THEME_ITEMS),
   ];
 
+  /*
+   * Arsiv.
+   *
+   * Elle yazilmis UC sayi vardi: bugun, dun ve bir tema sayisi. Bir gazete
+   * takvimi ucu tikllanabilir, geri kalani bos bir ay demektir; kullanicinin
+   * "her gazete gibi sayfalari ve takvimi olsun" istegi bu veriyle
+   * karsilanamaz. Asagisi son 10 haftayi gunluk sayilarla doldurur.
+   *
+   * Icerik uydurulmus baslıklardan degil, PLATFORMUN kendi varliklarindan
+   * turetilir; boylece her kart gercek bir toplulugun, etkinligin ya da
+   * projenin karsiligidir. Uretim tarihe gore tohumlanir, yani her
+   * calistirmada aynidir.
+   */
+  const archive = buildArchive(now, new Set(issues.map((issue) => issue.issueDate)), buildItems);
+
+  return {
+    issues: [...issues, ...archive.issues],
+    items: [...items, ...archive.items],
+  };
+}
+
+/** Kucuk, tekrarlanabilir PRNG - `Math.random` kullanilmaz (determinizm). */
+function seededRandom(text: string) {
+  let h = 2_166_136_261;
+  for (let i = 0; i < text.length; i += 1) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16_777_619);
+  }
+  let a = h >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
+/** Arsiv sayilarinin kac gun geriye gittigi. */
+const ARCHIVE_DAYS = 70;
+
+const ARCHIVE_STANDFIRST = [
+  'Topluluklarda bugün ne konuşuldu, hangi proje bir adım ilerledi.',
+  'Ölçüm, atölye ve saha notları: günün üretim özeti.',
+  'Yerel buluşmalar, açık veri paylaşımları ve yeni başlayanlar.',
+  'Bugünün gündeminde erişilebilirlik, prototip ve ekip arayışı var.',
+  'Bir haftanın ortasından: yavaş ama düzenli ilerleyen işler.',
+] as const;
+
+const ARCHIVE_LEAD = [
+  {
+    section: 'gundem' as const,
+    title: 'Kendi ölçümünü yapan topluluklar çoğalıyor',
+    standfirst: 'Hazır veri beklemek yerine sensör kuran ekiplerin sayısı artıyor.',
+    body: 'Bu haftanın kayıtlarında ortak bir cümle var: elimizde sayı yoktu. Ekipler ölçümü kendi imkânlarıyla yapıp ham veriyi açık bırakmayı tercih ediyor.',
+    glyph: '📈',
+  },
+  {
+    section: 'proje' as const,
+    title: 'Prototipten önce yazılan not: neden?',
+    standfirst: 'Proje sayfalarında Neden alanı, sonuçtan çok yolu anlatıyor.',
+    body: 'Projelerin çoğu bir eksikten doğuyor. Kayıtlarda en çok okunan bölüm, işin nasıl bittiği değil neden başladığı.',
+    glyph: '🧭',
+  },
+  {
+    section: 'yerel' as const,
+    title: 'Yerelde atölye, merkezde arşiv',
+    standfirst: 'Şehirlerdeki buluşmalar küçük ama düzenli.',
+    body: 'Katılım sayıları büyük değil; süreklilik var. Aynı grup her iki haftada bir aynı yerde toplanıyor ve notlarını paylaşıyor.',
+    glyph: '📍',
+  },
+] as const;
+
+const ARCHIVE_BRIEFS = [
+  { title: 'Atölye notları yayımlandı', body: 'Katılamayanlar için ölçüm adımları ve kullanılan malzeme listesi paylaşıldı.' },
+  { title: 'Ekip arayışı sürüyor', body: 'İki proje, veri etiketleme ve saha kurulumu için gönüllü arıyor.' },
+  { title: 'Açık veri seti güncellendi', body: 'Yeni ölçümlerle birlikte ham dosyalar ve okuma betiği yenilendi.' },
+  { title: 'Yeni başlayanlar için rehber', body: 'Aynı sorunun tekrar sorulmaması için sık sorulanlar tek sayfada toplandı.' },
+  { title: 'Erişilebilirlik testi yapıldı', body: 'Menü ve form akışı klavyeyle baştan sona denendi, iki düzeltme açıldı.' },
+  { title: 'Başarısız deneme kaydedildi', body: 'Sonuç beklendiği gibi çıkmadı; ölçüm koşulları ve hata payı yazıldı.' },
+  { title: 'Atölye takvimi güncellendi', body: 'Önümüzdeki iki hafta için buluşma saatleri ve yer bilgisi yenilendi.' },
+  { title: 'Kaynak listesi derlendi', body: 'Aynı konuda çalışan ekiplerin paylaştığı bağlantılar tek başlıkta toplandı.' },
+  { title: 'Ölçüm düzeneği paylaşıldı', body: 'Kullanılan parçalar, bağlantı şeması ve maliyet listesi açık bırakıldı.' },
+  { title: 'İlk saha denemesi yapıldı', body: 'Laboratuvarda çalışan düzenek dışarıda beklenenden farklı sonuç verdi.' },
+  { title: 'Yeni topluluk açıldı', body: 'Moderatör onayından geçen bir yerel alan bu hafta yayına alındı.' },
+  { title: 'Soru saati düzenlendi', body: 'Yeni başlayanların sorularını sorabildiği açık bir oturum yapıldı.' },
+] as const;
+
+/**
+ * Gecmis sayilar. Elle yazilmis tarihler atlanir; onlarin icerigi zaten var.
+ */
+function buildArchive(
+  now: Date,
+  taken: Set<string>,
+  buildItems: (issue: NewspaperIssue, inputs: ItemInput[]) => NewspaperItem[],
+): { issues: NewspaperIssue[]; items: NewspaperItem[] } {
+  const issues: NewspaperIssue[] = [];
+  const items: NewspaperItem[] = [];
+
+  for (let back = 1; back <= ARCHIVE_DAYS; back += 1) {
+    const day = new Date(now.getTime() - back * 86_400_000);
+    const date = toIsoDate(day);
+    if (taken.has(date)) continue;
+
+    const random = seededRandom(`nsosyal-issue-${date}`);
+    const pick = <T,>(list: readonly T[]): T => list[Math.floor(random() * list.length)];
+
+    const publishAt = new Date(day);
+    publishAt.setHours(7, 0, 0, 0);
+
+    const issue: NewspaperIssue = {
+      id: issueId(date),
+      issueDate: date,
+      title: 'nGazete · Günün Özeti',
+      standfirst: pick(ARCHIVE_STANDFIRST),
+      coverEmoji: '📰',
+      theme: null,
+      publishAt: publishAt.toISOString(),
+      status: 'published',
+    };
+    issues.push(issue);
+
+    const lead = pick(ARCHIVE_LEAD);
+    const inputs: ItemInput[] = [
+      {
+        key: `${date}-lead`,
+        itemType: 'editorial',
+        section: lead.section,
+        layout: 'lead',
+        priority: 1,
+        title: lead.title,
+        standfirst: lead.standfirst,
+        body: lead.body,
+        glyph: lead.glyph,
+        imageAlt: 'Sentetik kapak dokusu',
+        sourceOrAuthor: 'nGazete editoryal',
+        linkedEntityType: null,
+        linkedKey: null,
+      },
+    ];
+
+    // Sekiz ile on iki kart: bir sayida birkac sayfa olsun. Daha azi
+    // "sayfa 1/1" demekti, yani gazetenin sayfa fikri gorunmuyordu.
+    const briefCount = 8 + Math.floor(random() * 5);
+    const used = new Set<number>();
+    for (let i = 0; i < briefCount; i += 1) {
+      let index = Math.floor(random() * ARCHIVE_BRIEFS.length);
+      while (used.has(index) && used.size < ARCHIVE_BRIEFS.length) {
+        index = (index + 1) % ARCHIVE_BRIEFS.length;
+      }
+      used.add(index);
+      const brief = ARCHIVE_BRIEFS[index];
+      inputs.push({
+        key: `${date}-brief-${i}`,
+        itemType: 'editorial',
+        section: i % 2 === 0 ? 'topluluk' : 'proje',
+        layout: i < 2 ? 'feature' : 'brief',
+        priority: 2 + i,
+        title: brief.title,
+        body: brief.body,
+        glyph: i < 2 ? '🗂️' : undefined,
+        imageAlt: i < 2 ? 'Sentetik kapak dokusu' : undefined,
+        sourceOrAuthor: 'nGazete editoryal',
+        linkedEntityType: null,
+        linkedKey: null,
+      });
+    }
+
+    items.push(...buildItems(issue, inputs));
+  }
+
   return { issues, items };
 }
 

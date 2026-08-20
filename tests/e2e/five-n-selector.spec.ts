@@ -108,10 +108,35 @@ test.describe('5N secici', () => {
     expect(hubBox.y).toBeGreaterThanOrEqual(0);
     expect(hubBox.y + hubBox.height).toBeLessThanOrEqual(viewport.height);
 
-    // 5. Yayin uclari gercekten soluyor: en uzaktaki boyut bosluk kaplamaz.
-    //    (Spec 4.4/2 - "uclar saydamlasir ve viewport icinde kaybolur".)
-    const farItem = page.getByRole('menuitem', { name: /^Neden —/ });
-    expect(Number(await farItem.evaluate((el) => getComputedStyle(el).opacity))).toBe(0);
+    // 5. Yayin uclari gercekten soluyor (spec 4.4/2). Uctaki yuva secim
+    //    noktasindan iki adim uzaktadir ve belirgin sekilde saydamdir.
+    const farItem = page.getByRole('menuitem', { name: /^Ne zaman —/ });
+    const farOpacity = Number(await farItem.evaluate((el) => getComputedStyle(el).opacity));
+    expect(farOpacity).toBeGreaterThan(0);
+    expect(farOpacity).toBeLessThan(0.35);
+  });
+
+  test('yay sonsuz doner: son boyuttan sonra yeniden ilki gelir', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/explore');
+    await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
+
+    // Bes boyut da bir kez gecilir ve basa donulur. Onceki surumde dizi iki
+    // ucunda duruyordu: "Ne" secili iken ustunde bos bir yay parcasi kaliyor,
+    // "Neden"de ise donus tamamen tikaniyordu.
+    const order = [/^Nerede —/, /^Ne zaman —/, /^Nasıl —/, /^Neden —/, /^Ne —/];
+    for (const name of order) {
+      await page.keyboard.press('ArrowDown');
+      await expect(page.getByRole('menuitem', { name })).toBeFocused();
+    }
+
+    // Ters yon de sarar: "Ne"den yukari gitmek son boyuta goturur.
+    await page.keyboard.press('ArrowUp');
+    await expect(page.getByRole('menuitem', { name: /^Neden —/ })).toBeFocused();
+
+    // Yayin ustunde de altinda da yuva vardir; hicbiri bos degil.
+    const above = page.getByRole('menuitem', { name: /^Nasıl —/ });
+    expect(Number(await above.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.5);
   });
 
   test('gorunen bir secenege tek dokunus onu secer', async ({ page }) => {

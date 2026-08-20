@@ -54,14 +54,23 @@ const PANEL_R = 188;
 const ORBIT_R = 128;
 /** Oge dugmesinin capi. Dokunma hedefi icin 44px'in uzerinde. */
 const ITEM_D = 56;
-/** Ogeler arasi acisal mesafe. Ayni anda ~3 tanesi net gorunur. */
-const STEP = 36;
+/**
+ * Ogeler arasi acisal mesafe.
+ *
+ * Dizi KAPALIDIR: son ogeden sonra yeniden ilki gelir, yani yayin bir ucu
+ * yoktur ve "Ne" secili iken ustunde bosluk kalmaz. Aralik 360/5 = 72
+ * olsaydi komsu ogeler solma penceresinin kenarina dusup hayalet gibi
+ * gorunurdu; 40 derece hem bes yuvayi da doldurur hem de ortadaki uc ogeyi
+ * okunakli birakir.
+ */
+const STEP = 40;
 /**
  * Gorunur pencere. Bu acinin otesindeki oge tamamen kaybolur; oncesinde
- * kademeli olarak solar - spec'in "uclar saydamlasir" kurali.
+ * kademeli olarak solar - spec'in "uclar saydamlasir" kurali. Pencere
+ * +-90 derecedir: yarim daire gorunur, geri kalani yayin arkasindadir.
  */
-const FADE_FROM = 38;
-const FADE_TO = 88;
+const FADE_FROM = 34;
+const FADE_TO = 90;
 
 /** Gobek dugmesinin capi. Yayin duz kenarina yaslanir, kirpilmaz. */
 const HUB_D = 72;
@@ -82,8 +91,24 @@ const TRACK_PATH = (() => {
   const rad = (deg: number) => (deg * Math.PI) / 180;
   const x = (deg: number) => (CX + ORBIT_R * Math.cos(rad(deg))).toFixed(2);
   const y = (deg: number) => (CY + ORBIT_R * Math.sin(rad(deg))).toFixed(2);
-  return `M ${x(-FADE_TO)} ${y(-FADE_TO)} A ${ORBIT_R} ${ORBIT_R} 0 0 1 ${x(FADE_TO)} ${y(FADE_TO)}`;
+  const end = FADE_TO - 0.01; // tam 90 derece cizimde dejenere yay uretir
+  return `M ${x(-end)} ${y(-end)} A ${ORBIT_R} ${ORBIT_R} 0 0 1 ${x(end)} ${y(end)}`;
 })();
+
+/**
+ * Bir ogenin secim noktasina gore ISARETLI dairesel mesafesi.
+ *
+ * Dizi kapali oldugu icin dogrudan `(index - activeIndex) * STEP` yanlistir:
+ * bes ogelik bir halkada 4. oge, 0. ogenin 288 derece ilerisi degil 72
+ * derece GERISIDIR. Bu duzeltme olmadan yay bir uca dayaniyor ve aktif oge
+ * dizinin basindayken ustunde kocaman bir bosluk kaliyordu.
+ */
+function offsetAngle(index: number, activeIndex: number): number {
+  const n = DIMENSIONS.length;
+  let steps = (((index - activeIndex) % n) + n) % n;
+  if (steps > n / 2) steps -= n;
+  return steps * STEP;
+}
 
 /** Uclara dogru solma. 1 = tam gorunur, 0 = yayin disinda. */
 function fadeFor(angle: number): number {
@@ -227,8 +252,12 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, close]);
 
+  /** Sonsuz donus: dizinin sonundan sonra yeniden basi gelir. */
   const move = useCallback((steps: number) => {
-    setActiveIndex((i) => Math.min(DIMENSIONS.length - 1, Math.max(0, i + steps)));
+    setActiveIndex((i) => {
+      const n = DIMENSIONS.length;
+      return (((i + steps) % n) + n) % n;
+    });
   }, []);
 
   function onWheel(e: React.WheelEvent) {
@@ -249,9 +278,10 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     const d = dragRef.current;
     if (d && d.id === e.pointerId && Math.abs(e.clientY - d.y) > 6) draggedRef.current = true;
     if (!d || d.id !== e.pointerId) return;
-    // Dikey surukleme yayi cevirir: ~64px bir oge.
+    // Dikey surukleme yayi cevirir: ~64px bir oge. Sinir yok, yay sarar.
     const steps = Math.round((e.clientY - d.y) / 64);
-    setActiveIndex(Math.min(DIMENSIONS.length - 1, Math.max(0, d.from + steps)));
+    const n = DIMENSIONS.length;
+    setActiveIndex((((d.from + steps) % n) + n) % n);
   }
 
   function onPointerUp() {
@@ -287,7 +317,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
         aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}
         aria-label="5N boyut seçici"
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-accent transition-colors hover:bg-bg-hover"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl transition-colors hover:bg-bg-hover"
       >
         <FiveNMark size={44} animated={!reducedMotion} />
       </button>
@@ -396,7 +426,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   className="absolute inset-0"
                 >
                   {DIMENSIONS.map((dimension, index) => {
-                    const angle = (index - activeIndex) * STEP;
+                    const angle = offsetAngle(index, activeIndex);
                     const opacity = fadeFor(angle);
                     const pos = polar(angle, ORBIT_R);
                     const isActive = index === activeIndex;
@@ -479,7 +509,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   type="button"
                   onClick={() => close(true)}
                   aria-label="Seçiciyi kapat"
-                  className="absolute flex -translate-y-1/2 items-center justify-center rounded-full bg-bg-sunken text-accent ring-1 ring-[var(--border-strong)] transition-colors hover:bg-bg-hover"
+                  className="absolute flex -translate-y-1/2 items-center justify-center rounded-full bg-bg-sunken ring-1 ring-[var(--border-strong)] transition-colors hover:bg-bg-hover"
                   style={{ left: 0, top: CY, width: HUB_D, height: HUB_D }}
                 >
                   <FiveNMark size={40} animated={!reducedMotion} />

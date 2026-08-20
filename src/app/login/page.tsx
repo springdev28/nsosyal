@@ -29,7 +29,7 @@ export default async function LoginPage({
           metin karosu duruyordu. Isaretin kendisi Figma master vector'undan
           gelir (spec 17.18/2) ve baglanti parcacigiyla birlikte gosterilir.
         */}
-        <span aria-hidden="true" className="mx-auto mb-3 flex justify-center text-accent">
+        <span aria-hidden="true" className="mx-auto mb-3 flex justify-center">
           <FiveNMark size={72} animated />
         </span>
         <h1 className="text-3xl font-bold tracking-tight">

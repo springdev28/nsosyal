@@ -171,22 +171,58 @@ test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
     await expect(dialog).toBeHidden();
   });
 
-  test('sponsorlu kartlar açıkça etiketlenir ve hedefe bağlanır', async ({ page }) => {
+  test('ücretli yerleşim bir kez açıklanır, envanter okuyucuya gösterilmez', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/newspaper');
 
     await expect(page.getByRole('heading', { name: 'nGazete', level: 1 })).toBeVisible();
 
-    // Sponsorlu kartlar gazete grid'inin ICINDE durur. Spec 7.9 ayri bir
+    // Sponsorlu kartlar gazete kompozisyonunun ICINDE durur. Spec 7.9 ayri bir
     // "ucretli alanlar" listesini ismen yasakliyor; o basligin geri gelmesi
     // kurali sessizce bozardi.
     await expect(page.getByRole('heading', { name: 'Ücretli alanlar' })).toHaveCount(0);
 
-    const sponsored = page.getByText('Sponsorlu');
-    expect(await sponsored.count()).toBeGreaterThan(0);
+    // Aciklama TEK yerde, masthead altinda durur. Her kartin ustunde
+    // tekrarlanan rozet gurultuydu; ama aciklamayi hic yazmamak ucretli
+    // icerigi editoryal icerikten ayirt edilemez yapardi.
+    await expect(page.getByText(/Bu sayıda ücretli yerleşimler var/)).toBeVisible();
+
+    // Sponsor kendi adiyla isaretlidir.
+    await expect(page.getByText(/Ege Teknopark \(Demo\)/).first()).toBeVisible();
+
+    // Reklam envanteri (olcu, yerlesim kodu) reklamveren tarafinin verisidir;
+    // okuyucunun ekraninda gorunmez.
+    await expect(page.getByText(/\d+×\d+ · Bölüm içi/)).toHaveCount(0);
 
     await page.getByRole('link', { name: /Demo Günü başvuruları açık/ }).first().click();
     await expect(page).toHaveURL(/\/events\//);
+  });
+
+  test('gazetenin takvimi ve sayfaları vardır, varsayılan bugündür', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/newspaper');
+
+    // Takvim: arsive erisim uc tarih rozeti degil, gercek bir ay izgarasi.
+    const calendar = page.getByRole('navigation', { name: 'Gazete arşivi takvimi' });
+    await expect(calendar).toBeVisible();
+
+    // Varsayilan sayi bugunun sayisidir.
+    await expect(page.getByText('Bugünün sayısı')).toBeVisible();
+
+    // Gecmis bir gune tiklamak o gunun sayisini acar.
+    const pastDay = calendar.getByRole('link', { name: /^12 —/ });
+    await pastDay.click();
+    await expect(page).toHaveURL(/date=\d{4}-\d{2}-12/);
+    await expect(page.getByText('Bugünün sayısı')).toHaveCount(0);
+
+    // Sayfalar: bir sayi tek bir kaydirma seridi degildir.
+    const pages = page.getByRole('navigation', { name: 'Gazete sayfaları' });
+    await expect(pages).toBeVisible();
+    await expect(page.getByText(/Sayfa 1\/[2-9]/)).toBeVisible();
+
+    await pages.getByRole('link', { name: 'Sayfa 2' }).click();
+    await expect(page).toHaveURL(/sayfa=2/);
+    await expect(page.getByText(/Sayfa 2\/[2-9]/)).toBeVisible();
   });
 
   test('gazete kart listesi değil, gerçek bir gazete kompozisyonu', async ({ page }) => {

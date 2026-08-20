@@ -28,6 +28,13 @@ export interface ProvinceMetric {
   code: string;
   name: string;
   total: number;
+  /** Ipucu balonundaki tur kirilimi. Toplam tek basina "neyin" yogun oldugunu soylemiyordu. */
+  communities: number;
+  events: number;
+  projects: number;
+  posts: number;
+  organizations: number;
+  people: number;
 }
 
 /**
@@ -44,6 +51,21 @@ const DENSITY_STOPS = [
 
 const SELECTED_FILL = '#7fe4f0';
 const HOVER_FILL = '#5cc4e8';
+
+/**
+ * Turkiye'nin kabaca kapsama kutusu.
+ *
+ * Onceki surum sabit bir merkez ve zoom (4.6) kullaniyordu. Zoom, kapsayicinin
+ * boyutundan bagimsiz oldugu icin harita hicbir ekrana tam oturmuyordu: genis
+ * masaustunde iki yanda bosluk kaliyor, dar kolonda ise dogu ve bati kirpiliyordu.
+ * `fitBounds` kapsayiciyi olcup zoom'u kendisi secer.
+ */
+const TURKEY_BOUNDS: [[number, number], [number, number]] = [
+  [25.5, 35.6],
+  [45.0, 42.4],
+];
+
+const FIT_PADDING = { top: 24, bottom: 56, left: 24, right: 24 };
 
 const LEGEND_GRADIENT = `linear-gradient(90deg, ${DENSITY_STOPS.map(
   ({ at, color }) => `${color} ${Math.round(at * 100)}%`,
@@ -77,6 +99,13 @@ export function TurkeyMap({
   const selectDistrictRef = useRef(onSelectDistrict);
   selectProvinceRef.current = onSelectProvince;
   selectDistrictRef.current = onSelectDistrict;
+  // Ipucu balonu harita olaylarindan okunur; olaylar bir kez baglandigi icin
+  // guncel metrikleri bir ref uzerinden gorurler.
+  const metricsRef = useRef(metrics);
+  metricsRef.current = metrics;
+  const selectedProvinceRef = useRef(selectedProvince);
+  selectedProvinceRef.current = selectedProvince;
+  const popupRef = useRef<maplibregl.Popup | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -91,9 +120,9 @@ export function TurkeyMap({
         sources: {},
         layers: [{ id: 'arka-plan', type: 'background', paint: { 'background-color': '#0b1b34' } }],
       },
-      center: [35.2, 39.0],
-      zoom: 4.6,
-      minZoom: 3.6,
+      bounds: TURKEY_BOUNDS,
+      fitBoundsOptions: { padding: FIT_PADDING },
+      minZoom: 3,
       maxZoom: 9,
       attributionControl: false,
       // Kucuk ekranlarda sayfa kaydirmayi engellememesi icin.
@@ -181,6 +210,49 @@ export function TurkeyMap({
 
     let hovered: string | null = null;
 
+    /*
+     * Ipucu balonu. Onceki surumde imlecin altinda hicbir sey yoktu; tek geri
+     * bildirim legend kosesindeki kucuk satirdi, yani kullanici bir ile bakip
+     * gozunu koseye kaydirmak zorundaydi. Balon ilin adini ve TUR KIRILIMINI
+     * gosterir: toplam tek basina neyin yogun oldugunu soylemiyor.
+     */
+    const popup = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 10,
+      className: 'ns-map-popup',
+    });
+    popupRef.current = popup;
+
+    const tooltipHtml = (code: string) => {
+      const metric = metricsRef.current.find((entry) => entry.code === code);
+      if (!metric) return '';
+      const rows: Array<[string, number]> = [
+        ['Topluluk', metric.communities],
+        ['Etkinlik', metric.events],
+        ['Proje', metric.projects],
+        ['Paylaşım', metric.posts],
+        ['Kurum', metric.organizations],
+        ['Kişi', metric.people],
+      ];
+      const filled = rows.filter(([, value]) => value > 0);
+      const escape = (text: string) =>
+        text.replace(/[&<>"]/g, (ch) =>
+          ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&quot;',
+        );
+
+      const body = filled.length
+        ? filled
+            .map(
+              ([label, value]) =>
+                `<span class="ns-map-popup__row"><span>${label}</span><b>${value.toLocaleString('tr-TR')}</b></span>`,
+            )
+            .join('')
+        : '<span class="ns-map-popup__empty">Bu filtrede sonuç yok</span>';
+
+      return `<strong class="ns-map-popup__title">${escape(metric.name)}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} sonuç</span><span class="ns-map-popup__grid">${body}</span>`;
+    };
+
     const setHover = (code: string | null) => {
       if (hovered && hovered !== code) {
         map.setFeatureState({ source: 'provinces', id: hovered }, { hover: false });
@@ -195,11 +267,14 @@ export function TurkeyMap({
       const code = feature?.properties?.code as string | undefined;
       map.getCanvas().style.cursor = 'pointer';
       setHover(code ?? null);
+      if (code) popup.setLngLat(event.lngLat).setHTML(tooltipHtml(code)).addTo(map);
+      else popup.remove();
     });
 
     map.on('mouseleave', 'province-fill', () => {
       map.getCanvas().style.cursor = '';
       setHover(null);
+      popup.remove();
     });
 
     map.on('click', 'province-fill', (event) => {
@@ -208,7 +283,24 @@ export function TurkeyMap({
       if (code) selectProvinceRef.current(code);
     });
 
+    /*
+     * Kapsayici boyu degistiginde (kenar cubugunun acilmasi, ekran donmesi,
+     * pencere yeniden boyutlandirma) MapLibre kendiliginden yeniden olcmez ve
+     * harita ya kirpilir ya da tuvalin bir kismi bos kalir. Secim yokken
+     * yeniden oturtuyoruz; secim varken kullanicinin kadrajini bozmuyoruz.
+     */
+    const observer = new ResizeObserver(() => {
+      map.resize();
+      if (!selectedProvinceRef.current) {
+        map.fitBounds(TURKEY_BOUNDS, { padding: FIT_PADDING, duration: 0 });
+      }
+    });
+    observer.observe(containerRef.current);
+
     return () => {
+      observer.disconnect();
+      popup.remove();
+      popupRef.current = null;
       map.remove();
       mapRef.current = null;
     };
@@ -242,7 +334,7 @@ export function TurkeyMap({
     }
 
     if (!selectedProvince) {
-      map.easeTo({ center: [35.2, 39.0], zoom: 4.6, duration: 600 });
+      map.fitBounds(TURKEY_BOUNDS, { padding: FIT_PADDING, duration: 600 });
       return;
     }
 
