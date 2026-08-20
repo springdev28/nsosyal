@@ -136,7 +136,9 @@ test.describe('5N secici', () => {
 
     // Yayin ustunde de altinda da yuva vardir; hicbiri bos degil.
     const above = page.getByRole('menuitem', { name: /^Nasıl —/ });
-    expect(Number(await above.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.5);
+    await expect
+      .poll(async () => Number(await above.evaluate((el) => getComputedStyle(el).opacity)))
+      .toBeGreaterThan(0.5);
   });
 
   test('gorunen bir secenege tek dokunus onu secer', async ({ page }) => {

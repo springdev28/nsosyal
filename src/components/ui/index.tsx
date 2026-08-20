@@ -276,9 +276,17 @@ export function SectionHeader({
   as?: 'h1' | 'h2' | 'h3';
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+    <div
+      className={`${Tag === 'h1' ? 'mb-5 border-b border-line/70 pb-4' : 'mb-3'} flex flex-wrap items-end justify-between gap-3`}
+    >
       <div className="min-w-0">
-        <Tag className={Tag === 'h1' ? 'text-[1.6rem] font-extrabold' : 'text-[1.05rem] font-bold'}>
+        <Tag
+          className={
+            Tag === 'h1'
+              ? 'editorial-heading text-[2rem] font-black sm:text-[2.35rem]'
+              : 'text-[1.08rem] font-bold'
+          }
+        >
           {title}
         </Tag>
         {description ? <p className="mt-1 text-sm text-fg-muted">{description}</p> : null}

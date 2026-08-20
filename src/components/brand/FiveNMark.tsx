@@ -7,9 +7,10 @@ import { useId } from 'react';
  *
  * KAYNAK: takimin Figma master dosyasi QiXXYwqSFvcx2N2hHLw8DP,
  * "00 - Cover" > "Logo Concept" > "Connected Logo Hero" > "Group 1"
- * (dugum 82:73). Asagidaki uc path ve uc gradyan o gruptan SVG olarak disa
- * aktarilip birebir kopyalanmistir; disa aktarilan dosya provenans icin
- * `public/brand/nsosyal-mark.svg` altinda duruyor.
+ * (dugum 82:73). Asagidaki uc path o gruptan SVG olarak disa aktarilip birebir
+ * kopyalanmistir; disa aktarilan dosya provenans icin
+ * `public/brand/nsosyal-mark.svg` altinda durur. Renkler, takim tarafindan
+ * verilen turkuaz-kobalt referansina gore geometriye dokunmadan guncellenir.
  *
  * DIKKAT - bu dosya bir kez YANLIS isaretle dolduruldu. Onceki surum ayni
  * dosyanin baska bir dugumunden ("Brand Mark / Hero", 74:2) geliyordu ve
@@ -21,12 +22,12 @@ import { useId } from 'react';
  *     yukari). Kubik "S" degildir.
  *   - Iki halka geometrik olarak esdegerdir (rx 18, ry 18.5, stroke 5) ve
  *     cizginin iki ucunda durur: sol ALTTA ve sag USTTE.
- *   - Isaret TEK RENK DEGILDIR. Cizgi lacivertten (#0B3158) parlak maviye
- *     (#3D9BFF) giden bir radial gradyan tasir; halkalar da kendi lineer
- *     gradyanlarini tasir. `currentColor` ile boyamak markayi bozar.
+ *   - Isaret TEK RENK DEGILDIR. Cizgi turkuazdan kobalt maviye giden bir
+ *     gradyan tasir; halkalar da ayni paletin uc renklerini kullanir.
+ *     `currentColor` ile boyamak markayi bozar.
  *
- * Geometriyi elle duzeltmeyin. Marka degisirse master'dan yeniden disa
- * aktarip bu sabitleri degistirin (PROJECT_SPEC 17.18/2).
+ * Geometriyi elle duzeltmeyin. Marka geometrisi degisirse master'dan yeniden
+ * disa aktarip bu sabitleri degistirin (PROJECT_SPEC 17.18/2).
  */
 
 /** Master'dan birebir: baglanti cizgisi (sol alt halkadan sag ust halkaya). */
@@ -48,8 +49,8 @@ const STROKE_W = 5;
  */
 const VIEW = { x: 20, y: 17, w: 155, h: 149 } as const;
 
-/** Master'daki parcacik: camgobegi, kendi renginde glow. */
-const PARTICLE_FILL = '#35D6EE';
+/** Ayri motion katmani: marka paletinin turkuazi, kendi renginde glow. */
+const PARTICLE_FILL = '#39C5E6';
 
 export function FiveNMark({
   size = 40,
@@ -99,23 +100,19 @@ export function FiveNMark({
       className={className}
     >
       <defs>
-        {/* Master'dan birebir: cizginin radial gradyani. */}
-        <radialGradient
+        {/* Geometri master'dan; renkler guncel turkuaz-kobalt marka paleti. */}
+        <linearGradient
           id={lineId}
-          cx="0"
-          cy="0"
-          r="1"
+          x1="43.8876"
+          y1="151"
+          x2="157"
+          y2="30"
           gradientUnits="userSpaceOnUse"
-          gradientTransform="translate(98.3876 93) rotate(-90) scale(104 47.3725)"
         >
-          <stop offset="0.1875" stopColor="#0B3158" />
-          <stop offset="0.303474" stopColor="#0F3359" />
-          <stop offset="0.6" stopColor="#205995" />
-          <stop offset="0.7" stopColor="#2769B0" />
-          <stop offset="0.8" stopColor="#2E7ACA" />
-          <stop offset="0.9" stopColor="#368AE5" />
-          <stop offset="1" stopColor="#3D9BFF" />
-        </radialGradient>
+          <stop stopColor="#39C5E6" />
+          <stop offset="0.52" stopColor="#5792FF" />
+          <stop offset="1" stopColor="#3857F2" />
+        </linearGradient>
 
         <linearGradient
           id={upperId}
@@ -125,8 +122,8 @@ export function FiveNMark({
           y2="62.2138"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#1B4E83" />
-          <stop offset="1" stopColor="#3D9BFF" />
+          <stop stopColor="#3857F2" />
+          <stop offset="1" stopColor="#5792FF" />
         </linearGradient>
 
         <linearGradient
@@ -137,8 +134,8 @@ export function FiveNMark({
           y2="163"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#3D9BFF" />
-          <stop offset="1" stopColor="#255D99" />
+          <stop stopColor="#39C5E6" />
+          <stop offset="1" stopColor="#5792FF" />
         </linearGradient>
       </defs>
 
@@ -164,12 +161,12 @@ export function FiveNMark({
             fill={PARTICLE_FILL}
             filter={`url(#${glowId})`}
           >
-            <animateMotion dur="2.4s" repeatCount="indefinite" path={LINK_PATH} />
+            <animateMotion dur="3s" repeatCount="indefinite" path={LINK_PATH} />
             <animate
               attributeName="opacity"
               values="0;1;1;0"
               keyTimes="0;0.1;0.88;1"
-              dur="2.4s"
+              dur="3s"
               repeatCount="indefinite"
             />
           </circle>

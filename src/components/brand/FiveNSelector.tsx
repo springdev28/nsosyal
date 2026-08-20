@@ -79,8 +79,6 @@ const BOX = PANEL_R * 2;
 const CX = 0;
 const CY = PANEL_R;
 
-const HINT_STORAGE_KEY = 'nsosyal-5n-selector-hint';
-
 function polar(angleDeg: number, radius: number) {
   const rad = (angleDeg * Math.PI) / 180;
   return { x: CX + radius * Math.cos(rad), y: CY + radius * Math.sin(rad) };
@@ -126,7 +124,6 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
   /** Kac adim dondugumuz. Aktif oge her zaman 0 derecede (secim noktasi). */
   const [activeIndex, setActiveIndex] = useState(0);
   const [confirming, setConfirming] = useState<string | null>(null);
-  const [showHint, setShowHint] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
 
@@ -202,14 +199,6 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
       if (was) return false;
       setActiveIndex(0);
       wheelRef.current = 0;
-      try {
-        if (!window.localStorage.getItem(HINT_STORAGE_KEY)) {
-          setShowHint(true);
-          window.localStorage.setItem(HINT_STORAGE_KEY, 'seen');
-        }
-      } catch {
-        // Depolama kapaliysa ipucu her acilista cikar; kalici UI olmaz.
-      }
       return true;
     });
   }, []);
@@ -222,7 +211,6 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
      */
     (dimension: Dimension, snapping = false) => {
       setConfirming(dimension.id);
-      setShowHint(false);
       window.setTimeout(
         () => {
           setOpen(false);
@@ -515,14 +503,6 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   <FiveNMark size={40} animated={!reducedMotion} />
                 </button>
 
-                {showHint ? (
-                  <span
-                    className="pointer-events-none absolute whitespace-nowrap rounded-full bg-bg-sunken px-3 py-1.5 text-xs text-fg-muted shadow-pop ring-1 ring-[var(--border-strong)]"
-                    style={{ left: ORBIT_R + ITEM_D / 2 + 20, top: CY + 28 }}
-                  >
-                    Kaydırarak çevirin
-                  </span>
-                ) : null}
               </div>
             </>,
             document.body,

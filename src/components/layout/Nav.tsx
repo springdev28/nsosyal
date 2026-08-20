@@ -150,7 +150,7 @@ export function MainNav({
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={`group relative flex min-h-12 items-center gap-3.5 rounded-2xl px-3.5 text-[0.98rem] transition-colors ${
-                    active ? 'bg-accent-soft font-bold text-accent' : 'text-fg-muted hover:bg-bg-hover hover:text-fg'
+                    active ? 'nav-current font-bold text-accent' : 'text-fg-muted hover:bg-bg-hover hover:text-fg'
                   }`}
                 >
                   <span className="relative flex">
@@ -255,7 +255,7 @@ export function MobileNav({
   return (
     <nav
       aria-label="Ana gezinme"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg-raised/95 backdrop-blur lg:hidden"
+      className="app-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg-raised/92 backdrop-blur-xl lg:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <ul className="mx-auto flex max-w-xl">

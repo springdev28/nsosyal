@@ -33,17 +33,20 @@ export function AppShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="app-shell min-h-dvh">
       <a href="#main" className="skip-link">
         İçeriğe atla
       </a>
 
       <MobileTopBar viewer={viewer} unreadCount={unreadCount} />
 
-      <div className="mx-auto flex w-full max-w-[1380px] gap-5 px-3 pb-24 lg:px-6 lg:pb-6 xl:gap-7">
+      <div className="mx-auto flex w-full max-w-[1420px] gap-5 px-3 pb-24 lg:px-6 lg:pb-6 xl:gap-8">
         <MainNav viewer={viewer} unreadCount={unreadCount} hasNewIssue={hasNewIssue} />
 
-        <main id="main" className="min-w-0 flex-1 py-3 lg:max-w-[720px]">
+        <main
+          id="main"
+          className="app-main min-w-0 flex-1 py-3 lg:max-w-[744px] lg:border-x lg:px-4"
+        >
           {children}
         </main>
 
@@ -145,7 +148,7 @@ function TrendingCard({ trending }: { trending: TrendingTopic[] }) {
 /** Mobil ust bar: logo, arama ve profil. Masaustunde gizli. */
 function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadCount: number }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur lg:hidden">
+    <header className="app-topbar sticky top-0 z-30 border-b border-line bg-bg/88 backdrop-blur-xl lg:hidden">
       <div className="flex items-center gap-2 px-3 py-2">
         <Link href="/feed" aria-label="nSosyal ana sayfa" className="flex items-center">
           <FiveNMark size={34} animated />

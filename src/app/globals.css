@@ -18,18 +18,18 @@
   --color-brand-50: #e8f3ff;
   --color-brand-100: #cfe6ff;
   --color-brand-200: #a3d0ff;
-  --color-brand-300: #6db4ff;
-  --color-brand-400: #3d9bff;
-  --color-brand-500: #1e88ff;
-  --color-brand-600: #0b6fe6;
+  --color-brand-300: #79a7ff;
+  --color-brand-400: #5b82ff;
+  --color-brand-500: #496df6;
+  --color-brand-600: #3857e8;
   --color-brand-700: #0958b8;
   --color-brand-800: #0b4890;
   --color-brand-900: #0d3c73;
   --color-brand-950: #082548;
 
   /* Gradyan CTA'nin sol ucu */
-  --color-cyan-400: #35d6ee;
-  --color-cyan-500: #16bfdc;
+  --color-cyan-400: #39c5e6;
+  --color-cyan-500: #23afd3;
 
   /* Notr olcek - koyu lacivert tonlu */
   --color-ink-50: #f2f5f9;
@@ -59,7 +59,7 @@
     'Noto Sans', sans-serif;
   --font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, ui-serif, serif;
 
-  --radius-card: 1rem;
+  --radius-card: 1.25rem;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.28);
   --shadow-pop: 0 18px 48px -18px rgb(0 0 0 / 0.7);
@@ -74,24 +74,31 @@
 :root {
   color-scheme: dark;
 
-  --bg: #0a0f1a;
-  --bg-raised: #131b28;
-  --bg-sunken: #0e1420;
-  --bg-hover: #1a2333;
-  --fg: #e9eff7;
-  --fg-muted: #94a3b8;
+  --bg: #080d18;
+  --bg-raised: #111a2a;
+  --bg-sunken: #0d1422;
+  --bg-hover: #18243a;
+  --fg: #f5f8fd;
+  --fg-muted: #acb8c9;
   /* WCAG AA icin olculdu: yukseltilen yuzeyde 5.5:1 (onceki deger 3.95:1 idi). */
-  --fg-subtle: #8593a6;
-  --border: #1f2937;
-  --border-strong: #33415a;
+  --fg-subtle: #8998ad;
+  --border: #223149;
+  --border-strong: #354968;
 
-  --accent: #3d9bff;
-  --accent-fg: #04121f;
-  --accent-soft: #12283f;
-  --accent-line: #1f4a75;
+  --accent: #6a91ff;
+  --accent-fg: #06101e;
+  --accent-soft: #142b49;
+  --accent-line: #2d568a;
+
+  --brand-cyan: #39c5e6;
+  --brand-blue: #5792ff;
+  --brand-cobalt: #4c65f6;
+  --surface-glint: rgb(255 255 255 / 0.045);
+  --surface-highlight: rgb(255 255 255 / 0.075);
+  --surface-shadow: 0 24px 64px -48px rgb(0 0 0 / 0.95);
 
   /* Birincil eylem gradyani (Yeni Gonderi, Paylas) */
-  --gradient-cta: linear-gradient(95deg, #35d6ee 0%, #3d9bff 55%, #4f7dff 100%);
+  --gradient-cta: linear-gradient(112deg, var(--brand-cyan) 0%, var(--brand-blue) 52%, var(--brand-cobalt) 100%);
 
   --focus: #6db4ff;
   --danger: #ff6b81;
@@ -119,22 +126,29 @@
   :root:not([data-theme='dark']) {
     color-scheme: light;
 
-    --bg: #f4f7fb;
+    --bg: #f2f5fa;
     --bg-raised: #ffffff;
-    --bg-sunken: #eaeff6;
-    --bg-hover: #e6ecf5;
-    --fg: #0f172a;
+    --bg-sunken: #eaf0f8;
+    --bg-hover: #e3eaf4;
+    --fg: #111827;
     --fg-muted: #52627a;
     /* Olculen kontrast: en dusuk yuzeyde 5.0:1 (onceki deger 3.79:1 idi). */
     --fg-subtle: #586777;
-    --border: #dde5ef;
-    --border-strong: #b7c4d6;
+    --border: #d7e1ee;
+    --border-strong: #b5c7dc;
 
     /* Olculen kontrast: accent-soft uzerinde 5.3:1 (onceki deger 4.22:1 idi). */
-    --accent: #0a5fcc;
+    --accent: #2852ce;
     --accent-fg: #ffffff;
-    --accent-soft: #e8f3ff;
-    --accent-line: #a3d0ff;
+    --accent-soft: #eaf0ff;
+    --accent-line: #b8cbff;
+
+    --brand-cyan: #39c5e6;
+    --brand-blue: #5792ff;
+    --brand-cobalt: #4c65f6;
+    --surface-glint: rgb(255 255 255 / 0.72);
+    --surface-highlight: rgb(255 255 255 / 0.92);
+    --surface-shadow: 0 24px 64px -48px rgb(36 59 96 / 0.42);
 
     --focus: #0a5fcc;
     --danger: #c02640;
@@ -157,20 +171,27 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --bg: #f4f7fb;
+  --bg: #f2f5fa;
   --bg-raised: #ffffff;
-  --bg-sunken: #eaeff6;
-  --bg-hover: #e6ecf5;
-  --fg: #0f172a;
+  --bg-sunken: #eaf0f8;
+  --bg-hover: #e3eaf4;
+  --fg: #111827;
   --fg-muted: #52627a;
   --fg-subtle: #586777;
-  --border: #dde5ef;
-  --border-strong: #b7c4d6;
+  --border: #d7e1ee;
+  --border-strong: #b5c7dc;
 
-  --accent: #0a5fcc;
+  --accent: #2852ce;
   --accent-fg: #ffffff;
-  --accent-soft: #e8f3ff;
-  --accent-line: #a3d0ff;
+  --accent-soft: #eaf0ff;
+  --accent-line: #b8cbff;
+
+  --brand-cyan: #39c5e6;
+  --brand-blue: #5792ff;
+  --brand-cobalt: #4c65f6;
+  --surface-glint: rgb(255 255 255 / 0.72);
+  --surface-highlight: rgb(255 255 255 / 0.92);
+  --surface-shadow: 0 24px 64px -48px rgb(36 59 96 / 0.42);
 
   --focus: #0a5fcc;
   --danger: #c02640;
@@ -246,6 +267,10 @@
 
   body {
     background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 9% -8%, color-mix(in srgb, var(--brand-cyan) 10%, transparent) 0, transparent 30rem),
+      radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--brand-cobalt) 9%, transparent) 0, transparent 34rem);
+    background-attachment: fixed;
     color: var(--fg);
     font-family: var(--font-sans);
     font-size: 0.9375rem;
@@ -305,21 +330,74 @@
 
 @layer components {
   .card {
-    background-color: var(--bg-raised);
+    background:
+      linear-gradient(145deg, var(--surface-glint) 0%, transparent 44%),
+      var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: var(--radius-card);
+    box-shadow: var(--surface-shadow), inset 0 1px 0 var(--surface-highlight);
   }
 
   /* Birincil eylem: camgobegi -> mavi gradyan, tam yuvarlak. */
   .btn-gradient {
     background-image: var(--gradient-cta);
-    color: #04121f;
+    color: #06101e;
     font-weight: 700;
     border: none;
+    box-shadow: 0 14px 32px -22px color-mix(in srgb, var(--brand-cobalt) 72%, transparent);
   }
 
   .btn-gradient:hover {
-    filter: brightness(1.06);
+    filter: brightness(1.04) saturate(1.04);
+  }
+
+  .app-shell {
+    background:
+      radial-gradient(circle at 8% 3%, color-mix(in srgb, var(--brand-cyan) 8%, transparent) 0, transparent 24rem),
+      radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--brand-cobalt) 8%, transparent) 0, transparent 30rem),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 84%, transparent), var(--bg) 34rem);
+  }
+
+  .app-main {
+    border-color: color-mix(in srgb, var(--border) 78%, transparent);
+  }
+
+  .app-topbar,
+  .app-bottom-nav {
+    box-shadow: 0 18px 46px -36px rgb(0 0 0 / 0.72);
+  }
+
+  .nav-current {
+    background:
+      linear-gradient(115deg, var(--accent-soft), color-mix(in srgb, var(--accent) 11%, transparent));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  .auth-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .auth-shell::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 8% 2% auto;
+    height: 28rem;
+    border-radius: 999px;
+    background: linear-gradient(118deg, color-mix(in srgb, var(--brand-cyan) 17%, transparent), color-mix(in srgb, var(--brand-cobalt) 15%, transparent));
+    filter: blur(76px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .auth-kicker {
+    letter-spacing: 0.18em;
+  }
+
+  .editorial-heading {
+    letter-spacing: -0.04em;
+    line-height: 0.98;
   }
 
   .text-gradient {
