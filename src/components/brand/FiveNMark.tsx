@@ -90,7 +90,13 @@ export function FiveNMark({
               </feMerge>
             </filter>
           </defs>
-          <circle r="4" fill={PARTICLE_FILL} filter={`url(#${glowId})`}>
+          {/*
+            `ns-mark-particle` sinifi CSS'in prefers-reduced-motion altinda bu
+            katmani susturmasini saglar. Prop'a bagli kalsaydi isaret yalnizca
+            istemci bilesenlerinden guvenle animasyonlu kullanilabilirdi;
+            oysa giris ekrani bir sunucu bilesenidir.
+          */}
+          <circle className="ns-mark-particle" r="4" fill={PARTICLE_FILL} filter={`url(#${glowId})`}>
             <animateMotion dur="1.9s" repeatCount="indefinite" path={LINK_PATH} />
             <animate
               attributeName="opacity"

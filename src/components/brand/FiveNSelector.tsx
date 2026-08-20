@@ -10,31 +10,25 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 /**
  * 5N boyut secici (PROJECT_SPEC 4.4 / 17.18-4).
  *
- * Isim neden "5N", urun adi "nSosyal 5N1K" iken: 1K yani KIM, bir kesif paneli
- * degil sosyal kimlik katmanidir (spec 4.1) ve profil yuzeyinde yasar. Spec
- * 4.4/3 yayin uzerinde tasinacak ogeleri tek tek sayiyor ve bes tane: Ne,
- * Nerede, Ne zaman, Nasil, Neden. Bu yuzden secici bes oge tasir ve adi da
- * bunu soyler; baglam MODELININ tamami 5N1K'dir, secicinin tasidigi 5N'dir.
+ * Yapisi: sol kenara yaslanmis DOLU bir yarim disk paneli. Boyutlar bu panelin
+ * yayi uzerinde yuvarlak dugmeler olarak durur, merkezde animasyonlu N baglanti
+ * isareti bulunur. Ayni anda hepsi gorunmez: uclara yaklasan ogeler solar ve
+ * panelin disina cikar, kullanici yayi cevirerek digerlerini getirir.
  *
- * Spec bu mekanigi olumsuz cumlelerle tarif ediyor, o yuzden once ne DEGIL:
- *   - Kesfet sayfasinin ustunde duran bes sabit buton degil.
- *   - Bes buyuk kart ya da surekli gorunen bir liste degil.
- *   - Tam cark/daire degil.
+ * Spec 4.4 bunu zaten tarif ediyordu:
+ *   2. "tam daire degil, YARIM bir yay acilir; yayin iki ucu giderek
+ *       saydamlasir ve viewport icinde kaybolur"
+ *   3. "secenekler ikonlarla bu yay uzerinde TASINIR"
+ *   4. "kullanici mouse, touch veya trackpad hareketiyle yayi dondurur"
+ *   5. "secim noktasina denk geldiginde kisa bir snap/confirm state'i olusur"
+ *   6. "secim tamamlandiginda yay ve secenekler TAMAMEN kaybolur"
+ *   7. "N isareti panel uzerinde erisilebilir kalir"
  *
- * Olmasi gereken: kapaliyken yalnizca N baglanti isareti gorunur. Isarete
- * basildiginda yaninda YARIM bir yay acilir, iki ucu saydamlasarak kaybolur.
- * Bes boyut ikonlariyla bu yayin uzerinde TASINIR; kullanici yayi mouse,
- * tekerlek, dokunma veya klavyeyle dondurur. Secim noktasina yaklasan oge
- * buyur, uclara yaklasanlar solar. Oge secim noktasina oturunca kisa bir
- * snap/confirm hali olusur, ardindan yay ve ogeler TAMAMEN kaybolur ve
- * secilen boyutun gercek islevsel paneli acilir. N isareti panelin uzerinde
- * erisilebilir kalir; tekrar basildiginda yarim secici yeniden acilir.
- *
- * Erisilebilirlik (spec 4.4/9 ve 8.3): ayni islev klavye ve dugmelerle
- * tamamlanabilir. Ogeler gercek <button>'dir, ok tuslari yayi dondurur,
- * Enter/Space secer, Escape kapatir ve odagi tetikleyiciye geri verir.
- * prefers-reduced-motion'da acilma, donme ve parcacik hareketi kalkar;
- * yerine sade bir state degisimi kalir.
+ * Bu bilesen UC KEZ yazildi. Onceki iki denemenin neden ekranda coktugu ve
+ * bu geometrinin neden secildigi docs/decisions/0012'de duruyor; oraya
+ * bakmadan buradaki sabitleri degistirmeyin. Ozeti: panel isaretin yaslandigi
+ * DUVARA oturur (viewport kenarina degil), zemin OPAKTIR ve gobek isareti
+ * duvara yaslanir - ortalanirsa yarisi ekran disinda kalir.
  */
 
 interface Dimension {
@@ -47,79 +41,91 @@ interface Dimension {
 
 /** Spec 4.4/3'teki sira: Ne, Nerede, Ne zaman, Nasil, Neden. */
 const DIMENSIONS: Dimension[] = [
-  { id: 'ne', label: 'Ne', hint: 'Konular ve içerik', icon: 'search', href: '/explore' },
+  { id: 'ne', label: 'Ne', hint: 'Konular', icon: 'search', href: '/explore' },
   { id: 'nerede', label: 'Nerede', hint: 'Harita', icon: 'mapPin', href: '/explore/map' },
   { id: 'nezaman', label: 'Ne zaman', hint: 'Zaman', icon: 'calendar', href: '/explore/time' },
   { id: 'nasil', label: 'Nasıl', hint: 'Kaynaklar', icon: 'book', href: '/explore/how' },
   { id: 'neden', label: 'Neden', hint: 'Motivasyon', icon: 'spark', href: '/explore/why' },
 ];
 
+/** Panelin yaricapi: yarim disk sol kenara yaslanir. */
+const PANEL_R = 188;
+/** Ogelerin uzerinde durdugu yorunge. */
+const ORBIT_R = 128;
+/** Oge dugmesinin capi. Dokunma hedefi icin 44px'in uzerinde. */
+const ITEM_D = 56;
+/** Ogeler arasi acisal mesafe. Ayni anda ~3 tanesi net gorunur. */
+const STEP = 36;
 /**
- * Yay olculeri, tasarim dosyasindaki "5N Selector" bileseninden alindi
- * (QiXXYwqSFvcx2N2hHLw8DP, 18:186). Bilesende aktif oge secim noktasinda,
- * komsulari +/-54 derecede, uzaktakiler +/-102 derecede duruyor; yaricap
- * ~139px. Buradaki degerler o yerlesimi yeniden uretir.
+ * Gorunur pencere. Bu acinin otesindeki oge tamamen kaybolur; oncesinde
+ * kademeli olarak solar - spec'in "uclar saydamlasir" kurali.
  */
-const RADIUS = 140;
-const ARC_SPAN = 180;
-/** Ogeler arasi acisal mesafe (tasarimda ~52 derece). */
-const STEP = 52;
+const FADE_FROM = 38;
+const FADE_TO = 88;
 
-/**
- * Oge kademeleri. Tasarim ogeleri surekli bir formulle degil, secim
- * noktasindan kac adim uzakta olduklarina gore uc kademede gosteriyor:
- * aktif 48px/tam opak, komsu 34px/%50, uzak 28px/%12.
- */
-const TIERS = [
-  { size: 48, icon: 28, opacity: 1, border: 2 },
-  { size: 34, icon: 20, opacity: 0.5, border: 1 },
-  { size: 28, icon: 14, opacity: 0.12, border: 1 },
-] as const;
+/** Gobek dugmesinin capi. Yayin duz kenarina yaslanir, kirpilmaz. */
+const HUB_D = 72;
 
-/** Tasarimdaki nSosyal/Glow/SelectorActive efekti. */
-const ACTIVE_GLOW = '0 0 16px 0 rgba(167,139,250,0.38)';
-/** Tasarimdaki nSosyal/Glow/Brand efekti (N tetikleyicisi). */
-const TRIGGER_GLOW = '0 0 36px 0 rgba(61,155,255,0.28), 0 0 18px 0 rgba(53,214,238,0.32)';
-/** Oge dairesinin yaricapi; capa kenetlemesinde pay olarak da kullanilir. */
-const ITEM_RADIUS = 24;
+const BOX = PANEL_R * 2;
+const CX = 0;
+const CY = PANEL_R;
 
 const HINT_STORAGE_KEY = 'nsosyal-5n-selector-hint';
+
+function polar(angleDeg: number, radius: number) {
+  const rad = (angleDeg * Math.PI) / 180;
+  return { x: CX + radius * Math.cos(rad), y: CY + radius * Math.sin(rad) };
+}
+
+/** Gorunur pencerenin iki ucu arasindaki yorunge yayi. */
+const TRACK_PATH = (() => {
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const x = (deg: number) => (CX + ORBIT_R * Math.cos(rad(deg))).toFixed(2);
+  const y = (deg: number) => (CY + ORBIT_R * Math.sin(rad(deg))).toFixed(2);
+  return `M ${x(-FADE_TO)} ${y(-FADE_TO)} A ${ORBIT_R} ${ORBIT_R} 0 0 1 ${x(FADE_TO)} ${y(FADE_TO)}`;
+})();
+
+/** Uclara dogru solma. 1 = tam gorunur, 0 = yayin disinda. */
+function fadeFor(angle: number): number {
+  const d = Math.abs(angle);
+  if (d <= FADE_FROM) return 1;
+  if (d >= FADE_TO) return 0;
+  return 1 - (d - FADE_FROM) / (FADE_TO - FADE_FROM);
+}
 
 export function FiveNSelector({ className = '' }: { className?: string }) {
   const router = useRouter();
   const menuId = useId();
 
   const [open, setOpen] = useState(false);
-  /** Yayin donme ofseti (derece). 0 iken ilk oge secim noktasindadir. */
-  const [rotation, setRotation] = useState(0);
-  /** Secim onaylandiginda kisa sure yanan snap hali. */
+  /** Kac adim dondugumuz. Aktif oge her zaman 0 derecede (secim noktasi). */
+  const [activeIndex, setActiveIndex] = useState(0);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  /**
-   * Yayin ekrandaki capasi. Secici sol gezinmenin icinde duruyor ve o kolon
-   * `overflow-y: auto` tasiyor; overflow bir kirpma baglami yarattigi icin yay
-   * kolonun disina TASAMIYORDU. Bu yuzden yay bir portal ile body'ye cizilir
-   * ve isaretin ekran koordinatina sabitlenir.
-   */
-  const [anchor, setAnchor] = useState<{ x: number; y: number; radius: number } | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  // Yay portal ile body'ye ciziliyor; "disari tiklama" kontrolu bu yuzden hem
-  // tetikleyiciyi hem yayi saymak zorunda.
-  const menuRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ pointerId: number; startY: number; startRotation: number } | null>(null);
+  const dragRef = useRef<{ id: number; y: number; from: number } | null>(null);
+  /**
+   * Suruklemeyle biten bir jest, parmagin kalktigi ogenin uzerinde bir `click`
+   * de uretir. Bu bayrak olmadan "yayi cevirdim" hareketi istenmeyen bir
+   * secime, yani sayfa degisikligine donuyordu.
+   */
+  const draggedRef = useRef(false);
+  const wheelRef = useRef(0);
+
+  const active = DIMENSIONS[activeIndex];
 
   useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const apply = () => setReducedMotion(query.matches);
+    const q = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = () => setReducedMotion(q.matches);
     apply();
-    query.addEventListener('change', apply);
-    return () => query.removeEventListener('change', apply);
+    q.addEventListener('change', apply);
+    return () => q.removeEventListener('change', apply);
   }, []);
 
-  // Capayi acilista ve pencere degistiginde olc.
   useLayoutEffect(() => {
     if (!open) {
       setAnchor(null);
@@ -128,54 +134,49 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     const measure = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      // Yay ISARETIN YANINDA acilir (spec 4.4/2), yani capa isaretten
-      // kaydirilamaz. Isaret ekranin tepesine yakinsa capayi tasimak yerine
-      // yaricapi kisaltiyoruz: yay isarete bagli kalir, hicbir oge de
-      // viewport disina dusmez.
-      const room = Math.min(cy, window.innerHeight - cy) - ITEM_RADIUS - 12;
-      setAnchor({ x: cx, y: cy, radius: Math.max(72, Math.min(RADIUS, room)) });
+      // Yarim diskin duz kenari isaretin yaslandigi duvardir: Kesfet
+      // kolonunun sol kenari. Onceki surum paneli viewport'un 0'ina
+      // koyuyordu; panel o zaman isaretten koparak uygulamanin sol gezinme
+      // kolonunun uzerine biniyordu.
+      setAnchor({
+        // Dar bir yerlesimde duvar saga fazla kacarsa panel viewport'u asardi;
+        // duz kenar en fazla panel genisligi kadar iceride durabilir.
+        x: Math.min(Math.max(0, rect.left), Math.max(0, window.innerWidth - PANEL_R)),
+        y: Math.min(
+          Math.max(rect.top + rect.height / 2, PANEL_R + 8),
+          window.innerHeight - PANEL_R - 8,
+        ),
+      });
     };
     measure();
     window.addEventListener('resize', measure);
-    window.addEventListener('scroll', measure, true);
-    return () => {
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('scroll', measure, true);
-    };
+    return () => window.removeEventListener('resize', measure);
   }, [open]);
 
-  /** Secim noktasina en yakin oge. Donme ofsetinden hesaplanir. */
-  const activeIndex = clampIndex(Math.round(-rotation / STEP));
-  const active = DIMENSIONS[activeIndex];
-
-  /**
-   * Odagi secim noktasindaki ogeye tasi.
-   *
-   * Bu yalnizca konfor degil, islevin sarti: ok tuslarini dinleyen eleman yay
-   * kabidir ve odak tetikleyici dugmede kalirsa tuslar oraya hic ulasmaz -
-   * ArrowDown yayi dondurmek yerine SAYFAYI kaydirir. Odak yay icinde durunca
-   * hem donme hem Enter/Escape klavyeden calisir (spec 4.4/9).
-   */
+  // Secici acikken arka plan kaymasin; panel isarete sabitli.
   useEffect(() => {
-    if (!open || !anchor) return;
-    document.getElementById(`${menuId}-${DIMENSIONS[activeIndex].id}`)?.focus();
-  }, [open, anchor, activeIndex, menuId]);
+    if (!open) return;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
     setConfirming(null);
     dragRef.current = null;
+    // Yarim kalmis tekerlek birikimi bir sonraki acilisa tasinmasin.
+    wheelRef.current = 0;
     if (returnFocus) triggerRef.current?.focus();
   }, []);
 
   const toggle = useCallback(() => {
-    setOpen((wasOpen) => {
-      if (wasOpen) return false;
-      setRotation(0);
-      // Spec 4.4/8: ilk kullanimda tek cumlelik ipucu gosterilebilir, ama
-      // kalici UI'a donusmemelidir. Bir kez gosterip isaretliyoruz.
+    setOpen((was) => {
+      if (was) return false;
+      setActiveIndex(0);
+      wheelRef.current = 0;
       try {
         if (!window.localStorage.getItem(HINT_STORAGE_KEY)) {
           setShowHint(true);
@@ -188,40 +189,37 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     });
   }, []);
 
-  /** Secimi tamamla: kisa snap, sonra yay kaybolur ve panel acilir. */
   const commit = useCallback(
-    (dimension: Dimension) => {
+    /**
+     * @param snapping Oge secim noktasinda DEGILDI: once oraya kayar. Yolu
+     *   gorunsun diye onay bekleme suresi biraz uzar; yoksa panel oge daha
+     *   yerine varmadan kapanir ve hareket "atlamis" gibi gorunur.
+     */
+    (dimension: Dimension, snapping = false) => {
       setConfirming(dimension.id);
       setShowHint(false);
-      const delay = reducedMotion ? 0 : 170;
-      window.setTimeout(() => {
-        setOpen(false);
-        setConfirming(null);
-        router.push(dimension.href);
-      }, delay);
+      window.setTimeout(
+        () => {
+          setOpen(false);
+          setConfirming(null);
+          router.push(dimension.href);
+        },
+        reducedMotion ? 0 : snapping ? 280 : 170,
+      );
     },
     [reducedMotion, router],
   );
 
-  // Disari tiklamada kapat.
   useEffect(() => {
-    if (!open) return;
-    function onPointerDown(event: PointerEvent) {
-      const target = event.target as Node;
-      if (containerRef.current?.contains(target)) return;
-      if (menuRef.current?.contains(target)) return;
-      close(false);
-    }
-    document.addEventListener('pointerdown', onPointerDown);
-    return () => document.removeEventListener('pointerdown', onPointerDown);
-  }, [open, close]);
+    if (!open || !anchor) return;
+    document.getElementById(`${menuId}-${DIMENSIONS[activeIndex].id}`)?.focus();
+  }, [open, anchor, activeIndex, menuId]);
 
-  // Escape kapatir ve odagi tetikleyiciye geri verir.
   useEffect(() => {
     if (!open) return;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
         close(true);
       }
     }
@@ -229,51 +227,53 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, close]);
 
-  function rotateBy(steps: number) {
-    setRotation((current) => {
-      const next = clampIndex(Math.round(-current / STEP) + steps);
-      return -next * STEP;
-    });
+  const move = useCallback((steps: number) => {
+    setActiveIndex((i) => Math.min(DIMENSIONS.length - 1, Math.max(0, i + steps)));
+  }, []);
+
+  function onWheel(e: React.WheelEvent) {
+    e.preventDefault();
+    // Trackpad'de tek jest cok sayida olay uretir; esik koyup adim adim ceviriyoruz.
+    wheelRef.current += e.deltaY;
+    if (Math.abs(wheelRef.current) < 40) return;
+    move(wheelRef.current > 0 ? 1 : -1);
+    wheelRef.current = 0;
   }
 
-  function onWheel(event: React.WheelEvent) {
-    if (!open) return;
-    event.preventDefault();
-    rotateBy(event.deltaY > 0 ? 1 : -1);
+  function onPointerDown(e: React.PointerEvent) {
+    draggedRef.current = false;
+    dragRef.current = { id: e.pointerId, y: e.clientY, from: activeIndex };
   }
 
-  function onPointerDown(event: React.PointerEvent) {
-    if (!open) return;
-    dragRef.current = { pointerId: event.pointerId, startY: event.clientY, startRotation: rotation };
-  }
-
-  function onPointerMove(event: React.PointerEvent) {
-    const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    // Dikey surukleme yayi dondurur; 1 oge ~48px.
-    const delta = event.clientY - drag.startY;
-    const raw = drag.startRotation - (delta / 48) * STEP;
-    const index = clampIndex(Math.round(-raw / STEP));
-    setRotation(-index * STEP);
+  function onPointerMove(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (d && d.id === e.pointerId && Math.abs(e.clientY - d.y) > 6) draggedRef.current = true;
+    if (!d || d.id !== e.pointerId) return;
+    // Dikey surukleme yayi cevirir: ~64px bir oge.
+    const steps = Math.round((e.clientY - d.y) / 64);
+    setActiveIndex(Math.min(DIMENSIONS.length - 1, Math.max(0, d.from + steps)));
   }
 
   function onPointerUp() {
     dragRef.current = null;
   }
 
-  function onMenuKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      rotateBy(1);
-    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-      event.preventDefault();
-      rotateBy(-1);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      setRotation(0);
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      setRotation(-(DIMENSIONS.length - 1) * STEP);
+  function onKeyDownMenu(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      move(1);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      move(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setActiveIndex(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setActiveIndex(DIMENSIONS.length - 1);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      commit(DIMENSIONS[activeIndex]);
     }
   }
 
@@ -288,155 +288,216 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
         aria-controls={open ? menuId : undefined}
         aria-label="5N boyut seçici"
         className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-accent transition-colors hover:bg-bg-hover"
-        style={open ? { boxShadow: TRIGGER_GLOW } : undefined}
       >
-        <FiveNMark size={44} animated={open && !reducedMotion} />
+        <FiveNMark size={44} animated={!reducedMotion} />
       </button>
 
       {open && anchor
         ? createPortal(
-        <div
-          ref={menuRef}
-          id={menuId}
-          role="menu"
-          aria-label="5N boyutları"
-          aria-activedescendant={`${menuId}-${active.id}`}
-          tabIndex={-1}
-          onKeyDown={onMenuKeyDown}
-          onWheel={onWheel}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          className="fixed z-50 h-0 w-0"
-          style={{ left: anchor.x, top: anchor.y, touchAction: 'none' }}
-        >
-          {/* Yay izi. Iki ucu maskeyle saydamlasir (spec 4.4/2). */}
-          <svg
-            aria-hidden="true"
-            width={anchor.radius * 2 + 60}
-            height={anchor.radius * 2 + 60}
-            viewBox={`0 0 ${anchor.radius * 2 + 60} ${anchor.radius * 2 + 60}`}
-            className="pointer-events-none absolute"
-            style={{ left: -(anchor.radius + 30), top: -(anchor.radius + 30) }}
-          >
-            <defs>
-              <linearGradient id={`${menuId}-fade`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0" />
-                <stop offset="30%" stopColor="var(--accent)" stopOpacity="0.55" />
-                <stop offset="70%" stopColor="var(--accent)" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d={halfArcPath(anchor.radius + 30, anchor.radius + 30, anchor.radius)}
-              fill="none"
-              stroke={`url(#${menuId}-fade)`}
-              strokeWidth="1.5"
-              strokeDasharray="3 7"
-            />
-          </svg>
+            <>
+              <div
+                aria-hidden="true"
+                onPointerDown={() => close(false)}
+                className="fixed inset-0 z-40 bg-ink-950/60 backdrop-blur-[2px]"
+              />
 
-          {DIMENSIONS.map((dimension, index) => {
-            // Oge acisi secim noktasina GOREdir: aktif oge 0 derecede durur,
-            // komsulari +/-STEP'te, uzaktakiler +/-2*STEP'te.
-            const steps = index - activeIndex;
-            const angle = steps * STEP;
-            const tier = TIERS[Math.min(TIERS.length - 1, Math.abs(steps))];
-            const isActive = steps === 0;
-            const isConfirming = confirming === dimension.id;
-
-            const radians = (angle * Math.PI) / 180;
-            const x = Math.cos(radians) * anchor.radius;
-            const y = Math.sin(radians) * anchor.radius;
-
-            return (
-              <button
-                key={dimension.id}
-                id={`${menuId}-${dimension.id}`}
-                type="button"
-                role="menuitem"
-                tabIndex={isActive ? 0 : -1}
-                onClick={() => commit(dimension)}
-                onFocus={() => setRotation(-index * STEP)}
-                aria-label={`${dimension.label} — ${dimension.hint}`}
-                className="absolute flex items-center justify-center rounded-full border-solid bg-bg-raised outline-offset-2"
+              {/*
+                Konumlandirici + jest yuzeyi. `role="menu"` BURADA DEGIL:
+                bir menu yalnizca menuitem tasiyabilir, oysa bu kutuda panel
+                zemini, yorunge izi, okunan etiket ve gobek dugmesi de var.
+                Rolu buraya koymak axe'in `aria-required-children` kuralini
+                kritik seviyede ihlal ediyordu ("Element has children which
+                are not allowed: button[aria-label]") - yani ekran okuyucuda
+                menu yapisi bozuluyordu. Rol asagida yalnizca ogeleri saran
+                kutuya verildi; klavye ve isaretleme olaylari zaten buraya
+                kabarir.
+              */}
+              <div
+                onKeyDown={onKeyDownMenu}
+                onWheel={onWheel}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+                className="fixed z-50"
                 style={{
-                  left: x,
-                  top: y,
-                  width: tier.size,
-                  height: tier.size,
-                  transform: 'translate(-50%, -50%)',
-                  opacity: tier.opacity,
-                  // Tasarimda uzak kademe %12 opaklikta; okunamayacak kadar
-                  // soluk olan bir hedefi tiklanabilir birakmiyoruz.
-                  pointerEvents: tier.opacity < 0.2 ? 'none' : 'auto',
-                  borderWidth: tier.border,
-                  borderColor: 'var(--accent)',
-                  color: 'var(--accent)',
-                  boxShadow: isActive || isConfirming ? ACTIVE_GLOW : undefined,
-                  transition: reducedMotion
-                    ? 'none'
-                    : 'left 180ms ease, top 180ms ease, width 180ms ease, height 180ms ease, opacity 180ms ease',
+                  // Duz kenar duvara, yay saga acilir; dikeyde isaretin
+                  // hizasinda kalir.
+                  left: anchor.x,
+                  top: anchor.y - PANEL_R,
+                  width: PANEL_R,
+                  height: BOX,
+                  touchAction: 'none',
                 }}
               >
-                <Icon name={dimension.icon} size={tier.icon} />
-              </button>
-            );
-          })}
+                {/* Dolu yarim disk paneli. Ogeler bunun icinde kalir. */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-bg-raised shadow-pop ring-1 ring-[var(--border-strong)]"
+                  style={{
+                    // Panel opak. Onceki surum sayfaya karisan bir gradyandi:
+                    // koyu temada disk zeminden ayirt edilemiyordu, dolayisiyla
+                    // "yay" diye bir sey algilanmiyordu.
+                    boxShadow: 'inset -1px 0 0 0 var(--accent-line)',
+                    borderTopRightRadius: PANEL_R,
+                    borderBottomRightRadius: PANEL_R,
+                    animation: reducedMotion
+                      ? undefined
+                      : 'ns-arc-in 200ms cubic-bezier(.2,.8,.3,1)',
+                    transformOrigin: 'left center',
+                  }}
+                />
 
-          {/* Hizalama isareti: secim noktasini gosteren kisa cizgi. */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute h-[3px] w-6 rounded-sm bg-accent"
-            style={{
-              left: anchor.radius + ITEM_RADIUS + 14,
-              top: -1.5,
-              boxShadow: ACTIVE_GLOW,
-            }}
-          />
+                {/*
+                  Yorunge izi. Kullanicinin "bu sey doner" oldugunu gormesi
+                  icin ray cizilir, ama TAM yarim daire cizilmez: iz de
+                  ogelerle ayni pencerede yasar ve uclarinda saydamlasir
+                  (spec 4.4/2). Sabit bir yarim halka cizmek "uclar kaybolur"
+                  kuralini gorsel olarak yalanlardi.
+                */}
+                <svg
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  width={PANEL_R}
+                  height={BOX}
+                  viewBox={`0 0 ${PANEL_R} ${BOX}`}
+                  fill="none"
+                >
+                  <defs>
+                    <linearGradient id={`${menuId}-track`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity="0" />
+                      <stop offset="30%" stopColor="var(--accent)" stopOpacity="0.55" />
+                      <stop offset="70%" stopColor="var(--accent)" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d={TRACK_PATH}
+                    stroke={`url(#${menuId}-track)`}
+                    strokeWidth={1.5}
+                    strokeDasharray="2 8"
+                    strokeLinecap="round"
+                  />
+                </svg>
 
-          {/*
-            Secim noktasindaki ogenin adi. Surekli gorunen bir liste degil:
-            yalnizca tek bir etiket, yalnizca secici acikken (spec 4.4/5).
-          */}
-          <p
-            aria-hidden="true"
-            className="pointer-events-none absolute whitespace-nowrap text-[16px] font-semibold text-accent"
-            style={{ left: anchor.radius + ITEM_RADIUS + 14, top: 22 }}
-          >
-            {active.label}
-          </p>
+                {/* Secim noktasi isareti: yayin sagindaki kucuk kertik. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute h-9 w-1 -translate-y-1/2 rounded-full bg-accent"
+                  style={{ left: ORBIT_R + ITEM_D / 2 + 8, top: CY }}
+                />
 
-          {showHint ? (
-            <p
-              className="pointer-events-none absolute w-56 whitespace-normal rounded-xl bg-bg-raised px-3 py-2 text-xs text-fg-muted shadow-pop ring-1 ring-[var(--border)]"
-              style={{ left: anchor.radius + ITEM_RADIUS + 14, top: 54 }}
-            >
-              Yayı çevir, boyutu seç.
-            </p>
-          ) : null}
-        </div>,
+                <div
+                  id={menuId}
+                  role="menu"
+                  aria-label="5N boyutları"
+                  aria-activedescendant={`${menuId}-${active.id}`}
+                  tabIndex={-1}
+                  className="absolute inset-0"
+                >
+                  {DIMENSIONS.map((dimension, index) => {
+                    const angle = (index - activeIndex) * STEP;
+                    const opacity = fadeFor(angle);
+                    const pos = polar(angle, ORBIT_R);
+                    const isActive = index === activeIndex;
+                    const isConfirming = confirming === dimension.id;
+                    const scale = isActive ? 1 : 0.82;
+
+                    return (
+                      <button
+                        key={dimension.id}
+                        id={`${menuId}-${dimension.id}`}
+                        type="button"
+                        role="menuitem"
+                        tabIndex={isActive ? 0 : -1}
+                        aria-label={`${dimension.label} — ${dimension.hint}`}
+                        onClick={() => {
+                          // Cevirme jestinin kuyrugundaki tiklama secim degildir.
+                          if (draggedRef.current) {
+                            draggedRef.current = false;
+                            return;
+                          }
+                          // Yaydaki HERHANGI bir ogeye dokunmak onu once secim
+                          // noktasina getirir, sonra onaylar. Onceki davranis
+                          // ilk dokunusu yalnizca donduruyordu: kullanici
+                          // gordugu secenege basiyor ve hicbir sey olmuyordu -
+                          // "duzgun secemiyorum" sikayetinin kaynagi buydu.
+                          if (!isActive) setActiveIndex(index);
+                          commit(dimension, !isActive);
+                        }}
+                        className="absolute flex flex-col items-center justify-center rounded-full outline-offset-2"
+                        style={{
+                          left: pos.x,
+                          top: pos.y,
+                          width: ITEM_D,
+                          height: ITEM_D,
+                          transform: `translate(-50%, -50%) scale(${scale})`,
+                          opacity,
+                          // Pencerenin disina cikan oge DOM'da kalir: menu
+                          // semantigi bes boyutu da saymali ve ekran okuyucu
+                          // listenin tamamini gorebilmeli. Yalnizca boyasi ve
+                          // isaretleme hedefi kalkar; boylece girip cikarken
+                          // yumusak solar, aniden belirmez.
+                          pointerEvents: opacity <= 0 ? 'none' : undefined,
+                          background: isActive ? 'var(--accent)' : 'var(--bg-sunken)',
+                          color: isActive ? 'var(--accent-fg)' : 'var(--fg)',
+                          boxShadow: isConfirming
+                            ? '0 0 0 6px var(--accent-soft)'
+                            : isActive
+                              ? '0 6px 18px -6px var(--accent)'
+                              : '0 1px 2px 0 rgb(0 0 0 / 0.28)',
+                          border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border-strong)'}`,
+                          transition: reducedMotion
+                            ? 'none'
+                            : 'left 180ms ease, top 180ms ease, opacity 180ms ease, transform 180ms ease, background 140ms ease',
+                        }}
+                      >
+                        <Icon name={dimension.icon} size={20} />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Aktif boyutun adi: yayin disinda, panelin sag ustunde. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap rounded-full bg-bg-raised px-3.5 py-2 shadow-pop ring-1 ring-[var(--border-strong)]"
+                  style={{ left: ORBIT_R + ITEM_D / 2 + 20, top: CY }}
+                >
+                  <span className="text-sm font-bold text-accent">{active.label}</span>
+                  <span className="ml-1.5 text-xs text-fg-subtle">{active.hint}</span>
+                </span>
+
+                {/*
+                  Gobek: animasyonlu N isareti (spec 4.4/7 - isaret panel
+                  uzerinde her zaman erisilebilir kalir). Yayin merkezi duz
+                  kenardadir; isaret oraya ORTALANIRSA yarisi viewport disinda
+                  kalir - onceki surumun hatasi buydu. Bunun yerine dugme
+                  duvara YASLANIR: sol kenari x=0'da, isaret tamamen icerde.
+                */}
+                <button
+                  type="button"
+                  onClick={() => close(true)}
+                  aria-label="Seçiciyi kapat"
+                  className="absolute flex -translate-y-1/2 items-center justify-center rounded-full bg-bg-sunken text-accent ring-1 ring-[var(--border-strong)] transition-colors hover:bg-bg-hover"
+                  style={{ left: 0, top: CY, width: HUB_D, height: HUB_D }}
+                >
+                  <FiveNMark size={40} animated={!reducedMotion} />
+                </button>
+
+                {showHint ? (
+                  <span
+                    className="pointer-events-none absolute whitespace-nowrap rounded-full bg-bg-sunken px-3 py-1.5 text-xs text-fg-muted shadow-pop ring-1 ring-[var(--border-strong)]"
+                    style={{ left: ORBIT_R + ITEM_D / 2 + 20, top: CY + 28 }}
+                  >
+                    Kaydırarak çevirin
+                  </span>
+                ) : null}
+              </div>
+            </>,
             document.body,
           )
         : null}
     </div>
   );
-}
-
-function clampIndex(index: number): number {
-  return Math.min(DIMENSIONS.length - 1, Math.max(0, index));
-}
-
-/**
- * Merkezi (cx, cy) olan, yukaridan asagiya saga bakan YARIM yay.
- * Tam daire degil: -90 dereceden +90 dereceye.
- */
-function halfArcPath(cx: number, cy: number, r: number): string {
-  const half = ARC_SPAN / 2;
-  const startX = cx + r * Math.cos((-half * Math.PI) / 180);
-  const startY = cy + r * Math.sin((-half * Math.PI) / 180);
-  const endX = cx + r * Math.cos((half * Math.PI) / 180);
-  const endY = cy + r * Math.sin((half * Math.PI) / 180);
-  return `M ${startX} ${startY} A ${r} ${r} 0 0 1 ${endX} ${endY}`;
 }

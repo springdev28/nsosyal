@@ -17,9 +17,10 @@ yeni kayıtla ilişkisi açıkça belirtilir.
 | [0003](0003-yerel-geojson-ile-tile-sunucusuz-harita.md) | Yerel GeoJSON ile tile sunucusuz harita | Tileless karar geçerli, scope 0009 ile genişletildi |
 | [0004](0004-ucretli-gorunurluk-yalnizca-ngazetede.md) | Paid visibility yalnızca nGazete, spatial inventory | Kabul edildi |
 | [0005](0005-sentetik-demo-medyasi.md) | Sentetik ama oynatılabilir demo medyası | Kabul edildi |
-| [0006](0006-tasarim-dilini-canli-siteden-almak.md) | Mevcut nSosyal visual language + Figma master logo + half selector | Kabul edildi |
+| [0006](0006-tasarim-dilini-canli-siteden-almak.md) | Mevcut nSosyal visual language + Figma master logo + half selector | Kabul edildi, seçici mekaniği 0012 ile detaylandırıldı |
 | [0007](0007-zaman-ekseni-europe-istanbul.md) | Ürünün günü Europe/Istanbul günüdür | Kabul edildi |
 | [0008](0008-erisilebilirligi-testle-sabitlemek.md) | Erişilebilirliği ölçüp testle sabitlemek | Kabul edildi |
 | [0009](0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md) | Türkiye-wide density map ve extensible district layer | Kabul edildi |
 | [0010](0010-kalici-profil-hedefleri-ve-gecici-niyet.md) | Kalıcı profile goals ve transient intent ayrımı | Kabul edildi |
 | [0011](0011-dagitim-hattini-kurmak.md) | Dağıtım bir hat olmalı, elle yükleme değil | Kabul edildi |
+| [0012](0012-5n-secici-kenara-yaslanan-yarim-disk.md) | 5N seçici: kenara yaslanan yarım disk, pencereli yay | Kabul edildi, 0006'yı genişletir |

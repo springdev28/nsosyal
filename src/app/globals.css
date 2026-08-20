@@ -381,3 +381,30 @@
 .maplibregl-ctrl-attrib {
   font-size: 0.7rem;
 }
+
+/* 5N secicinin acilma hareketi. Yarim disk sol kenardan yayilir.
+   prefers-reduced-motion'da bilesen animasyonu hic uygulamaz. */
+@keyframes ns-arc-in {
+  from {
+    transform: scaleX(0.82) scaleY(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Marka isaretindeki parcacik yalnizca bir hareket katmanidir; geometrinin
+   parcasi degildir (spec 17.18/2). Hareketi azaltilmis tercihte kaldirilir ve
+   isaret sade haliyle kalir.
+
+   Bu kural yukaridaki genel reduced-motion blogunun tekrari DEGILDIR: orasi
+   CSS animasyon ve gecislerini kisaltir, oysa parcacik SMIL ile
+   (`<animateMotion>`) hareket eder ve CSS suresinden etkilenmez. Tek yol
+   katmani hic boyamamak. */
+@media (prefers-reduced-motion: reduce) {
+  .ns-mark-particle {
+    display: none;
+  }
+}

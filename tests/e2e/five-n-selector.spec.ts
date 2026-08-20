@@ -64,6 +64,80 @@ test.describe('5N secici', () => {
     await expect(trigger).toBeFocused();
   });
 
+  /**
+   * Bu test kasten "gorunur mu, tiklanir mi"nin otesine gecer.
+   *
+   * Onceki surumde secici teknik olarak calisiyordu - menuitem'lar DOM'daydi,
+   * tiklaniyordu, testler yesildi - ama gercek ekranda kullanilamiyordu: panel
+   * viewport'un disina tasiyor, isaret yariya kirpiliyor, aktif oge sayfa
+   * icerigiyle ic ice giriyordu. "Var ve tiklanabilir" bir arayuzun
+   * kullanilabilir oldugunu KANITLAMAZ. Asagidaki olcumler o boslugu kapatir.
+   */
+  test('acik yay ekrana sigar ve dokunma hedefleri yeterli', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/explore');
+    await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
+
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('viewport bilinmiyor');
+
+    // 1. Aktif oge tam opak ve tam gorunur olmali.
+    const activeItem = page.getByRole('menuitem', { name: /^Ne —/ });
+    const box = await activeItem.boundingBox();
+    if (!box) throw new Error('aktif oge olculemedi');
+
+    expect(await activeItem.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+
+    // 2. WCAG 2.2 hedef boyutu: 44x44'un altina dusmemeli.
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+
+    // 3. Hicbir kenari viewport disinda kalmamali (kirpilma yok).
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+
+    // 4. Merkezdeki N isareti de butunuyle ekranda olmali; yarisi disarida
+    //    kalan bir gobek kullanicinin sikayet ettigi tam olarak buydu.
+    const hub = page.getByRole('button', { name: 'Seçiciyi kapat' });
+    const hubBox = await hub.boundingBox();
+    if (!hubBox) throw new Error('gobek olculemedi');
+    expect(hubBox.x).toBeGreaterThanOrEqual(0);
+    expect(hubBox.x + hubBox.width).toBeLessThanOrEqual(viewport.width);
+    expect(hubBox.y).toBeGreaterThanOrEqual(0);
+    expect(hubBox.y + hubBox.height).toBeLessThanOrEqual(viewport.height);
+
+    // 5. Yayin uclari gercekten soluyor: en uzaktaki boyut bosluk kaplamaz.
+    //    (Spec 4.4/2 - "uclar saydamlasir ve viewport icinde kaybolur".)
+    const farItem = page.getByRole('menuitem', { name: /^Neden —/ });
+    expect(Number(await farItem.evaluate((el) => getComputedStyle(el).opacity))).toBe(0);
+  });
+
+  test('gorunen bir secenege tek dokunus onu secer', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/explore');
+    await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
+
+    // "Nerede" secim noktasinda DEGIL, yayin bir alt basamagindadir. Onceki
+    // davranista ilk dokunus onu yalnizca secim noktasina getiriyordu ve
+    // kullanici acisindan hicbir sey olmuyordu. Artik once kayar, sonra secer.
+    await page.getByRole('menuitem', { name: /^Nerede —/ }).click();
+    await expect(page).toHaveURL(/\/explore\/map/);
+  });
+
+  test('yay acikken sayfa kaymaz, secici kayar', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/explore');
+    await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
+
+    // Yay tekerlekle donuyorsa sayfanin kendisi kaymamali; aksi halde secici
+    // parmagin altindan kayip gider.
+    const before = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, 600);
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
+  });
+
   test('yay acikken ciddi erisilebilirlik ihlali yok', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/explore');

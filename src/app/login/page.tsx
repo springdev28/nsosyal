@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { signInAsDemoAccount, startOnboarding } from '@/actions/auth';
+import { FiveNMark } from '@/components/brand/FiveNMark';
 import { Avatar, Badge, Button, Card, ErrorNote, InfoNote, Icon } from '@/components/ui';
 import { DEMO_ACCOUNTS } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
@@ -23,11 +24,13 @@ export default async function LoginPage({
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col justify-center gap-6 px-4 py-10">
       <header className="text-center">
-        <span
-          aria-hidden="true"
-          className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-xl font-bold text-accent-fg"
-        >
-          nS
+        {/*
+          Giris ekrani markanin ilk goruldugu yerdir; burada "nS" yazan bir
+          metin karosu duruyordu. Isaretin kendisi Figma master vector'undan
+          gelir (spec 17.18/2) ve baglanti parcacigiyla birlikte gosterilir.
+        */}
+        <span aria-hidden="true" className="mx-auto mb-3 flex justify-center text-accent">
+          <FiveNMark size={72} animated />
         </span>
         <h1 className="text-3xl font-bold tracking-tight">
           nSosyal
