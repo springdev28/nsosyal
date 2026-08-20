@@ -1,125 +1,102 @@
 # Dağıtım
 
-## Şu an nerede yayında
+## Bu depo hiçbir yere dosya göndermez
 
-İki yerde, birbirinden bağımsız:
+İki hedef de `main`'e push'u kendisi görür, kendisi klonlar, kendisi derler.
+Depoda dosya gönderen bir adım **yoktur ve olmamalıdır**.
 
-| Ortam | Adres | Nasıl güncelleniyor |
-| --- | --- | --- |
-| Render | `nsosyal-5n1k.onrender.com` | `main`'e push → Render kendi çeker, derler, yeniden başlatır |
-| Hostinger | `aliceblue-chimpanzee-816645.hostingersite.com` | aşağıya bakın |
+| Ortam | Adres | Nasıl bağlı | Ölçülen gecikme |
+| --- | --- | --- | --- |
+| Hostinger | `aliceblue-chimpanzee-816645.hostingersite.com` | Node.js web app, GitHub entegrasyonu | push'tan ~2 dakika sonra ayakta |
+| Render | `nsosyal-5n1k.onrender.com` | Web Service, depoya bağlı | birkaç dakika (ücretsiz katman uykudaysa daha uzun) |
 
 İkisi de aynı kaynaktan derlenir ama **ayrı derlemelerdir**; aynı commit'te bile
 chunk hash'leri farklıdır. Biri güncelken diğeri eski kalabilir — bu yüzden
-`/api/health` artık çalıştığı commit'i söyler ve iş akışı bunu doğrular.
+`/api/health` çalıştığı commit'i söyler ve CI bunu doğrular.
 
-Render kurulumu: **New → Web Service** → depoyu seç → build `npm ci && npm run build`,
-start `npm start`. Ücretsiz katman ~15 dakika hareketsizlikten sonra uykuya geçer
-ve ilk istekte 30-60 saniyede uyanır; demodan önce siteyi bir kez açmak yeterli.
-Render `RENDER_GIT_COMMIT` değişkenini kendisi sağlar, `/api/health` onu okur.
+### Hostinger tarafı
+
+hPanel'de **Websites → Node.js web app**, GitHub entegrasyonuyla bu depoya
+bağlı. Her push'ta Hostinger kendisi çeker, `npm run build` koşar ve uygulamayı
+yeniden başlatır. Bağlantı hPanel'den yönetilir; bu depoda karşılığı yoktur.
+
+Not: hPanel'in **Advanced → GIT** ekranı bu kuruluma **ait değildir** — o,
+Node.js olmayan siteler için ayrı bir özellik. Node.js web app'in dağıtımı
+uygulamanın kendi ekranından yönetilir.
+
+### Render tarafı
+
+**New → Web Service** → depoyu seç → build `npm ci && npm run build`,
+start `npm start`. Ücretsiz katman ~15 dakika hareketsizlikten sonra uykuya
+geçer ve ilk istekte 30-60 saniyede uyanır; demodan önce siteyi bir kez açmak
+yeterli.
 
 ## Neden statik barındırma yetmiyor
 
 nSosyal bir **sunucu uygulamasıdır**. `npm run build` çıktısında her rota `ƒ`
-(sunucuda render edilir) olarak işaretlenir ve tüm yazma yolları Server Action'lardan
-geçer. Bu yüzden:
+(sunucuda render edilir) olarak işaretlenir ve tüm yazma yolları Server
+Action'lardan geçer. Bu yüzden paylaşımlı/PHP planlar bu uygulamayı çalıştıramaz
+ve statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar
+ve sunucu tarafındaki demo deposu statik çıktıda yaşayamaz.
 
-- Hostinger'ın **paylaşımlı / PHP** planları bu uygulamayı çalıştıramaz.
-- Statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar ve
-  sunucu tarafındaki demo deposu statik çıktıda yaşayamaz.
+## CI ne yapıyor
 
-Gereken: **Node çalıştırabilen** bir plan — Hostinger VPS ya da Node.js hosting.
+`.github/workflows/ci.yml`:
 
-## Hostinger: iki yol var, birini seçin
+1. **Verify** — `npm run verify` (typecheck + lint + birim testleri) ve E2E.
+2. **Confirm live** — `main`'e push'ta, iki canlı adresin `/api/health`
+   çıktısının **push edilen SHA'yı** bildirmesini bekler.
 
-İş akışı hangisinin yapılandırıldığını secret'lara bakarak anlar. Hiçbiri
-tanımlı değilse dağıtım **sessizce atlanır** ve iş akışı yeşil kalır.
+İkinci adım hattın asıl işi. "200 dönüyor" bir şey kanıtlamaz: eski derleme de
+200 döner. Bu proje tam olarak bu yüzden birkaç kez "hiçbir şey değişmemiş"
+göründü.
 
-### Yol A — hPanel Git webhook (basit olan)
+Adresler secret değil, iş akışında düz yazılıdır: ikisi de herkese açık.
+Secret'a bağlamak, doğrulamayı "kimse secret tanımlamadığı için sessizce
+atlanan" bir adıma çevirirdi.
 
-hPanel'de zaten bir Git dağıtımı kuruluysa bu yolu seçin. Dosyaları biz
-göndermeyiz; Hostinger depodan kendisi çeker.
+### Sürüm kimliği nereden geliyor
 
-1. hPanel → **Advanced → GIT**. Depo bağlı değilse bağlayın (`main` dalı).
-2. Aynı ekrandaki **Deploy webhook** adresini kopyalayın.
-3. GitHub → **Settings → Secrets and variables → Actions → New repository secret**
-   - `HOSTINGER_DEPLOY_HOOK` = kopyaladığınız adres
+`next.config.ts` derleme anında çözer ve `env` ile gömer:
 
-Bu secret varsa iş akışı SSH'a hiç bakmaz.
+1. `NSOSYAL_COMMIT_SHA`
+2. `RENDER_GIT_COMMIT` (Render kendisi verir)
+3. `VERCEL_GIT_COMMIT_SHA`
+4. `GITHUB_SHA`
+5. `git rev-parse HEAD`
 
-### Yol B — SSH (dosyaları biz gönderiyoruz)
-
-| Secret | Zorunlu | Açıklama |
-| --- | --- | --- |
-| `HOSTINGER_HOST` | evet | Yalnızca IP veya alan adı. `https://` yok, port yok |
-| `HOSTINGER_USER` | evet | SSH kullanıcısı |
-| `HOSTINGER_SSH_KEY` | evet | **Özel** anahtarın tamamı (BEGIN satırından END satırına) |
-| `HOSTINGER_PATH` | evet | Sunucudaki uygulama dizini |
-| `HOSTINGER_PORT` | hayır | SSH portu; verilmezse 22 |
-| `HOSTINGER_RESTART` | hayır | Yeniden başlatma komutu. Boşsa pm2 denenir, o da yoksa `touch tmp/restart.txt` |
-
-Anahtar hiçbir zaman depoya girmez; iş akışı onu yalnızca çalışma anında yazar ve
-adım sonunda siler.
-
-#### "Permission denied (publickey)" alıyorsanız
-
-Bu hata **özel anahtarın secret'ta olmadığı** anlamına gelmez. Neredeyse her
-zaman şu ikisinden biridir:
-
-1. **Açık anahtar sunucuda yok.** Preflight adımı artık bu durumda kullandığı
-   açık anahtarı log'a yazdırır — o satırı kopyalayıp sunucuya ekleyin:
-   - Paylaşımlı barındırma: hPanel → **Advanced → SSH Access → SSH Keys → Import**
-   - VPS: hPanel → **VPS → Settings → SSH Keys**, ya da sunucuda:
-     ```bash
-     mkdir -p ~/.ssh
-     echo '<açık anahtar satırı>' >> ~/.ssh/authorized_keys
-     chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
-     ```
-2. **Kullanıcı adı yanlış.** Hostinger paylaşımlı barındırmada kullanıcı adı
-   genelde `uXXXXXXXXX` biçimindedir, `root` değil. hPanel → SSH Access ekranında
-   yazar.
-
-Anahtarın kendisini kaybettiyseniz yenisini üretip ikisini birden yenileyin:
-
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/nsosyal_deploy -N "" -C "nsosyal-deploy"
-cat ~/.ssh/nsosyal_deploy      # bunun TAMAMI -> HOSTINGER_SSH_KEY secret'ı
-cat ~/.ssh/nsosyal_deploy.pub  # bu satır  -> sunucudaki authorized_keys
-```
-
-## Dağıtımın canlıya yansıdığını doğrulama
-
-`/api/health` çalıştığı commit'i söyler:
+Beşinci adım Hostinger için gerekli: GitHub entegrasyonu hiçbir sürüm değişkeni
+vermiyor, o yüzden orası bir süre `commit: "unknown"` bildirdi. Platform depoyu
+klonlayarak derlediği için `.git` mevcut ve soru doğrudan depoya sorulabiliyor.
 
 ```json
-{ "status": "ok", "commit": "3671e37...", "mode": "demo", "topics": 8, "communities": 84 }
+{ "status": "ok", "commit": "076ae7f…", "mode": "demo", "topics": 8, "communities": 137 }
 ```
 
-İş akışının son işi (`Confirm live`) bu adresi çeker ve **push edilen SHA'yı**
-bekler. "200 dönüyor" yeterli değildir: eski derleme de 200 döner. Bu proje tam
-olarak bu yüzden birkaç kez "hiçbir şey değişmemiş" göründü.
+## Kaldırılan SSH dağıtımı
 
-Doğrulanacak adresleri secret olarak verin (ikisi de isteğe bağlı, ama en az
-biri olmadan dağıtımın yansıdığı hiçbir zaman kanıtlanmaz):
+Bir dönem bu depoda SSH + rsync + pm2 ile dosya gönderen bir iş vardı. İki
+sorunu birden taşıyordu:
 
-| Secret | Örnek |
-| --- | --- |
-| `HOSTINGER_HEALTH_URL` | `https://aliceblue-chimpanzee-816645.hostingersite.com/api/health` |
-| `RENDER_HEALTH_URL` | `https://nsosyal-5n1k.onrender.com/api/health` |
+- **Gereksizdi.** Hostinger ve Render zaten kendileri çekiyor. İkinci bir yazıcı
+  aynı dizine dokunacaktı.
+- **Çalışmıyordu.** Sunucu iş akışının anahtarını tanımıyordu
+  (`Permission denied (publickey)`) ve **dokuz koşu üst üste kırmızı yandı**. Her
+  push'ta kırmızı yanan bir hat zamanla okunmaz olur; asıl bir sorun çıktığında
+  da kimse fark etmez.
 
-`commit: "unknown"` görüyorsanız derlemeye sürüm kimliği geçilmemiş demektir.
-SSH yolunda iş akışı bunu kendisi yazar; hPanel Git yolunda uygulama ortamına
-`NSOSYAL_COMMIT_SHA` ekleyin (hPanel → Node.js uygulaması → Environment
-variables) ya da bu kontrolü Render üzerinden yapın.
+Bu yüzden kaldırıldı. `HOSTINGER_HOST`, `HOSTINGER_USER`, `HOSTINGER_SSH_KEY`,
+`HOSTINGER_PATH` secret'ları artık hiçbir yerde okunmuyor; GitHub → Settings →
+Secrets and variables → Actions altından silinebilirler.
 
-## Elle dağıtım
+İleride SSH erişimi olan bir sunucuya (örn. VPS) geçilirse elle dağıtım:
 
 ```bash
 npm ci
-NSOSYAL_COMMIT_SHA=$(git rev-parse HEAD) npm run build
+npm run build          # sürüm kimliğini git'ten kendisi alır
 rsync -az --delete .next public package.json package-lock.json next.config.ts \
-  kullanici@sunucu:/home/user/nsosyal/
-ssh kullanici@sunucu "cd /home/user/nsosyal && npm ci --omit=dev && pm2 reload nsosyal"
+  kullanici@sunucu:/uygulama/dizini/
+ssh kullanici@sunucu "cd /uygulama/dizini && npm ci --omit=dev && pm2 reload nsosyal"
 ```
 
 ## Mod

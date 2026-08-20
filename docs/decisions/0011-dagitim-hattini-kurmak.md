@@ -55,3 +55,18 @@ Node.js hosting). Sunucuda bir kerelik Node 20+ ve pm2 kurulumu gerekir.
 - **Vercel/Railway:** Next.js için en az sürtünmeli yol. Yarışma altyapısı
   Hostinger üzerinden planlandığı için seçilmedi; karar değişirse iş akışı
   küçük bir değişiklikle taşınabilir.
+
+---
+
+## Güncelleme (0014 ile değiştirildi)
+
+Bu karaydaki **SSH + rsync + pm2** yolu 2026-08-20'de kaldırıldı. Karar yanlış
+bir varsayıma dayanıyordu: dağıtımı bu deponun *yapması* gerektiği. Gerçekte
+hem Hostinger hem Render `main`'e push'u kendileri görüp kendileri derliyor;
+depodan dosya göndermek hem gereksizdi hem de dokuz koşu boyunca kırmızı yandı.
+
+Kararın geçerli kalan kısmı: **dağıtım bir hattır ve `main`'e bağlıdır**,
+testler geçmeden bir sürüm iyi sayılmaz. Değişen kısım, hattın ne yaptığı —
+artık dosya göndermiyor, canlı sürümün push edilen commit olduğunu doğruluyor.
+
+Ayrıntı: [0014](0014-dagitimi-platform-yapar-hat-kanitlar.md).

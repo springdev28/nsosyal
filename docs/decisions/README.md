@@ -22,6 +22,7 @@ yeni kayıtla ilişkisi açıkça belirtilir.
 | [0008](0008-erisilebilirligi-testle-sabitlemek.md) | Erişilebilirliği ölçüp testle sabitlemek | Kabul edildi |
 | [0009](0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md) | Türkiye-wide density map ve extensible district layer | Kabul edildi |
 | [0010](0010-kalici-profil-hedefleri-ve-gecici-niyet.md) | Kalıcı profile goals ve transient intent ayrımı | Kabul edildi |
-| [0011](0011-dagitim-hattini-kurmak.md) | Dağıtım bir hat olmalı, elle yükleme değil | Kabul edildi |
+| [0011](0011-dagitim-hattini-kurmak.md) | Dağıtım bir hat olmalı, elle yükleme değil | Test kapısı geçerli, dağıtım yolu 0014 ile değişti |
 | [0012](0012-5n-secici-kenara-yaslanan-yarim-disk.md) | 5N seçici: kenara yaslanan yarım disk, pencereli yay | Kabul edildi, 0006'yı genişletir |
 | [0013](0013-gercek-marka-vektoru-yogunluk-verisi-ve-gazete-sayfalari.md) | Gerçek marka vektörü, gerçek yoğunluk verisi, gerçek gazete sayfaları | Kabul edildi |
+| [0014](0014-dagitimi-platform-yapar-hat-kanitlar.md) | Dağıtımı platform yapar, hat kanıtlar | Kabul edildi, 0011'i değiştirir |

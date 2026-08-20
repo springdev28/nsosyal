@@ -17,7 +17,7 @@ async function loadRoute() {
   return import('@/app/api/health/route');
 }
 
-const ENV_KEYS = ['NSOSYAL_COMMIT_SHA', 'RENDER_GIT_COMMIT', 'VERCEL_GIT_COMMIT_SHA'] as const;
+const ENV_KEYS = ['NSOSYAL_COMMIT_SHA'] as const;
 let saved: Record<string, string | undefined> = {};
 
 beforeEach(() => {
@@ -43,22 +43,18 @@ describe('/api/health', () => {
     expect(body.communities).toBeGreaterThan(0);
   });
 
-  it('dagitim hattinin verdigi surum kimligini bildirir', async () => {
+  it('derlemeye gomulen surum kimligini bildirir', async () => {
+    // Uretimde bu degeri `next.config.ts` gomer: once platform degiskenleri,
+    // hicbiri yoksa `git rev-parse HEAD`. Burada dogrudan veriyoruz.
     process.env.NSOSYAL_COMMIT_SHA = 'abc123';
     const { GET } = await loadRoute();
     expect((await GET().json()).commit).toBe('abc123');
   });
 
-  it('platformun kendi degiskenine duser', async () => {
-    process.env.RENDER_GIT_COMMIT = 'render-sha';
-    const { GET } = await loadRoute();
-    expect((await GET().json()).commit).toBe('render-sha');
-  });
-
   it('kimlik yoksa yalan soylemez', async () => {
     const { GET } = await loadRoute();
-    // 'unknown' bir hata degil: "bu derleme kimligini bilmiyor" demek. Dagitim
-    // hatti bunu gorunce dogrulamayi gecmis saymaz, uyari verir.
+    // 'unknown' bir hata degil: "bu derleme kimligini bilmiyor" demek. CI bunu
+    // gorurse dogrulamayi gecmis saymaz - Hostinger tam olarak bu durumdaydi.
     expect((await GET().json()).commit).toBe('unknown');
   });
 

@@ -1,0 +1,106 @@
+name: CI
+
+# --- Dagitim nasil oluyor ---
+#
+# Bu depoda dosya GONDEREN bir dagitim adimi YOKTUR ve olmamalidir. Iki hedef de
+# `main`'e push'u kendisi gorur, kendisi klonlar, kendisi derler:
+#
+#   Render     -> Web Service, depoya bagli, her push'ta yeniden derler.
+#   Hostinger  -> Node.js web app, GitHub entegrasyonuyla bagli; push'tan ~2
+#                 dakika sonra yeniden derleyip yeniden basliyor. (Olculdu:
+#                 09:52'de push, 09:54'te yeni surum ayaktaydi.)
+#
+# Onceki surum bunun uzerine bir de SSH+rsync+pm2 adimi kosuyordu. Iki sorun:
+# gereksizdi (platform zaten cekiyor) ve calismiyordu - sunucu is akisinin
+# anahtarini tanimadigi icin DOKUZ kosu ust uste kirmizi yandi. Her push'ta
+# kirmizi yanan bir hat zamanla okunmaz olur; asil bir sorun ciktiginda da
+# kimse fark etmez. O yuzden gonderme adimi kaldirildi.
+#
+# Geriye bu hattin gercekten yapabilecegi iki is kaldi:
+#   1. Testleri kosmak.
+#   2. Canli adreslerin PUSH EDILEN COMMIT'i sundugunu KANITLAMAK. "200
+#      donuyor" yeterli degil; eski derleme de 200 doner. Bu proje tam olarak
+#      bu yuzden birkac kez "hicbir sey degismemis" gorundu.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # typecheck + lint + birim testleri
+      - run: npm run verify
+
+      - name: Playwright tarayicisini kur
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        run: npm run test:e2e
+
+  # Canli surumun push edilen commit oldugunu dogrula.
+  #
+  # Platformlar kendi hizlarinda derler, o yuzden burada beklemek gerekiyor.
+  # Adresler secret DEGIL: ikisi de herkese acik ve zaten docs/deployment.md'de
+  # yaziyor. Secret'a baglamak, "dogrulama" adimini kimse secret tanimlamadigi
+  # icin sessizce atlanan bir adima cevirirdi.
+  confirm:
+    name: Confirm live
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Canli surum push edilen commit mi
+        env:
+          SHA: ${{ github.sha }}
+          HOSTINGER_URL: https://aliceblue-chimpanzee-816645.hostingersite.com/api/health
+          RENDER_URL: https://nsosyal-5n1k.onrender.com/api/health
+        run: |
+          failed=0
+
+          check() {
+            name="$1"; url="$2"
+            echo "::group::$name"
+            echo "$url"
+            # Render'in ucretsiz katmani uykudan kalkarken 30-60 saniye
+            # alabiliyor; Hostinger ~2 dakikada derliyor. Toplam ~6 dakika
+            # beklenir, sonrasi gercekten takilmis demektir.
+            for attempt in $(seq 1 18); do
+              body=$(curl -fsS --max-time 25 "$url" 2>/dev/null || true)
+              live=$(printf '%s' "$body" | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p')
+
+              if [ "$live" = "$SHA" ]; then
+                echo "guncel: $SHA"
+                echo "::endgroup::"
+                return 0
+              fi
+
+              echo "deneme $attempt/18: canli '${live:-yanit yok}'"
+              sleep 20
+            done
+
+            echo "::endgroup::"
+            echo "::error::$name hala eski surumu sunuyor. Beklenen $SHA, gelen '${live:-yanit yok}'."
+            failed=1
+          }
+
+          check "Hostinger" "$HOSTINGER_URL"
+          check "Render" "$RENDER_URL"
+          exit "$failed"
