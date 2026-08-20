@@ -1,125 +1,153 @@
-name: Deploy to Hostinger
+name: Deploy
 
-# nSosyal 5N1K bir Next.js sunucu uygulamasidir: her rota sunucuda render edilir
-# ve butun yazma yollari Server Action'lardan gecer. Bu yuzden statik/PHP
-# barindirma yeterli degildir; hedef Node calistirabilen bir Hostinger plani
-# (VPS ya da Node.js hosting) olmak zorunda.
+# nSosyal bir Next.js SUNUCU uygulamasidir: her rota sunucuda render edilir ve
+# butun yazma yollari Server Action'lardan gecer. Statik/PHP barindirma yetmez;
+# hedef Node calistirabilen bir plan olmak zorunda.
 #
-# Kimlik bilgileri depoda DURMAZ. Dort repository secret gerekir:
-#   HOSTINGER_HOST      sunucu adresi        (or. 123.45.67.89 veya vps.example.com)
-#   HOSTINGER_USER      SSH kullanicisi
-#   HOSTINGER_SSH_KEY   ozel anahtar (PEM icerigi)
-#   HOSTINGER_PATH      sunucudaki uygulama dizini (or. /home/user/nsosyal)
-# Istege bagli:
-#   HOSTINGER_PORT      SSH portu (varsayilan 22)
-#   HOSTINGER_HEALTH_URL  dagitim sonrasi kontrol edilecek adres
+# --- Uc dagitim yolu desteklenir ---
+#
+# 1) SSH  (VPS ya da SSH erisimi olan Node hosting)
+#      HOSTINGER_HOST      sunucu adresi (yalnizca IP/alan adi; https:// ve port yok)
+#      HOSTINGER_USER      SSH kullanicisi
+#      HOSTINGER_SSH_KEY   OZEL anahtar (PEM icerigi, satir sonlariyla birlikte)
+#      HOSTINGER_PATH      sunucudaki uygulama dizini
+#    Istege bagli:
+#      HOSTINGER_PORT      SSH portu (varsayilan 22)
+#      HOSTINGER_RESTART   yeniden baslatma komutu. Varsayilan pm2'dir; hPanel'in
+#                          Node.js uygulamalari Passenger kullanir ve orada
+#                          `touch tmp/restart.txt` yeterlidir.
+#
+# 2) WEBHOOK  (hPanel > Advanced > GIT "Deploy" webhook adresi)
+#      HOSTINGER_DEPLOY_HOOK   POST edilecek adres
+#    Bu yolda dosyalari biz gondermeyiz; Hostinger depodan kendisi ceker.
+#
+# 3) HICBIRI  Barindirma bu depo icin yapilandirilmamistir. Dagitim atlanir ve
+#    is akisi YESIL kalir - her push'ta kirmizi yanan bir hat zamanla goz ardi
+#    edilir, asil bir sorun ciktiginda kimse fark etmez.
+#
+# Her yolda son adim ayni: canli adresin PUSH EDILEN COMMIT'i sunduguna bakariz
+# (`/api/health` -> `commit`). "200 donuyor" yeterli degil; bu proje tam olarak
+# bu yuzden defalarca "hicbir sey degismemis" gorundu.
+#   HOSTINGER_HEALTH_URL / RENDER_HEALTH_URL   dogrulanacak adresler (istege bagli)
 
 on:
   push:
     branches: [main]
-  # Elle tetikleme: bir dagitimi yeniden calistirmak icin.
   workflow_dispatch:
 
-# Ust uste gelen dagitimlar birbirini ezmesin.
-#
-# `cancel-in-progress: false` kuyruk olusturuyordu: yeni bir push, onceki
-# kosunun ~12 dakikalik test paketinin arkasinda bekliyor ve geri bildirim
-# gecikiyordu. Dagitim hattinda eskimis bir commit'i yayina almanin degeri
-# zaten yok; yeni kosu eskisini iptal eder.
+# Ust uste gelen dagitimlar birbirini ezmesin. Eskimis bir commit'i yayina
+# almanin degeri yok; yeni kosu eskisini iptal eder.
 concurrency:
-  group: deploy-hostinger
+  group: deploy-main
   cancel-in-progress: true
 
 jobs:
-  # Sunucu erisimi testlerden ONCE ve onlarla PARALEL denetlenir.
-  #
-  # Onceki duzende dagitim tam test paketinin arkasindaydi: eksik bir secret ya
-  # da sunucuya konmamis bir anahtar ancak ~12 dakika sonra ortaya cikiyordu.
-  # Kimlik bilgisi sorunu kodla ilgili degil; kod testlerini beklemesi icin bir
-  # sebep yok. Bu is saniyeler icinde biter ve sorunu adiyla soyler.
+  # Sunucu erisimi testlerden ONCE ve onlarla PARALEL denetlenir. Kimlik
+  # bilgisi sorunu kodla ilgili degil; kod testlerini beklemesi icin sebep yok.
   preflight:
     name: Preflight
     runs-on: ubuntu-latest
     outputs:
-      configured: ${{ steps.secrets.outputs.configured }}
+      mode: ${{ steps.pick.outputs.mode }}
     steps:
-      - name: Check deploy secrets
-        id: secrets
+      - name: Hangi dagitim yolu yapilandirilmis
+        id: pick
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
           KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
           TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
+          HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
         run: |
+          if [ -n "$HOOK" ]; then
+            echo "Yol: webhook (hPanel GIT)."
+            echo "mode=hook" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           missing=""
           [ -z "$HOST" ] && missing="$missing HOSTINGER_HOST"
           [ -z "$SSH_USER" ] && missing="$missing HOSTINGER_USER"
           [ -z "$KEY" ] && missing="$missing HOSTINGER_SSH_KEY"
           [ -z "$TARGET_PATH" ] && missing="$missing HOSTINGER_PATH"
 
-          # Hic secret yoksa Hostinger bu depo icin yapilandirilmamis demektir.
-          # Bu bir hata degil bir tercih: proje su an Render uzerinde yayinda.
-          # Her push'ta kirmizi yanan bir is akisi zamanla tamamen goz ardi
-          # edilir; asil bir sorun ciktiginda da kimse fark etmez.
-          if [ -z "$HOST" ] && [ -z "$SSH_USER" ] && [ -z "$KEY" ] && [ -z "$TARGET_PATH" ]; then
-            echo "Hostinger secret'lari tanimli degil; dagitim atlaniyor."
-            echo "configured=false" >> "$GITHUB_OUTPUT"
+          if [ -z "$HOST$SSH_USER$KEY$TARGET_PATH" ]; then
+            echo "Barindirma bu depo icin yapilandirilmamis; dagitim atlaniyor."
+            echo "mode=none" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Bazilari var bazilari yoksa bu yarim kalmis bir kurulumdur ve
-          # sessizce gecilmemeli.
           if [ -n "$missing" ]; then
-            echo "::error::Hostinger kismen yapilandirilmis. Eksik:$missing"
+            echo "::error::Yarim kalmis kurulum. Eksik secret:$missing"
             echo "Ayrintili kurulum: docs/deployment.md"
             exit 1
           fi
 
-          echo "Dort zorunlu secret de tanimli."
-          echo "configured=true" >> "$GITHUB_OUTPUT"
+          echo "Yol: SSH."
+          echo "mode=ssh" >> "$GITHUB_OUTPUT"
 
       # Anahtarin sunucuda GERCEKTEN calistigini burada ogreniyoruz. Secret'in
       # dolu olmasi yetmez: acik anahtar authorized_keys'te degilse dagitim
       # yine duser, ama bu kez sebebini bilerek.
-      - name: Verify server access
-        if: steps.secrets.outputs.configured == 'true'
+      - name: SSH erisimini dogrula
+        if: steps.pick.outputs.mode == 'ssh'
         env:
           HOST: ${{ secrets.HOSTINGER_HOST }}
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
           PORT: ${{ secrets.HOSTINGER_PORT }}
           TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
+          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
         run: |
           port="${PORT:-22}"
           install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_deploy
+          printf '%s\n' "$KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
 
+          # Anahtarin bicimi bozuksa hata "Permission denied" olarak gorunur ve
+          # insan saatlerce authorized_keys ile ugrasir. Once bicimi soyleyelim.
+          if ! ssh-keygen -y -f ~/.ssh/id_deploy > ~/.ssh/id_deploy.pub 2>/dev/null; then
+            echo "::error::HOSTINGER_SSH_KEY okunamadi. Secret OZEL anahtarin TAMAMI olmali:"
+            echo "  -----BEGIN ... PRIVATE KEY----- satirindan"
+            echo "  -----END ... PRIVATE KEY----- satirina kadar, satir sonlari korunarak."
+            echo "  (.pub dosyasi degil, parola korumali bir anahtar da degil.)"
+            exit 1
+          fi
+
           if ! ssh-keyscan -p "$port" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
-            echo "::error::$HOST:$port adresine ulasilamadi. HOSTINGER_HOST dogru mu? (yalnizca IP/alan adi, https:// ve port olmadan)"
+            echo "::error::$HOST:$port adresine ulasilamadi. HOSTINGER_HOST yalnizca IP ya da alan adi olmali (https:// ve port olmadan)."
             exit 1
           fi
 
           if ! ssh -i ~/.ssh/id_deploy -p "$port" -o BatchMode=yes -o ConnectTimeout=15 \
                  "$SSH_USER@$HOST" 'echo baglanti-tamam'; then
-            echo "::error::SSH kimlik dogrulamasi basarisiz. Ozel anahtar secret'ta, ama ACIK anahtar sunucuda authorized_keys icinde olmayabilir."
-            echo "Cozum: ssh-copy-id -i ~/.ssh/nsosyal_deploy.pub $SSH_USER@$HOST"
-            echo "veya hPanel > VPS > SSH Keys altina .pub dosyasinin icerigini yapistirin."
+            echo "::error::SSH kimlik dogrulamasi basarisiz: sunucu bu anahtari tanimiyor."
+            echo ""
+            echo "Ozel anahtar secret'ta duruyor ve okunabiliyor; eksik olan ACIK anahtarin"
+            echo "sunucudaki ~/.ssh/authorized_keys dosyasinda olmasi. Bu is akisinin"
+            echo "kullandigi acik anahtar tam olarak sudur:"
+            echo ""
+            cat ~/.ssh/id_deploy.pub
+            echo ""
+            echo "Bu satiri sunucuya ekleyin:"
+            echo "  - Hostinger paylasimli barindirma (hPanel): Advanced > SSH Access > SSH Keys > Import"
+            echo "  - Hostinger VPS: hPanel > VPS > Settings > SSH Keys, ya da sunucuda"
+            echo "    mkdir -p ~/.ssh && echo '<yukaridaki satir>' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+            echo ""
+            echo "Kullanici adini da dogrulayin: HOSTINGER_USER=$SSH_USER"
             exit 1
           fi
 
-          # Hedef dizin ve calisma zamani da simdi kontrol edilsin; dagitim
-          # sirasinda ortaya cikmasindansa burada cikmasi daha ucuz.
+          # Hedef dizin ve calisma zamani da simdi kontrol edilsin.
           ssh -i ~/.ssh/id_deploy -p "$port" -o BatchMode=yes "$SSH_USER@$HOST" "
             set -e
             [ -d '$TARGET_PATH' ] || { echo '::error::HOSTINGER_PATH sunucuda yok: $TARGET_PATH'; exit 1; }
             command -v node >/dev/null || { echo '::error::Sunucuda node bulunamadi'; exit 1; }
-            command -v pm2  >/dev/null || { echo '::error::Sunucuda pm2 bulunamadi (npm i -g pm2)'; exit 1; }
-            echo \"node \$(node -v) / pm2 hazir\"
+            echo \"node \$(node -v) hazir\"
           "
 
-      - name: Clean up key
+      - name: Anahtari temizle
         if: always()
-        run: rm -f ~/.ssh/id_deploy
+        run: rm -f ~/.ssh/id_deploy ~/.ssh/id_deploy.pub
 
   verify:
     name: Verify
@@ -137,7 +165,7 @@ jobs:
       # Kirik bir surum dagitilmasin: typecheck + lint + birim testleri.
       - run: npm run verify
 
-      - name: Install Playwright browser
+      - name: Playwright tarayicisini kur
         run: npx playwright install --with-deps chromium
 
       - name: E2E
@@ -146,79 +174,159 @@ jobs:
   deploy:
     name: Deploy
     needs: [preflight, verify]
-    if: needs.preflight.outputs.configured == 'true'
+    if: needs.preflight.outputs.mode != 'none'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      # --- Yol 2: Hostinger kendi ceker -------------------------------------
+      - name: Hostinger deploy webhook'unu tetikle
+        if: needs.preflight.outputs.mode == 'hook'
+        env:
+          HOOK: ${{ secrets.HOSTINGER_DEPLOY_HOOK }}
+        run: |
+          code=$(curl -sS -o /tmp/hook.out -w '%{http_code}' -X POST "$HOOK")
+          echo "Webhook yaniti: $code"
+          head -c 500 /tmp/hook.out || true
+          case "$code" in
+            2*) echo "Dagitim tetiklendi." ;;
+            *) echo "::error::Webhook $code dondu. hPanel > Advanced > GIT altindaki adresi kontrol edin."; exit 1 ;;
+          esac
+
+      # --- Yol 1: dosyalari biz gonderiyoruz --------------------------------
       - uses: actions/setup-node@v4
+        if: needs.preflight.outputs.mode == 'ssh'
         with:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - name: Derle
+        if: needs.preflight.outputs.mode == 'ssh'
+        env:
+          # Canli surumun hangi commit oldugunu /api/health uzerinden
+          # dogrulayabilmek icin SHA derlemeye gomulur.
+          NSOSYAL_COMMIT_SHA: ${{ github.sha }}
+        run: |
+          npm ci
+          npm run build
 
-      - name: Build
-        run: npm run build
-
-      - name: Set up SSH
+      - name: SSH hazirla
+        if: needs.preflight.outputs.mode == 'ssh'
+        env:
+          KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_deploy
+          printf '%s\n' "$KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -p "${{ secrets.HOSTINGER_PORT || 22 }}" -H "${{ secrets.HOSTINGER_HOST }}" \
-            >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "${PORT:-22}" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
       # Yalnizca calistirmak icin gerekenler gonderilir. node_modules
       # gonderilmez; sunucuda uretim bagimliliklari ayrica kurulur.
-      - name: Upload build
+      - name: Derlemeyi yukle
+        if: needs.preflight.outputs.mode == 'ssh'
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
         run: |
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/id_deploy -p ${{ secrets.HOSTINGER_PORT || 22 }}" \
+            -e "ssh -i ~/.ssh/id_deploy -p ${PORT:-22}" \
             --exclude '.git' \
             .next public package.json package-lock.json next.config.ts \
-            "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/"
+            "$SSH_USER@$HOST:$TARGET_PATH/"
 
-      - name: Install and restart
-        run: |
-          ssh -i ~/.ssh/id_deploy -p "${{ secrets.HOSTINGER_PORT || 22 }}" \
-            "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}" \
-            "set -e
-             cd '${{ secrets.HOSTINGER_PATH }}'
-             npm ci --omit=dev
-             # pm2 uygulamayi ayakta tutar ve sunucu yeniden baslayinca geri getirir.
-             if pm2 describe nsosyal >/dev/null 2>&1; then
-               pm2 reload nsosyal --update-env
-             else
-               pm2 start npm --name nsosyal -- start
-               pm2 save
-             fi"
-
-      # Dagitimin gercekten ayakta oldugunu dogrula. Adres verilmemisse atlanir.
-      #
-      # Kosul `if:` icinde DEGIL, betigin icinde: GitHub `secrets` baglamini
-      # if ifadelerinde kabul etmiyor ve is akisini daha ayristirma asamasinda
-      # reddediyor (hic job uretmeden). Secret'i env'e alip burada kontrol
-      # ediyoruz.
-      - name: Health check
+      - name: Kur ve yeniden baslat
+        if: needs.preflight.outputs.mode == 'ssh'
         env:
-          HEALTH_URL: ${{ secrets.HOSTINGER_HEALTH_URL }}
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          TARGET_PATH: ${{ secrets.HOSTINGER_PATH }}
+          SHA: ${{ github.sha }}
+          # hPanel'in Node.js uygulamalari pm2 degil Passenger kullanir; orada
+          # yeniden baslatma `touch tmp/restart.txt` ile olur. Varsayilan pm2,
+          # ama sunucu oyle calismiyorsa secret ile degistirilebilir.
+          RESTART: ${{ secrets.HOSTINGER_RESTART }}
         run: |
-          if [ -z "$HEALTH_URL" ]; then
-            echo "HOSTINGER_HEALTH_URL tanimli degil; saglik kontrolu atlandi."
-            exit 0
-          fi
-          for attempt in 1 2 3 4 5; do
-            if curl -fsS "$HEALTH_URL" | grep -q '"status":"ok"'; then
-              echo "Saglik kontrolu gecti."
-              exit 0
+          ssh -i ~/.ssh/id_deploy -p "${PORT:-22}" "$SSH_USER@$HOST" "
+            set -e
+            cd '$TARGET_PATH'
+            npm ci --omit=dev
+            # Surum kimligi sunucuda da kalsin: /api/health bunu okur.
+            printf 'NSOSYAL_COMMIT_SHA=%s\n' '$SHA' > .env.production.local
+            if [ -n '$RESTART' ]; then
+              sh -c '$RESTART'
+            elif command -v pm2 >/dev/null 2>&1; then
+              if pm2 describe nsosyal >/dev/null 2>&1; then
+                pm2 reload nsosyal --update-env
+              else
+                pm2 start npm --name nsosyal -- start
+                pm2 save
+              fi
+            elif [ -d tmp ]; then
+              # Passenger: dokunulan dosya sureci yeniden baslatir.
+              touch tmp/restart.txt
+            else
+              echo '::error::Yeniden baslatma yolu bulunamadi. pm2 kurun ya da HOSTINGER_RESTART secret ile komutu verin.'
+              exit 1
             fi
-            echo "Deneme $attempt basarisiz, tekrar denenecek..."
-            sleep 5
-          done
-          echo "Saglik kontrolu gecmedi."
-          exit 1
+          "
 
-      - name: Clean up key
+      - name: Anahtari temizle
         if: always()
         run: rm -f ~/.ssh/id_deploy
+
+  # Dagitimin gercekten YENI surumu sundugunu dogrula.
+  #
+  # "200 donuyor" yeterli degil: eski derleme de 200 doner. Bu proje tam olarak
+  # bu yuzden birkac kez "hicbir sey degismemis" gorundu. Burada canli adresin
+  # /api/health'inden PUSH EDILEN SHA'yi bekliyoruz.
+  confirm:
+    name: Confirm live
+    needs: [preflight, deploy]
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Canli surum push edilen commit mi
+        env:
+          SHA: ${{ github.sha }}
+          HOSTINGER_URL: ${{ secrets.HOSTINGER_HEALTH_URL }}
+          RENDER_URL: ${{ secrets.RENDER_HEALTH_URL }}
+        run: |
+          checked=0
+          failed=0
+
+          check() {
+            name="$1"; url="$2"
+            [ -z "$url" ] && return 0
+            checked=$((checked + 1))
+            echo "--- $name: $url"
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              body=$(curl -fsS --max-time 20 "$url" 2>/dev/null || true)
+              live=$(printf '%s' "$body" | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p')
+              if [ "$live" = "$SHA" ]; then
+                echo "  guncel ($SHA)"
+                return 0
+              fi
+              if [ "$live" = "unknown" ]; then
+                echo "::warning::$name surum kimligi bildirmiyor. Derlemeye NSOSYAL_COMMIT_SHA gecirin; aksi halde 'dagitildi' dogrulanamaz."
+                return 0
+              fi
+              echo "  deneme $attempt: canli commit '${live:-yok}', beklenen '$SHA'"
+              sleep 20
+            done
+            echo "::error::$name hala eski surumu sunuyor (beklenen $SHA)."
+            failed=1
+          }
+
+          check "Hostinger" "$HOSTINGER_URL"
+          check "Render" "$RENDER_URL"
+
+          if [ "$checked" -eq 0 ]; then
+            echo "::warning::Dogrulanacak adres yok. HOSTINGER_HEALTH_URL ve/veya RENDER_HEALTH_URL tanimlayin; yoksa dagitimin canliya yansidigi hicbir zaman kanitlanmaz."
+            exit 0
+          fi
+          exit "$failed"
