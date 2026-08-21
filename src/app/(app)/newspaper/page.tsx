@@ -279,7 +279,10 @@ function PageLink({
 }) {
   if (!enabled) {
     return (
-      <span aria-hidden="true" className="px-3 py-2 text-sm text-fg-subtle opacity-40">
+      <span
+        aria-disabled="true"
+        className="inline-flex min-h-9 items-center rounded-lg px-3 text-sm text-fg-subtle"
+      >
         {children}
       </span>
     );
