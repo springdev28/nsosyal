@@ -272,6 +272,22 @@ Karar kaydı:
 
 ## 11. nGazete mimarisi
 
+### Mevcut Publication Studio uygulaması
+
+`/publish` rotası ana `(app)` layout grubunun dışında çalışır ve ana `AppShell`
+kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` istemci editörü,
+30×40 A4 grid üzerinde pointer sürükleme ve klavye oklarıyla blok yerleşimi sağlar.
+Üç denetçi sekmesi içerik, düzen ve stili ayırır. Markdown renderer başlık,
+paragraf, kalın/italik metin, inline code, bağlantı, alıntı, madde/numara listesi
+ve temel tabloyu destekler. Tekrar kullanılabilir doku/kaynaklar ile blok
+kopyalama ve silme editör içinde bulunur.
+
+`PublicationBlock` yeni stil alanlarını eski taslaklarla uyum için opsiyonel taşır.
+`DemoStore` gelen değerleri doğrular, sayısal ayarları izin verilen aralıklara
+sınırlar ve taslağa kaydeder. Bu, mevcut demo-mode uygulamasıdır; production
+yolunda aynı sözleşmenin Supabase kalıcılığı ve RLS politikalarıyla uygulanması
+gerekir.
+
 ### 11.1 Reader model
 
 nGazete generic card collection değil, gerçek digital newspaper composition'dır.

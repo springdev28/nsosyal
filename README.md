@@ -88,6 +88,7 @@ basar.
 | Topluluklar | `/communities` | Kök/dal topluluklar, üyelik ve moderator onaylı başvuru |
 | Projeler | `/projects` | Yaşayan proje sayfaları, ilerleme, ekip, pitch videosu |
 | nGazete | `/newspaper` | Gerçek digital newspaper layout, editorial ve spatial sponsored inventory |
+| Yayın Atölyesi | `/publish` | Bağımsız, Canva tipi 30×40 A4 grid editörü; zengin Markdown, kaynaklar ve blok stil kontrolleri |
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
 | Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan ve yerleşim yönetimi |
 
@@ -130,6 +131,14 @@ nGazete generic card grid değildir. Gerçek dijital gazete yapısı hedeflenir:
 - sections, columns/grid;
 - internal/external links;
 - editorial priority ve layout variants.
+
+Mevcut prototipte yayın üretimi `/publish` adresindeki bağımsız Yayın Atölyesi'nde
+çalışır. Bu rota ana uygulama kabuğunun dışında, yeni sekmede açılır. 30×40 A4 grid
+üzerinde sürükleme ve klavye oklarıyla yerleşim; başlık, paragraf, liste, alıntı,
+kod, bağlantı ve temel tablo Markdown'ı; içerik/düzen/stil denetçileri; tekrar
+kullanılabilir doku ve kaynaklar; gelişmiş tipografi ve görsel ayarları uygulanmıştır.
+Blok ayarları taslakta güvenli sınırlar içinde saklanır ve yeni alanlar eski
+taslaklarla uyumluluk için opsiyoneldir.
 
 Sponsored placements gazetenin grid'i içinde yer alır ve açık `Sponsorlu` etiketi
 taşır. Reader UI'da ayrı bir `Ücretli alanlar` kart listesi veya gelir modeli

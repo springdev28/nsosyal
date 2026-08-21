@@ -114,6 +114,18 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 6. Sistem price snapshot üretir.
 7. Admin request'i inceler ve placement onaylar.
 
+### Yayın Atölyesi demo adımı
+
+1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
+   navigasyonu editör alanını daraltmaz.
+2. Bir blok 30×40 grid üzerinde sürüklenir, ardından ok tuşlarıyla hassas biçimde
+   hareket ettirilir.
+3. İçerik, düzen ve stil sekmelerinden Markdown, tipografi, hizalama, kenarlık,
+   gölge ve görsel ayarlarından birkaçının değiştiği gösterilir.
+4. Tasarım rehberi ve tekrar kullanılabilir doku/kaynaklar açılır; bir blok
+   kopyalanır veya silinir.
+5. Taslak kaydedilip yeniden açıldığında ayarların korunduğu doğrulanır.
+
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.
 
