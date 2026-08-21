@@ -23,6 +23,7 @@ const UNIT_PRICE = 10;
 
 type StudioTab = 'drafts' | 'guide' | 'resources';
 type StudioStage = 'select' | 'edit' | 'preview';
+type EditorPanel = 'design' | 'elements' | 'text' | 'uploads' | 'resources';
 
 interface OwnerView {
   id: string;
@@ -89,6 +90,7 @@ function newBlock(type: PublicationBlock['type'], rect: PublicationRect): Public
     brightness: 1,
     contrast: 1,
     saturation: 1,
+    animation: 'none',
     archived: false,
   };
 }
@@ -242,7 +244,7 @@ function PageGrid({
           className="absolute z-20 border-2 border-accent bg-accent/20 shadow-[0_0_0_1px_white]"
           style={rectStyle(value)}
         >
-          {['-left-1 -top-1', '-right-1 -top-1', '-bottom-1 -left-1', '-bottom-1 -right-1'].map((position) => (
+          {['left-1 top-1', 'right-1 top-1', 'bottom-1 left-1', 'bottom-1 right-1'].map((position) => (
             <span key={position} aria-hidden="true" className={`absolute h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-white ${position}`} />
           ))}
         </div>
@@ -254,7 +256,7 @@ function PageGrid({
   );
 }
 
-function RectFields({ value, onChange }: { value: PublicationRect; onChange: (value: PublicationRect) => void }) {
+function RectFields({ value, onChange, compact = false }: { value: PublicationRect; onChange: (value: PublicationRect) => void; compact?: boolean }) {
   const fields: Array<{ key: keyof PublicationRect; label: string; max: number }> = [
     { key: 'x', label: 'X', max: 29 },
     { key: 'y', label: 'Y', max: 39 },
@@ -262,7 +264,7 @@ function RectFields({ value, onChange }: { value: PublicationRect; onChange: (va
     { key: 'height', label: 'Yükseklik', max: 40 },
   ];
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-2 ${compact ? '' : 'sm:grid-cols-4'}`}>
       {fields.map((field) => (
         <label key={field.key} className="text-xs font-semibold text-fg-muted">
           {field.label}
@@ -286,12 +288,14 @@ function DesignCanvas({
   selectedId,
   onSelect,
   onMove,
+  onResize,
 }: {
   draft: PublicationDraft;
   blocks: PublicationBlock[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onMove?: (id: string, patch: Pick<PublicationRect, 'x' | 'y'>) => void;
+  onResize?: (id: string, patch: PublicationRect) => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -300,6 +304,13 @@ function DesignCanvas({
     pointerY: number;
     originX: number;
     originY: number;
+  } | null>(null);
+  const resizeRef = useRef<{
+    id: string;
+    corner: 'nw' | 'ne' | 'sw' | 'se';
+    pointerX: number;
+    pointerY: number;
+    origin: PublicationRect;
   } | null>(null);
 
   function moveWithPointer(event: React.PointerEvent<HTMLButtonElement>) {
@@ -312,6 +323,27 @@ function DesignCanvas({
       x: Math.max(0, Math.min(PAGE_COLUMNS - 1, drag.originX + dx)),
       y: Math.max(0, Math.min(PAGE_ROWS - 1, drag.originY + dy)),
     });
+  }
+
+  function resizeWithPointer(event: React.PointerEvent<HTMLSpanElement>) {
+    const resize = resizeRef.current;
+    const bounds = canvasRef.current?.getBoundingClientRect();
+    if (!resize || !bounds || !onResize) return;
+    const dx = Math.round(((event.clientX - resize.pointerX) / bounds.width) * PAGE_COLUMNS);
+    const dy = Math.round(((event.clientY - resize.pointerY) / bounds.height) * PAGE_ROWS);
+    let { x, y, width, height } = resize.origin;
+
+    if (resize.corner.includes('e')) width = Math.max(1, Math.min(PAGE_COLUMNS - x, resize.origin.width + dx));
+    if (resize.corner.includes('s')) height = Math.max(1, Math.min(PAGE_ROWS - y, resize.origin.height + dy));
+    if (resize.corner.includes('w')) {
+      x = Math.max(0, Math.min(resize.origin.x + resize.origin.width - 1, resize.origin.x + dx));
+      width = resize.origin.width + resize.origin.x - x;
+    }
+    if (resize.corner.includes('n')) {
+      y = Math.max(0, Math.min(resize.origin.y + resize.origin.height - 1, resize.origin.y + dy));
+      height = resize.origin.height + resize.origin.y - y;
+    }
+    onResize(resize.id, { x, y, width, height });
   }
 
   return (
@@ -356,13 +388,13 @@ function DesignCanvas({
                 y: Math.max(0, Math.min(PAGE_ROWS - 1, block.y + (event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0))),
               });
             }}
-            className={`absolute overflow-hidden text-left text-slate-950 ${
-              outside ? 'border-2 border-red-600 ring-2 ring-red-300' : selectedId === block.id ? 'ring-2 ring-accent' : 'ring-1 ring-slate-400/60'
+            className={`absolute overflow-visible text-left text-slate-950 ${
+              outside ? 'border-2 border-red-600 ring-2 ring-inset ring-red-300' : selectedId === block.id ? 'ring-2 ring-inset ring-accent' : 'ring-1 ring-inset ring-slate-400/60'
             }`}
             style={{
               ...rectStyle(block),
               borderRadius: block.borderRadius,
-              backgroundColor: block.type === 'shape' ? block.color : block.backgroundColor ?? '#FFFFFF',
+              backgroundColor: block.type === 'shape' && !block.resourceId ? block.color : block.backgroundColor ?? '#FFFFFF',
               opacity: block.opacity ?? 1,
               borderWidth: block.borderWidth ?? 0,
               borderColor: block.borderColor ?? '#3D9BFF',
@@ -377,12 +409,13 @@ function DesignCanvas({
               textTransform: block.textTransform ?? 'none',
               letterSpacing: `${block.letterSpacing ?? 0}px`,
               lineHeight: block.lineHeight ?? 1.35,
-              padding: block.padding ?? 8,
+              padding: block.resourceId ? 0 : block.padding ?? 8,
               transform: `rotate(${block.rotation ?? 0}deg) scaleX(${block.flipX ? -1 : 1}) scaleY(${block.flipY ? -1 : 1})`,
               filter: blockShadow(block.shadow),
               touchAction: 'none',
             }}
           >
+            <span className="absolute inset-0 block overflow-hidden rounded-[inherit] pointer-events-none">
             {block.type === 'markdown' ? (
               <span
                 className="flex h-full w-full flex-col overflow-hidden"
@@ -408,11 +441,36 @@ function DesignCanvas({
                 />
               ) : <span className="flex h-full items-center justify-center text-center text-slate-500">Görsel URL’si ekle</span>
             ) : null}
-            {block.type === 'shape' ? (
+            {block.type === 'shape' && block.resourceId ? (
+              (() => {
+                const resource = RESOURCE_ITEMS.find((item) => item.id === block.resourceId);
+                return resource ? <ResourcePreview item={resource} fill /> : null;
+              })()
+            ) : null}
+            {block.type === 'shape' && !block.resourceId ? (
               <span className="flex h-full items-center" style={{ justifyContent: blockVerticalAlign(block.verticalAlign) }}>
                 {block.content}
               </span>
             ) : null}
+            </span>
+            {selectedId === block.id && onResize ? (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
+              <span
+                key={corner}
+                data-corner={corner}
+                aria-hidden="true"
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  resizeRef.current = { id: block.id, corner, pointerX: event.clientX, pointerY: event.clientY, origin: { x: block.x, y: block.y, width: block.width, height: block.height } };
+                }}
+                onPointerMove={resizeWithPointer}
+                onPointerUp={(event) => {
+                  resizeWithPointer(event);
+                  resizeRef.current = null;
+                }}
+                className={`absolute z-20 h-3 w-3 rounded-sm border-2 border-white bg-accent shadow ${corner.includes('n') ? 'top-0' : 'bottom-0'} ${corner.includes('w') ? 'left-0' : 'right-0'}`}
+              />
+            )) : null}
           </button>
         );
       })}
@@ -577,7 +635,7 @@ function BlockInspector({
           <>
             <div>
               <p className="mb-2 text-xs font-black uppercase tracking-wider text-fg-muted">Konum ve ölçü</p>
-              <RectFields value={block} onChange={(rect) => onUpdate(rect)} />
+              <RectFields value={block} onChange={(rect) => onUpdate(rect)} compact />
             </div>
             {block.type !== 'image' ? (
               <>
@@ -658,6 +716,8 @@ export function PublicationStudio({
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [anonymous, setAnonymous] = useState(anonymousByDefault);
   const [dirty, setDirty] = useState(false);
+  const [editorPanel, setEditorPanel] = useState<EditorPanel>('design');
+  const [zoom, setZoom] = useState(80);
   const [notice, setNotice] = useState<{ tone: 'error' | 'success' | 'info'; text: string } | null>(null);
 
   const activeWindow = windows.find((window) => window.issueDate === issueDate) ?? windows[0];
@@ -742,6 +802,33 @@ export function PublicationStudio({
     setDirty(true);
   }
 
+  function addTextPreset(preset: 'title' | 'subtitle' | 'body') {
+    if (!draft) return;
+    const block = newBlock('markdown', draft.rect);
+    const yOffset = preset === 'body' && draft.rect.height > 6 ? 6 : 0;
+    const next: PublicationBlock = {
+      ...block,
+      content: preset === 'title' ? '# Yeni manşet' : preset === 'subtitle' ? '## Açıklayıcı alt başlık' : 'Gövde metninizi buraya yazın.',
+      x: draft.rect.x,
+      y: draft.rect.y + yOffset,
+      width: draft.rect.width,
+      fontSize: preset === 'title' ? 32 : preset === 'subtitle' ? 24 : 16,
+      fontWeight: preset === 'body' ? 400 : 800,
+      height: Math.max(1, Math.min(draft.rect.height - yOffset, preset === 'body' ? 8 : 6)),
+    };
+    setBlocks((current) => [...current, next]);
+    setSelectedBlockId(next.id);
+    setDirty(true);
+  }
+
+  function addImageUrl(url: string) {
+    if (!draft) return;
+    const block = { ...newBlock('image', draft.rect), content: url };
+    setBlocks((current) => [...current, block]);
+    setSelectedBlockId(block.id);
+    setDirty(true);
+  }
+
   function duplicateSelectedBlock() {
     if (!draft || !selectedBlock) return;
     const copy: PublicationBlock = {
@@ -776,19 +863,26 @@ export function PublicationStudio({
     setDirty(true);
   }
 
-  function addResource(label: string, color: string) {
+  function addResource(item: ResourceItem) {
     if (!draft) {
       setTab('drafts');
       setNotice({ tone: 'info', text: 'Kaynağı kullanmak için önce bir sayı ve alan seçerek taslağı aç.' });
       return;
     }
-    const block = { ...newBlock('shape', draft.rect), content: label, color };
+    const block: PublicationBlock = {
+      ...newBlock('shape', draft.rect),
+      content: item.title,
+      color: item.color,
+      resourceId: item.id,
+      animation: item.animation,
+      backgroundColor: 'transparent',
+    };
     setBlocks((current) => [...current, block]);
     setSelectedBlockId(block.id);
     setTab('drafts');
     setStage('edit');
     setDirty(true);
-    setNotice({ tone: 'success', text: `${label} tasarıma eklendi. Özellikler panelinden renk ve ölçülerini değiştirebilirsin.` });
+    setNotice({ tone: 'success', text: `${item.title} tasarıma eklendi. Özellikler panelinden renk ve ölçülerini değiştirebilirsin.` });
   }
 
   function reserve() {
@@ -948,7 +1042,7 @@ export function PublicationStudio({
           <aside className="min-w-0 space-y-4">
             <Card className="space-y-4 p-4">
               <h2 className="text-lg font-black">Alan özeti</h2>
-              <RectFields value={selection} onChange={setSelection} />
+              <RectFields value={selection} onChange={setSelection} compact />
               <dl className="grid grid-cols-2 gap-3 rounded-xl bg-bg-sunken p-3 text-sm">
                 <div><dt className="text-fg-muted">Alan</dt><dd className="text-lg font-black">{area} birim</dd></div>
                 <div><dt className="text-fg-muted">Tahmini tutar</dt><dd className="text-lg font-black">{area * UNIT_PRICE}₺</dd></div>
@@ -965,61 +1059,82 @@ export function PublicationStudio({
       ) : null}
 
       {tab === 'drafts' && stage === 'edit' && draft ? (
-        <div className="grid min-w-0 gap-4 xl:grid-cols-[220px_minmax(0,1fr)_350px]">
-          <aside className="min-w-0 space-y-4">
-            <Card className="p-4">
-              <p className="text-xs font-black uppercase tracking-widest text-accent">Ekle</p>
-              <div className="mt-3 grid gap-2">
-                <button type="button" onClick={() => addBlock('markdown')} className="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-bg-sunken px-3 text-left font-bold hover:border-accent hover:bg-bg-hover">
-                  <Icon name="text" size={19} /> <span>Yazı<span className="block text-xs font-normal text-fg-muted">Markdown metin</span></span>
+        <div className="studio-editor-shell min-w-0 overflow-hidden rounded-2xl border border-line bg-bg-raised">
+          <header className="studio-editor-toolbar flex min-h-16 flex-wrap items-center gap-2 border-b border-line px-3 py-2 sm:px-4">
+            <button type="button" onClick={() => setStage('select')} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm font-bold hover:bg-bg-hover"><Icon name="arrowLeft" size={17} /> <span className="hidden sm:inline">Alan</span></button>
+            <span className="h-7 w-px bg-line" aria-hidden="true" />
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-black">{formatDate(`${draft.issueDate}T09:00:00+03:00`)} · Sayfa {draft.page}</h2>
+              <p className="text-xs text-fg-muted">{draft.rect.width * draft.rect.height} birim · {blocks.length} blok</p>
+            </div>
+            <span className="ml-1"><Badge tone={dirty ? 'warning' : 'success'}>{dirty ? 'Kaydedilmedi' : 'Kaydedildi'}</Badge></span>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <Button type="button" tone="secondary" onClick={() => save(false)} disabled={pending || outsideBlocks.length > 0}><Icon name="check" size={16} /> Kaydet</Button>
+              <Button type="button" tone="secondary" onClick={reserve} disabled={pending || outsideBlocks.length > 0}>Rezerve et</Button>
+              <Button type="button" tone="gradient" onClick={() => save(true, () => setStage('preview'))} disabled={pending || outsideBlocks.length > 0 || blocks.length === 0}>Önizle</Button>
+            </div>
+          </header>
+
+          <div className="studio-editor-grid min-w-0">
+            <nav className="studio-tool-rail" aria-label="Tasarım araçları">
+              {([
+                ['design', 'layout', 'Tasarım'],
+                ['elements', 'shapes', 'Öğeler'],
+                ['text', 'text', 'Metin'],
+                ['uploads', 'upload', 'Yüklemeler'],
+                ['resources', 'sparkles', 'Kaynaklar'],
+              ] as const).map(([value, icon, label]) => (
+                <button key={value} type="button" aria-pressed={editorPanel === value} onClick={() => setEditorPanel(value)} className={editorPanel === value ? 'is-active' : ''}>
+                  <Icon name={icon} size={21} /><span>{label}</span>
                 </button>
-                <button type="button" onClick={() => addBlock('image')} className="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-bg-sunken px-3 text-left font-bold hover:border-accent hover:bg-bg-hover">
-                  <Icon name="image" size={19} /> <span>Görsel<span className="block text-xs font-normal text-fg-muted">URL, kırpma, alt metin</span></span>
-                </button>
-                <button type="button" onClick={() => addBlock('shape')} className="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-bg-sunken px-3 text-left font-bold hover:border-accent hover:bg-bg-hover">
-                  <Icon name="spark" size={19} /> <span>Grafik<span className="block text-xs font-normal text-fg-muted">Renkli vurgu alanı</span></span>
-                </button>
-              </div>
-            </Card>
-            <Card className="space-y-2 p-4 text-xs">
-              <h3 className="font-black text-fg">Çalışma bilgisi</h3>
-              <p className="text-fg-muted">{formatDate(`${draft.issueDate}T09:00:00+03:00`)}</p>
-              <p className="text-fg-muted">Sayfa {draft.page}/5 · {draft.rect.width * draft.rect.height} birim</p>
-              <p className="border-t border-line pt-2 text-fg-subtle">Bloku sürükle veya ok tuşlarıyla birer birim taşı.</p>
-            </Card>
-            <Button type="button" tone="ghost" onClick={() => setStage('select')} className="w-full">
-              <Icon name="arrowLeft" size={16} /> Alan seçimine dön
-            </Button>
-          </aside>
-          <Card className="min-w-0 p-4 sm:p-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">2. Tasarla</h2><p className="text-sm text-fg-muted">{formatDate(`${draft.issueDate}T09:00:00+03:00`)} · Sayfa {draft.page} · {draft.rect.width * draft.rect.height} birim</p></div><Badge tone={dirty ? 'warning' : 'success'}>{dirty ? 'Kaydedilmemiş değişiklik' : 'Kaydedildi'}</Badge></div>
-            <DesignCanvas
-              draft={draft}
-              blocks={blocks}
-              selectedId={selectedBlockId}
-              onSelect={setSelectedBlockId}
-              onMove={(id, patch) => {
-                setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
-                setDirty(true);
-              }}
-            />
-          </Card>
-          <aside className="min-w-0 space-y-4">
-            {outsideBlocks.length ? <p role="alert" className="rounded-xl border border-danger/40 bg-danger-soft p-3 text-sm text-danger">{outsideBlocks.length} blok seçili alanın dışında. Kırmızı bloklar düzelmeden taslak kaydedilemez veya gönderilemez.</p> : null}
-            {selectedBlock ? (
-              <BlockInspector
-                key={selectedBlock.id}
-                block={selectedBlock}
-                onUpdate={updateBlock}
-                onDuplicate={duplicateSelectedBlock}
-                onLayer={moveSelectedLayer}
-                onRemove={removeSelectedBlock}
+              ))}
+            </nav>
+
+            <aside className="studio-library-panel min-w-0 border-r border-line bg-bg-sunken/55 p-3">
+              <EditorLibraryPanel
+                panel={editorPanel}
+                onAddBlock={addBlock}
+                onAddText={addTextPreset}
+                onAddImage={addImageUrl}
+                onUseResource={addResource}
+                onOpenCatalogue={() => setTab('resources')}
               />
-            ) : null}
-            <Card className="space-y-3 p-4"><h3 className="font-black">Alanı değiştir</h3><p className="text-xs text-fg-muted">Ölçü değişirse canlı bloklar arşive taşınır.</p><RectFields value={selection} onChange={setSelection} /><Button type="button" tone="secondary" onClick={changeDraftRect} disabled={sameRect(draft.rect, selection) || pending} className="w-full">Yeni alanı uygula</Button></Card>
-            {draft.archivedBlocks.length ? <Card className="p-4"><h3 className="font-black">Tasarım arşivi</h3><div className="mt-2 space-y-2">{draft.archivedBlocks.map((block) => <button key={block.id} type="button" onClick={() => { const copy = { ...block, id: globalThis.crypto.randomUUID(), archived: false }; setBlocks((current) => [...current, copy]); setSelectedBlockId(copy.id); setDirty(true); }} className="w-full rounded-xl border border-line p-2 text-left text-sm hover:bg-bg-hover">{block.type} · {block.width}×{block.height} <span className="block text-xs text-fg-muted">Bozulmadan çalışma alanına kopyala</span></button>)}</div></Card> : null}
-            <div className="grid grid-cols-2 gap-2"><Button type="button" tone="secondary" onClick={() => save(false)} disabled={pending || outsideBlocks.length > 0}>Kaydet</Button><Button type="button" tone="secondary" onClick={reserve} disabled={pending || outsideBlocks.length > 0}>Rezerve et</Button><Button type="button" tone="gradient" onClick={() => save(true, () => setStage('preview'))} disabled={pending || outsideBlocks.length > 0 || blocks.length === 0} className="col-span-2">Gönder ve önizle</Button></div>
-          </aside>
+            </aside>
+
+            <main className="studio-canvas-workspace min-w-0 bg-[#111827] p-4 sm:p-6" aria-label="Gazete tuvali çalışma zemini">
+              {outsideBlocks.length ? <p role="alert" className="mb-3 rounded-xl border border-danger/60 bg-danger-soft p-3 text-sm text-danger">{outsideBlocks.length} blok alan dışında. Kırmızı işaretli bloklar düzelmeden kayıt veya ödeme yapılamaz.</p> : null}
+              <div className="mx-auto transition-[width]" style={{ width: `${zoom}%`, minWidth: '280px', maxWidth: '760px' }}>
+                <DesignCanvas
+                  draft={draft}
+                  blocks={blocks}
+                  selectedId={selectedBlockId}
+                  onSelect={setSelectedBlockId}
+                  onMove={(id, patch) => {
+                    setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
+                    setDirty(true);
+                  }}
+                  onResize={(id, patch) => {
+                    setBlocks((current) => current.map((block) => (block.id === id ? { ...block, ...patch } : block)));
+                    setDirty(true);
+                  }}
+                />
+              </div>
+              <div className="studio-zoom-bar" aria-label="Tuval yakınlaştırma">
+                <button type="button" onClick={() => setZoom((value) => Math.max(40, value - 10))} aria-label="Uzaklaştır"><Icon name="zoomOut" size={18} /></button>
+                <span>{zoom}%</span>
+                <input type="range" min={40} max={120} step={10} value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Tuval yakınlaştırma yüzdesi" />
+                <button type="button" onClick={() => setZoom((value) => Math.min(120, value + 10))} aria-label="Yakınlaştır"><Icon name="zoomIn" size={18} /></button>
+              </div>
+            </main>
+
+            <aside className="studio-inspector min-w-0 space-y-4 border-l border-line bg-bg p-3">
+              {selectedBlock ? (
+                <BlockInspector key={selectedBlock.id} block={selectedBlock} onUpdate={updateBlock} onDuplicate={duplicateSelectedBlock} onLayer={moveSelectedLayer} onRemove={removeSelectedBlock} />
+              ) : <div className="rounded-xl border border-dashed border-line p-5 text-center text-sm text-fg-muted"><Icon name="shapes" size={24} className="mx-auto mb-2" />Düzenlemek için tuvalde bir blok seç.</div>}
+              <Card className="space-y-3 p-4"><h3 className="font-black">Alanı değiştir</h3><p className="text-xs text-fg-muted">Ölçü değişirse canlı bloklar arşive taşınır.</p><RectFields value={selection} onChange={setSelection} compact /><Button type="button" tone="secondary" onClick={changeDraftRect} disabled={sameRect(draft.rect, selection) || pending} className="w-full">Yeni alanı uygula</Button></Card>
+              {draft.archivedBlocks.length ? <Card className="p-4"><h3 className="font-black">Tasarım arşivi</h3><div className="mt-2 space-y-2">{draft.archivedBlocks.map((block) => <button key={block.id} type="button" onClick={() => { const copy = { ...block, id: globalThis.crypto.randomUUID(), archived: false }; setBlocks((current) => [...current, copy]); setSelectedBlockId(copy.id); setDirty(true); }} className="w-full rounded-xl border border-line p-2 text-left text-sm hover:bg-bg-hover">{block.type} · {block.width}×{block.height}<span className="block text-xs text-fg-muted">Bozulmadan tuvale kopyala</span></button>)}</div></Card> : null}
+            </aside>
+          </div>
         </div>
       ) : null}
 
@@ -1152,70 +1267,79 @@ function Guide() {
   );
 }
 
-const RESOURCE_ITEMS = [
-  {
-    id: 'dots',
-    title: 'Nokta dokusu',
-    access: 'Ücretsiz',
-    kind: 'Statik arka plan',
-    description: 'Hafif mavi nokta örgüsü; veri, araştırma ve teknoloji sayfalarında metni bastırmadan derinlik verir.',
-    color: '#245C92',
-    features: ['Renk değiştirilebilir', 'Baskıda güvenli', 'Saydamlık denetimli'],
-  },
-  {
-    id: 'flow',
-    title: 'Akış gradyanı',
-    access: 'Abonelik',
-    kind: 'Hareketli grafik',
-    description: 'Camgöbeğinden kobalta kayan yumuşak vurgu. Azaltılmış hareket tercihinde statik kareye dönüşür.',
-    color: '#3D78F2',
-    features: ['6 saniyelik yavaş döngü', 'Statik yedek görünüm', 'Başlık arkası için uygun'],
-  },
-  {
-    id: 'n-frame',
-    title: 'N çerçevesi',
-    access: 'Tek seferlik satın alma',
-    kind: 'Grafik çerçeve',
-    description: 'Marka geometrisini değiştirmeyen, görsel ve alıntıları çevreleyen ince mavi çerçeve.',
-    color: '#496DF6',
-    features: ['3:4 ve 1:1 oran', 'İnce/orta çizgi', 'Açık-koyu yüzey uyumu'],
-  },
-  {
-    id: 'data-grid',
-    title: 'Veri ızgarası',
-    access: 'Ücretsiz',
-    kind: 'Grafik zemin',
-    description: 'Grafik, ölçüm ve deney sonuçlarını hizalamak için sakin 12 sütunlu kılavuz.',
-    color: '#1E4A78',
-    features: ['12 sütun', 'Açık-koyu çizgi', 'Grafiklerle uyumlu'],
-  },
-  {
-    id: 'quote-band',
-    title: 'Alıntı bandı',
-    access: 'Ücretsiz',
-    kind: 'Metin bileşeni',
-    description: 'Kısa alıntı ve kaynak adını birlikte tutan, editoryal önceliği artıran bant.',
-    color: '#2E6DB1',
-    features: ['Kaynak satırı', 'İki yazı boyutu', 'Yüksek kontrast'],
-  },
-  {
-    id: 'signal',
-    title: 'Sinyal çizgileri',
-    access: 'Abonelik',
-    kind: 'Hareketli vurgu',
-    description: 'Proje ve etkinlik başlıklarında kullanılabilen, yavaşça ilerleyen üç ince bağlantı çizgisi.',
-    color: '#35A8D6',
-    features: ['8 saniyelik döngü', 'Hareket azaltma desteği', 'Başlıkla çakışmayan maske'],
-  },
-] as const;
+type ResourceTier = 'free' | 'plus' | 'pro' | 'studio';
+type ResourceCategory = 'Arka plan' | 'Çerçeve' | 'Veri grafiği' | 'Tipografi' | 'Dekor' | 'Hareketli grafik';
 
-function ResourcePreview({ id }: { id: (typeof RESOURCE_ITEMS)[number]['id'] }) {
-  if (id === 'dots') return <div className="h-28 rounded-2xl bg-[radial-gradient(circle,#3D9BFF_2px,transparent_3px)] [background-size:18px_18px]" />;
-  if (id === 'flow') return <div className="h-28 rounded-2xl bg-[linear-gradient(120deg,#35C9E8,#3D9BFF,#3156F5)] bg-[length:180%_180%] motion-safe:animate-pulse" />;
-  if (id === 'n-frame') return <div className="flex h-28 items-center justify-center rounded-2xl border-2 border-accent bg-accent-soft text-4xl font-black text-accent">N</div>;
-  if (id === 'data-grid') return <div className="publication-grid h-28 rounded-2xl border border-accent/30 bg-bg-sunken" />;
-  if (id === 'quote-band') return <div className="flex h-28 items-center rounded-2xl border-l-4 border-accent bg-accent-soft px-5 text-xl font-black">“Merak ölçülebilir.”</div>;
-  return <div className="flex h-28 items-center justify-center gap-2 rounded-2xl bg-bg-sunken"><span className="h-1 w-16 rounded-full bg-cyan-400 motion-safe:animate-pulse" /><span className="h-1 w-12 rounded-full bg-accent motion-safe:animate-pulse" /><span className="h-1 w-8 rounded-full bg-blue-600 motion-safe:animate-pulse" /></div>;
+interface ResourceItem {
+  id: string;
+  title: string;
+  tier: ResourceTier;
+  category: ResourceCategory;
+  description: string;
+  color: string;
+  features: string[];
+  animated: boolean;
+  animation: NonNullable<PublicationBlock['animation']>;
+  price: number;
+}
+
+const CURRENT_RESOURCE_TIER: ResourceTier = 'plus';
+const RESOURCE_TIER_ORDER: Record<ResourceTier, number> = { free: 0, plus: 1, pro: 2, studio: 3 };
+const RESOURCE_TIER_LABEL: Record<ResourceTier, string> = { free: 'Ücretsiz', plus: 'Plus', pro: 'Pro', studio: 'Stüdyo' };
+
+const RESOURCE_ITEMS: ResourceItem[] = [
+  { id: 'dots', title: 'Nokta dokusu', tier: 'free', category: 'Arka plan', description: 'Metni bastırmadan derinlik veren düzenli mavi nokta örgüsü.', color: '#245C92', features: ['Renk değişir', 'Baskıda güvenli', 'Saydamlık denetimi'], animated: false, animation: 'none', price: 0 },
+  { id: 'data-grid', title: 'Veri ızgarası', tier: 'free', category: 'Arka plan', description: 'Ölçüm, deney sonucu ve teknik görseller için sakin kılavuz.', color: '#1E4A78', features: ['12 sütun', 'Hafif çizgi', 'Grafik uyumlu'], animated: false, animation: 'none', price: 0 },
+  { id: 'topography', title: 'Topoğrafya çizgileri', tier: 'plus', category: 'Arka plan', description: 'Yerel haber ve saha projelerinde kullanılabilen katmanlı harita dokusu.', color: '#256B9B', features: ['Vektör doku', 'İki yoğunluk', 'Renklenebilir'], animated: false, animation: 'none', price: 29 },
+  { id: 'mesh', title: 'Yumuşak ışık ağı', tier: 'pro', category: 'Arka plan', description: 'Başlık alanlarına saldırgan görünmeden ışık ve hacim ekler.', color: '#345EEA', features: ['Yumuşak geçiş', 'Koyu zemin', 'Parlaklık ayarı'], animated: false, animation: 'none', price: 39 },
+  { id: 'photo-frame', title: 'Fotoğraf çerçevesi', tier: 'free', category: 'Çerçeve', description: 'Görsel, başlık ve alt yazıyı birlikte tutan editoryal kart.', color: '#2C6EA8', features: ['3:2 oran', 'Alt yazı alanı', 'Yuvarlaklık ayarı'], animated: false, animation: 'none', price: 0 },
+  { id: 'n-frame', title: 'N çerçevesi', tier: 'pro', category: 'Çerçeve', description: 'Marka geometrisini değiştirmeden görseli çevreleyen mavi çerçeve.', color: '#496DF6', features: ['1:1 ve 3:4', 'İnce çizgi', 'Açık-koyu uyum'], animated: false, animation: 'none', price: 39 },
+  { id: 'split-frame', title: 'İkili karşılaştırma', tier: 'plus', category: 'Çerçeve', description: 'Önce-sonra veya iki proje karşılaştırması için bölünmüş alan.', color: '#367FB6', features: ['Eşit bölme', 'Orta ayırıcı', 'Başlık yuvası'], animated: false, animation: 'none', price: 29 },
+  { id: 'bar-chart', title: 'Sütun grafiği', tier: 'plus', category: 'Veri grafiği', description: 'Dört veriyi etiketleriyle gösteren sade karşılaştırma grafiği.', color: '#318EC4', features: ['4 seri', 'Etiket alanı', 'Oranlı ölçek'], animated: false, animation: 'none', price: 29 },
+  { id: 'donut-chart', title: 'Halka grafik', tier: 'pro', category: 'Veri grafiği', description: 'Tek bir yüzde veya dağılım bilgisini vurgulayan halka grafik.', color: '#3D78F2', features: ['Yüzde etiketi', 'İki renk', 'Kalınlık ayarı'], animated: false, animation: 'none', price: 39 },
+  { id: 'stats', title: 'Üçlü veri özeti', tier: 'plus', category: 'Veri grafiği', description: 'Üç temel sayıyı küçük açıklamalarıyla aynı satırda sunar.', color: '#2D74A9', features: ['3 gösterge', 'Sayı vurgusu', 'Mobil uyum'], animated: false, animation: 'none', price: 29 },
+  { id: 'timeline', title: 'Zaman çizgisi', tier: 'studio', category: 'Veri grafiği', description: 'Dört aşamalı süreç, proje veya etkinlik akışını gösterir.', color: '#4268D8', features: ['4 durak', 'Tarih etiketi', 'Yatay/dikey'], animated: false, animation: 'none', price: 59 },
+  { id: 'quote-band', title: 'Alıntı bandı', tier: 'free', category: 'Tipografi', description: 'Kısa alıntı ve kaynak adını editoryal bir bantta birleştirir.', color: '#2E6DB1', features: ['Kaynak satırı', 'İki yazı boyutu', 'Yüksek kontrast'], animated: false, animation: 'none', price: 0 },
+  { id: 'headline', title: 'Manşet kilidi', tier: 'plus', category: 'Tipografi', description: 'Başlık, üst başlık ve kısa spot için hazır tipografik düzen.', color: '#3463C3', features: ['Üç metin katı', 'Serif/sans', 'Hizalama seçenekleri'], animated: false, animation: 'none', price: 29 },
+  { id: 'molecule', title: 'Molekül kümesi', tier: 'free', category: 'Dekor', description: 'Bilim içerikleri için ince bağlantılardan oluşan dekoratif küme.', color: '#35A8D6', features: ['Ölçeklenebilir', 'Renklenebilir', 'Saydamlık ayarı'], animated: false, animation: 'none', price: 0 },
+  { id: 'constellation', title: 'Bağlantı ağı', tier: 'plus', category: 'Dekor', description: 'Topluluk ve iş birliği içerikleri için nokta-bağlantı ağı.', color: '#3A88C6', features: ['12 düğüm', 'İki çizgi kalınlığı', 'Kırpılabilir'], animated: false, animation: 'none', price: 29 },
+  { id: 'flow', title: 'Akış gradyanı', tier: 'plus', category: 'Hareketli grafik', description: 'Camgöbeğinden kobalta yavaşça kayan yumuşak vurgu.', color: '#3D78F2', features: ['8 saniyelik döngü', 'Statik yedek', 'Hareket azaltma'], animated: true, animation: 'drift', price: 29 },
+  { id: 'signal', title: 'Sinyal çizgileri', tier: 'pro', category: 'Hareketli grafik', description: 'Proje ve etkinlik başlıklarında ilerleyen üç ince bağlantı çizgisi.', color: '#35A8D6', features: ['10 saniyelik döngü', 'Maske desteği', 'Hareket azaltma'], animated: true, animation: 'wave', price: 39 },
+  { id: 'orbit', title: 'Yörünge halkaları', tier: 'studio', category: 'Hareketli grafik', description: 'Uzay ve teknoloji içeriklerine düşük tempolu yörünge hareketi ekler.', color: '#496DF6', features: ['3 yörünge', '12 saniyelik döngü', 'Statik yedek'], animated: true, animation: 'float', price: 59 },
+];
+
+function resourceIsIncluded(item: ResourceItem): boolean {
+  return RESOURCE_TIER_ORDER[item.tier] <= RESOURCE_TIER_ORDER[CURRENT_RESOURCE_TIER];
+}
+
+function resourceAccessLabel(item: ResourceItem, unlocked: boolean): string {
+  if (unlocked && !resourceIsIncluded(item)) return 'Satın alındı';
+  if (item.tier === 'free') return 'Ücretsiz';
+  if (resourceIsIncluded(item)) return `${RESOURCE_TIER_LABEL[item.tier]} planına dahil`;
+  return `${RESOURCE_TIER_LABEL[item.tier]} · ${item.price}₺ ile aç`;
+}
+
+function ResourcePreview({ item, compact = false, fill = false }: { item: ResourceItem; compact?: boolean; fill?: boolean }) {
+  const height = fill ? 'h-full' : compact ? 'h-16' : 'h-28';
+  const base = `${height} resource-preview relative overflow-hidden rounded-xl border border-accent/25 bg-bg-sunken`;
+  if (item.id === 'dots') return <div className={`${base} resource-dots`} />;
+  if (item.id === 'data-grid') return <div className={`${base} publication-grid`} />;
+  if (item.id === 'topography') return <div className={`${base} resource-topography`}><i /><i /><i /></div>;
+  if (item.id === 'mesh') return <div className={`${base} resource-mesh`} />;
+  if (item.id === 'photo-frame') return <div className={`${base} grid grid-rows-[1fr_auto] p-2`}><span className="rounded-md bg-accent-soft"><Icon name="image" className="m-auto h-full" /></span><span className="mt-1 h-1.5 w-2/3 rounded-full bg-accent/50" /></div>;
+  if (item.id === 'n-frame') return <div className={`${base} flex items-center justify-center border-2 border-accent text-3xl font-black text-accent`}>N</div>;
+  if (item.id === 'split-frame') return <div className={`${base} grid grid-cols-2 gap-1 p-2`}><span className="rounded-md bg-cyan-400/25" /><span className="rounded-md bg-blue-500/30" /></div>;
+  if (item.id === 'bar-chart') return <div className={`${base} flex items-end justify-center gap-2 p-4`}><i className="h-1/3" /><i className="h-2/3" /><i className="h-1/2" /><i className="h-5/6" /></div>;
+  if (item.id === 'donut-chart') return <div className={`${base} flex items-center justify-center`}><span className="resource-donut" /></div>;
+  if (item.id === 'stats') return <div className={`${base} grid grid-cols-3 gap-1.5 p-2`}><i /><i /><i /></div>;
+  if (item.id === 'timeline') return <div className={`${base} resource-timeline flex items-center justify-around px-3`}><i /><i /><i /><i /></div>;
+  if (item.id === 'quote-band') return <div className={`${base} flex items-center border-l-4 border-l-accent px-4 text-base font-black`}>“Merak ölçülebilir.”</div>;
+  if (item.id === 'headline') return <div className={`${base} flex flex-col justify-center gap-1 px-4`}><i className="w-1/3" /><b>YENİ FİKİRLER</b><i className="w-3/4" /></div>;
+  if (item.id === 'molecule') return <div className={`${base} resource-molecule`}><i /><i /><i /><i /><i /></div>;
+  if (item.id === 'constellation') return <div className={`${base} resource-constellation`} />;
+  if (item.id === 'flow') return <div className={`${base} resource-flow`} />;
+  if (item.id === 'signal') return <div className={`${base} resource-signal flex flex-col items-center justify-center gap-2`}><i /><i /><i /></div>;
+  return <div className={`${base} resource-orbit flex items-center justify-center`}><i /><i /><b /></div>;
 }
 
 function Resources({
@@ -1223,10 +1347,23 @@ function Resources({
   onUseResource,
 }: {
   onOpenGuide: () => void;
-  onUseResource: (label: string, color: string) => void;
+  onUseResource: (item: ResourceItem) => void;
 }) {
-  const [selectedId, setSelectedId] = useState<(typeof RESOURCE_ITEMS)[number]['id'] | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<'Tümü' | ResourceCategory>('Tümü');
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(() => new Set());
   const selected = RESOURCE_ITEMS.find((item) => item.id === selectedId) ?? null;
+  const categories: Array<'Tümü' | ResourceCategory> = ['Tümü', 'Arka plan', 'Çerçeve', 'Veri grafiği', 'Tipografi', 'Dekor', 'Hareketli grafik'];
+  const visibleItems = RESOURCE_ITEMS.filter((item) => {
+    const matchesCategory = category === 'Tümü' || item.category === category;
+    const haystack = `${item.title} ${item.category} ${item.description}`.toLocaleLowerCase('tr-TR');
+    return matchesCategory && haystack.includes(query.trim().toLocaleLowerCase('tr-TR'));
+  });
+
+  function unlock(item: ResourceItem) {
+    setUnlockedIds((current) => new Set(current).add(item.id));
+  }
 
   return (
     <div className="space-y-5">
@@ -1234,49 +1371,151 @@ function Resources({
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-accent">Tasarım envanteri</p>
           <h2 className="mt-1 text-2xl font-black sm:text-3xl">Kaynaklar</h2>
-          <p className="mt-1 max-w-3xl text-sm text-fg-muted">Bir kaynağa basarak lisansını, özelliklerini ve tuvalde nasıl davranacağını incele.</p>
+          <p className="mt-1 max-w-3xl text-sm text-fg-muted">Plus planın ücretsiz ve Plus kaynakları kapsar. Pro ve Stüdyo kaynaklarını istersen tek tek açabilirsin.</p>
         </div>
         <button type="button" onClick={onOpenGuide} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line px-4 text-sm font-bold hover:bg-bg-hover">
           <Icon name="book" size={17} /> Markdown rehberini aç
         </button>
       </header>
 
+      <Card className="grid gap-4 p-4 lg:grid-cols-[minmax(240px,1fr)_auto] lg:items-center">
+        <label className="relative block">
+          <span className="sr-only">Kaynak ara</span>
+          <Icon name="search" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kaynak, grafik veya çerçeve ara" className="min-h-11 w-full rounded-xl border border-line bg-bg-sunken pl-10 pr-3 text-sm text-fg" />
+        </label>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Kaynak kategorisi">
+          {categories.map((entry) => <button key={entry} type="button" aria-pressed={category === entry} onClick={() => setCategory(entry)} className={`min-h-9 rounded-full px-3 text-xs font-bold ${category === entry ? 'bg-accent text-accent-fg' : 'border border-line bg-bg-sunken text-fg-muted'}`}>{entry}</button>)}
+        </div>
+        <p className="text-xs text-fg-muted lg:col-span-2"><strong className="text-fg">Mevcut plan: Plus</strong> · {RESOURCE_ITEMS.length} kaynak · {RESOURCE_ITEMS.filter((item) => item.animated).length} hareketli grafik</p>
+      </Card>
+
       <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-        {RESOURCE_ITEMS.map((item) => (
+        {visibleItems.map((item) => (
           <button
             key={item.id}
             type="button"
             aria-pressed={selectedId === item.id}
             onClick={() => setSelectedId(item.id)}
-            className={`card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-accent ${selectedId === item.id ? 'border-accent ring-1 ring-accent' : ''}`}
+            className={`card box-border overflow-hidden p-4 text-left transition-all hover:-translate-y-0.5 hover:border-accent ${selectedId === item.id ? 'border-accent ring-2 ring-inset ring-accent' : ''}`}
           >
-            <ResourcePreview id={item.id} />
+            <ResourcePreview item={item} />
             <span className="mt-4 flex items-start justify-between gap-2">
-              <span><span className="block font-black">{item.title}</span><span className="block text-sm text-fg-muted">{item.kind}</span></span>
-              <Badge tone={item.access === 'Ücretsiz' ? 'success' : 'accent'}>{item.access}</Badge>
+              <span><span className="block font-black">{item.title}</span><span className="block text-sm text-fg-muted">{item.category} · {item.animated ? 'Animasyonlu' : 'Statik'}</span></span>
+              <Badge tone={resourceIsIncluded(item) || unlockedIds.has(item.id) ? 'success' : 'accent'}>{RESOURCE_TIER_LABEL[item.tier]}</Badge>
             </span>
+            <span className="mt-3 block border-t border-line pt-3 text-xs font-bold text-accent">{resourceAccessLabel(item, unlockedIds.has(item.id))}</span>
           </button>
         ))}
       </div>
 
+      {!visibleItems.length ? <p className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-fg-muted">Bu aramayla eşleşen kaynak bulunamadı.</p> : null}
+
       {selected ? (
         <Card as="section" className="grid gap-5 p-5 lg:grid-cols-[260px_minmax(0,1fr)_auto] lg:items-center" id="resource-detail">
-          <ResourcePreview id={selected.id} />
+          <ResourcePreview item={selected} />
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-accent">{selected.access} · {selected.kind}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-accent">{selected.category} · {selected.animated ? 'Animasyonlu grafik' : 'Statik grafik'}</p>
             <h3 className="mt-1 text-xl font-black">{selected.title}</h3>
             <p className="mt-2 text-sm text-fg-muted">{selected.description}</p>
+            <p className="mt-2 text-sm font-bold text-fg">{resourceAccessLabel(selected, unlockedIds.has(selected.id))}</p>
             <ul className="mt-3 flex flex-wrap gap-2">
               {selected.features.map((feature) => <li key={feature} className="rounded-full bg-bg-sunken px-3 py-1 text-xs text-fg-muted ring-1 ring-[var(--border)]">{feature}</li>)}
             </ul>
           </div>
-          <Button type="button" tone="gradient" onClick={() => onUseResource(selected.title, selected.color)}>
-            <Icon name="plus" size={17} /> Tasarımda kullan
-          </Button>
+          {resourceIsIncluded(selected) || unlockedIds.has(selected.id) ? (
+            <Button type="button" tone="gradient" onClick={() => onUseResource(selected)}><Icon name="plus" size={17} /> Tasarımda kullan</Button>
+          ) : (
+            <Button type="button" tone="gradient" onClick={() => unlock(selected)}><Icon name="lock" size={17} /> Tek seferlik aç · {selected.price}₺</Button>
+          )}
         </Card>
       ) : (
         <p className="rounded-2xl border border-dashed border-line p-5 text-center text-sm text-fg-muted">Ayrıntılarını görmek için bir kaynak seç.</p>
       )}
+    </div>
+  );
+}
+
+function EditorLibraryPanel({
+  panel,
+  onAddBlock,
+  onAddText,
+  onAddImage,
+  onUseResource,
+  onOpenCatalogue,
+}: {
+  panel: EditorPanel;
+  onAddBlock: (type: PublicationBlock['type']) => void;
+  onAddText: (preset: 'title' | 'subtitle' | 'body') => void;
+  onAddImage: (url: string) => void;
+  onUseResource: (item: ResourceItem) => void;
+  onOpenCatalogue: () => void;
+}) {
+  const [imageUrl, setImageUrl] = useState('');
+  const includedResources = RESOURCE_ITEMS.filter(resourceIsIncluded);
+
+  if (panel === 'design') {
+    return (
+      <div className="space-y-4">
+        <div><p className="text-xs font-black uppercase tracking-widest text-accent">Hazır düzenler</p><h3 className="mt-1 text-lg font-black">Tasarım</h3></div>
+        <button type="button" onClick={() => { onAddText('title'); onAddText('body'); }} className="studio-template-tile"><span className="grid grid-cols-[1.3fr_0.7fr] gap-2"><i className="h-20 rounded-lg bg-accent/25" /><i className="h-20 rounded-lg bg-bg-hover" /></span><b>Editoryal manşet</b><small>Başlık + metin sütunu</small></button>
+        <button type="button" onClick={() => { onAddBlock('image'); onAddText('subtitle'); }} className="studio-template-tile"><span className="grid gap-2"><i className="h-14 rounded-lg bg-gradient-to-r from-cyan-400/35 to-blue-500/40" /><i className="h-5 w-2/3 rounded bg-bg-hover" /></span><b>Görsel hikâye</b><small>Kapak görseli + spot</small></button>
+        <button type="button" onClick={() => onUseResource(RESOURCE_ITEMS.find((item) => item.id === 'stats')!)} className="studio-template-tile"><span className="grid grid-cols-3 gap-1"><i /><i /><i /></span><b>Veri özeti</b><small>Üç göstergeli düzen</small></button>
+      </div>
+    );
+  }
+
+  if (panel === 'elements') {
+    return (
+      <div className="space-y-4">
+        <div><p className="text-xs font-black uppercase tracking-widest text-accent">Bloklar</p><h3 className="mt-1 text-lg font-black">Öğeler</h3></div>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={() => onAddBlock('shape')} className="studio-element-button"><span className="h-9 w-12 rounded-lg bg-accent" />Dörtgen</button>
+          <button type="button" onClick={() => onUseResource(RESOURCE_ITEMS.find((item) => item.id === 'molecule')!)} className="studio-element-button"><Icon name="shapes" size={28} />Molekül</button>
+          <button type="button" onClick={() => onUseResource(RESOURCE_ITEMS.find((item) => item.id === 'quote-band')!)} className="studio-element-button"><Icon name="text" size={28} />Alıntı</button>
+          <button type="button" onClick={() => onUseResource(RESOURCE_ITEMS.find((item) => item.id === 'bar-chart')!)} className="studio-element-button"><Icon name="chart" size={28} />Grafik</button>
+        </div>
+        <p className="rounded-xl border border-line bg-bg-raised p-3 text-xs text-fg-muted">Seçili öğeyi tuvalde sürükle; köşe tutamaçlarıyla boyutlandır. Hassas değerler sağ paneldedir.</p>
+      </div>
+    );
+  }
+
+  if (panel === 'text') {
+    return (
+      <div className="space-y-3">
+        <div><p className="text-xs font-black uppercase tracking-widest text-accent">Tipografi</p><h3 className="mt-1 text-lg font-black">Metin</h3></div>
+        <button type="button" onClick={() => onAddText('title')} className="studio-text-preset text-2xl font-black">Manşet ekle<span>40 px · kalın</span></button>
+        <button type="button" onClick={() => onAddText('subtitle')} className="studio-text-preset text-lg font-bold">Alt başlık ekle<span>26 px · kalın</span></button>
+        <button type="button" onClick={() => onAddText('body')} className="studio-text-preset text-sm">Gövde metni ekle<span>16 px · normal</span></button>
+        <button type="button" onClick={() => onAddBlock('markdown')} className="studio-text-preset font-mono text-sm">Markdown bloğu<span>Başlık, liste, bağlantı</span></button>
+      </div>
+    );
+  }
+
+  if (panel === 'uploads') {
+    return (
+      <div className="space-y-4">
+        <div><p className="text-xs font-black uppercase tracking-widest text-accent">Görsel</p><h3 className="mt-1 text-lg font-black">Yüklemeler</h3></div>
+        <div className="rounded-xl border border-dashed border-accent/60 bg-accent-soft p-5 text-center"><Icon name="upload" size={28} className="mx-auto text-accent" /><p className="mt-2 text-sm font-bold">Görsel bağlantısı ekle</p><p className="mt-1 text-xs text-fg-muted">URL, alt metin, crop ve efektler sağ panelden düzenlenir.</p></div>
+        <label className="block text-xs font-bold text-fg-muted">Görsel URL’si<input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." className="mt-1 min-h-11 w-full rounded-xl border border-line bg-bg-raised px-3 text-sm text-fg" /></label>
+        <Button type="button" tone="gradient" disabled={!/^https?:\/\//.test(imageUrl)} onClick={() => { onAddImage(imageUrl); setImageUrl(''); }} className="w-full"><Icon name="image" size={17} /> Tuvale ekle</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div><p className="text-xs font-black uppercase tracking-widest text-accent">Plus planına dahil</p><h3 className="mt-1 text-lg font-black">Kaynaklar</h3><p className="mt-1 text-xs text-fg-muted">Ücretsiz ve Plus öğeleri doğrudan kullanabilirsin.</p></div>
+      <div className="grid grid-cols-2 gap-2">
+        {includedResources.slice(0, 8).map((item) => (
+          <button key={item.id} type="button" onClick={() => onUseResource(item)} className="overflow-hidden rounded-xl border border-line bg-bg-raised p-2 text-left hover:border-accent">
+            <ResourcePreview item={item} compact />
+            <span className="mt-2 block truncate text-xs font-bold">{item.title}</span>
+            <span className="block truncate text-[0.65rem] text-fg-muted">{item.category}</span>
+          </button>
+        ))}
+      </div>
+      <Button type="button" tone="secondary" onClick={onOpenCatalogue} className="w-full"><Icon name="sparkles" size={17} /> Tüm {RESOURCE_ITEMS.length} kaynağı gör</Button>
     </div>
   );
 }

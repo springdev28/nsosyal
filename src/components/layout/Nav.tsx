@@ -187,7 +187,7 @@ export function MainNav({
                   } ${isNewspaper ? 'nav-newspaper' : ''}`}
                 >
                   <span className={`relative flex ${isNewspaper ? 'nav-newspaper__icon' : ''}`}>
-                    <Icon name={item.icon} size={22} filled={active} strokeWidth={1.9} />
+                    <Icon name={item.icon} size={22} filled={active && !isNewspaper} strokeWidth={1.9} />
                     {badge > 0 ? (
                       <span className="absolute -right-2 -top-1.5 min-w-[1.05rem] rounded-full bg-accent px-1 text-center text-[0.62rem] font-bold leading-[1.05rem] text-accent-fg">
                         {badge > 9 ? '9+' : badge}

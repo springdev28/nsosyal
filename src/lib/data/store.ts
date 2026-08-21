@@ -1191,6 +1191,10 @@ export class DemoStore {
       brightness: Math.max(0.5, Math.min(1.5, block.brightness ?? 1)),
       contrast: Math.max(0.5, Math.min(1.5, block.contrast ?? 1)),
       saturation: Math.max(0, Math.min(2, block.saturation ?? 1)),
+      resourceId: typeof block.resourceId === 'string' ? block.resourceId.slice(0, 80) : undefined,
+      animation: ['none', 'float', 'pulse', 'drift', 'wave'].includes(block.animation ?? '')
+        ? block.animation
+        : 'none',
       archived: false,
     }));
     if (blocks.some((block) => !cleanPublicationRect(block) || !publicationRectContains(draft.rect, block))) {

@@ -431,6 +431,8 @@ describe('Yayın Atölyesi alan hakkı', () => {
         brightness: 1,
         contrast: 1,
         saturation: 1,
+        resourceId: 'flow',
+        animation: 'drift',
         archived: false,
       }],
       anonymous: false,
@@ -453,6 +455,8 @@ describe('Yayın Atölyesi alan hakkı', () => {
       paragraphIndent: 24,
       verticalAlign: 'middle',
       textTransform: 'uppercase',
+      resourceId: 'flow',
+      animation: 'drift',
     });
   });
 });

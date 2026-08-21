@@ -60,7 +60,16 @@ export type IconName =
   | 'github'
   | 'linkedin'
   | 'youtube'
-  | 'x';
+  | 'x'
+  | 'shapes'
+  | 'layout'
+  | 'upload'
+  | 'layers'
+  | 'chart'
+  | 'animation'
+  | 'zoomIn'
+  | 'zoomOut'
+  | 'copy';
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -351,6 +360,62 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   x: <path d="M5 4.5 19 19.5M18.5 4.5 5.5 19.5" />,
+  shapes: (
+    <>
+      <rect x="3.5" y="4" width="7" height="7" rx="1.5" />
+      <circle cx="16.5" cy="7.5" r="3.5" />
+      <path d="m8 20 4-7 4 7z" />
+    </>
+  ),
+  layout: (
+    <>
+      <rect x="3.5" y="4" width="17" height="16" rx="2" />
+      <path d="M9 4v16M9 10h11" />
+    </>
+  ),
+  upload: (
+    <>
+      <path d="M12 16V4.5M7.5 9 12 4.5 16.5 9" />
+      <path d="M5 14.5V19h14v-4.5" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m12 3.5 8 4.5-8 4.5L4 8z" />
+      <path d="m4 12 8 4.5 8-4.5M4 16l8 4.5 8-4.5" />
+    </>
+  ),
+  chart: (
+    <>
+      <path d="M5 19V11M10 19V6M15 19v-4M20 19V8" />
+      <path d="M3.5 19.5h17" />
+    </>
+  ),
+  animation: (
+    <>
+      <path d="M8 5.5a8 8 0 0 1 11 4M16 18.5a8 8 0 0 1-11-4" />
+      <path d="m16.5 5.5 2.8 4.2-4.8.7M7.5 18.5l-2.8-4.2 4.8-.7" />
+      <path d="m10 8.5 5 3.5-5 3.5z" />
+    </>
+  ),
+  zoomIn: (
+    <>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m15.5 15.5 4 4M10.5 7.5v6M7.5 10.5h6" />
+    </>
+  ),
+  zoomOut: (
+    <>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m15.5 15.5 4 4M7.5 10.5h6" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="8" y="8" width="11.5" height="11.5" rx="2" />
+      <path d="M16 8V5.5a2 2 0 0 0-2-2H5.5a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2H8" />
+    </>
+  ),
 };
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

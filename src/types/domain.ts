@@ -493,6 +493,9 @@ export interface PublicationBlock extends PublicationRect {
   brightness?: number;
   contrast?: number;
   saturation?: number;
+  /** Katalogdan eklenen grafik kaynaginin kimligi ve hareket davranisi. */
+  resourceId?: string;
+  animation?: 'none' | 'float' | 'pulse' | 'drift' | 'wave';
   archived: boolean;
 }
 

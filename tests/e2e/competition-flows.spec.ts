@@ -221,8 +221,15 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await expect(page.getByText('[Kaynak](https://ornek.org)')).toBeVisible();
 
     await page.getByRole('tab', { name: 'Kaynaklar' }).click();
+    await expect(page.getByText('Mevcut plan: Plus')).toBeVisible();
+    await expect(page.locator('.resource-preview')).toHaveCount(18);
+    await expect(page.getByText('Hareketli grafik · Animasyonlu').first()).toBeVisible();
     await page.getByRole('button', { name: /Nokta dokusu/ }).click();
     await expect(page.locator('#resource-detail').getByRole('heading', { name: 'Nokta dokusu' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Tasarımda kullan/ })).toBeVisible();
+
+    await page.getByRole('button', { name: /N çerçevesi/ }).click();
+    await page.getByRole('button', { name: 'Tek seferlik aç · 39₺' }).click();
     await expect(page.getByRole('button', { name: /Tasarımda kullan/ })).toBeVisible();
   });
 
@@ -231,8 +238,26 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await page.goto('/publish');
 
     await page.getByRole('button', { name: 'Düzenlemeye başla' }).click();
-    await expect(page.getByRole('heading', { name: '2. Tasarla' })).toBeVisible();
-    await page.getByRole('button', { name: /Yazı.*Markdown metin/ }).click();
+    await expect(page.getByRole('navigation', { name: 'Tasarım araçları' })).toBeVisible();
+    await page.getByRole('navigation', { name: 'Tasarım araçları' }).getByRole('button', { name: 'Metin', exact: true }).click();
+    await page.getByRole('button', { name: /Manşet ekle/ }).click();
+
+    const textBlock = page.getByRole('button', { name: /Yazı bloğu/ }).first();
+    const beforeResize = await textBlock.boundingBox();
+    const resizeHandle = textBlock.locator('[data-corner="se"]');
+    const handleBox = await resizeHandle.boundingBox();
+    if (beforeResize && handleBox) {
+      await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(handleBox.x - 30, handleBox.y + handleBox.height / 2);
+      await page.mouse.up();
+      const afterResize = await textBlock.boundingBox();
+      if ((page.viewportSize()?.width ?? 0) >= 768) {
+        expect(afterResize?.width ?? beforeResize.width).toBeLessThan(beforeResize.width);
+      } else {
+        await expect(resizeHandle).toBeVisible();
+      }
+    }
 
     const inspector = page.getByRole('region', { name: 'Seçili yazı bloğu özellikleri' });
     await expect(inspector.getByRole('tab', { name: 'İçerik' })).toBeVisible();
@@ -244,9 +269,8 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await inspector.getByLabel('Harf aralığı').fill('2');
     await inspector.getByLabel('Döndürme').fill('15');
 
-    const textBlock = page.getByRole('button', { name: /Yazı bloğu/ }).first();
     await expect(textBlock).toHaveAttribute('style', /rotate\(15deg\)/);
-    await expect(textBlock.locator('span').first()).toHaveCSS('text-indent', '24px');
+    await expect(textBlock.locator('span.flex.h-full').first()).toHaveCSS('text-indent', '24px');
 
     await inspector.getByRole('button', { name: 'Çoğalt' }).click();
     await expect(page.getByRole('button', { name: /Yazı bloğu/ })).toHaveCount(2);
@@ -255,6 +279,9 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await duplicateInspector.getByRole('tab', { name: 'Stil' }).click();
     await duplicateInspector.getByLabel('Gölge').selectOption('soft');
     await expect(page.getByRole('button', { name: /Yazı bloğu/ }).last()).not.toHaveCSS('filter', 'none');
+
+    await page.getByRole('button', { name: 'Kaynaklar' }).click();
+    await expect(page.getByRole('button', { name: /Tüm 18 kaynağı gör/ })).toBeVisible();
 
     await page.getByRole('button', { name: 'Kaydet' }).click();
     await expect(page.getByText('Taslak kaydedildi.')).toBeVisible();
