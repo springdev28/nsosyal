@@ -210,6 +210,22 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 - internal/external links
 - editorial priority/layout variants
 
+### Mevcut prototipte Yayın Atölyesi
+
+`/publish` ana uygulama kabuğundan ayrılmış, yeni sekmede açılan bağımsız yayın
+çalışma alanıdır. Uygulanan kapsam:
+
+- 30×40 A4 grid üzerinde sürükleme ve klavye oklarıyla blok yerleşimi;
+- başlık, paragraf, liste, alıntı, kod, bağlantı ve temel tablo Markdown desteği;
+- içerik, düzen ve stil sekmeleri;
+- tekrar kullanılabilir doku/kaynaklar ve blok kopyalama/silme;
+- tipografi, hizalama, boşluk, kenarlık, gölge, görsel filtreleri ve dönüşümler;
+- blok ayarlarının güvenli sınırlar içinde temizlenmesi ve taslakta saklanması.
+
+Yeni blok alanları mevcut taslakların okunabilmesi için opsiyoneldir. Bu bölüm
+uygulanmış prototip davranışını anlatır; Supabase-backed kalıcı üretim yolu hâlâ
+planlanan mimaridir.
+
 Sponsorlu alanlar ayrı `Ücretli alanlar` listesinin altında toplanmaz. Gazetenin grid'inde tanımlı spatial inventory satın alır ve açık `Sponsorlu` etiketi taşır.
 
 Örnek envanter ölçüleri: `300x250`, `728x90`, `300x600`, `600x400`, `970x250`. Bunlar sabit zorunlu liste değildir. Responsive için `grid_column_span`, `grid_row_span` veya `aspect_ratio` da tutulur.
