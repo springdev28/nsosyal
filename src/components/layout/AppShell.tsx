@@ -57,6 +57,7 @@ export function AppShell({
               {viewer ? (
                 <Link
                   href={`/profile/${viewer.username}`}
+                  prefetch
                   className="shrink-0 rounded-full"
                   aria-label={`${viewer.displayName} profili`}
                 >
@@ -111,6 +112,7 @@ function TrendingCard({ trending }: { trending: TrendingTopic[] }) {
         </h2>
         <Link
           href="/explore"
+          prefetch
           className="inline-flex items-center gap-0.5 text-xs text-fg-muted hover:text-fg"
         >
           Tümünü gör
@@ -165,6 +167,7 @@ function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadC
 
           <Link
             href="/notifications"
+            prefetch
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-fg-muted hover:bg-bg-hover"
           >
             <Icon name="bell" size={20} />
@@ -179,7 +182,7 @@ function MobileTopBar({ viewer, unreadCount }: { viewer: Profile | null; unreadC
           </Link>
 
           {viewer ? (
-            <Link href={`/profile/${viewer.username}`} aria-label="Profilim" className="ml-1">
+            <Link href={`/profile/${viewer.username}`} prefetch aria-label="Profilim" className="ml-1">
               <Avatar profile={viewer} size={34} />
             </Link>
           ) : (

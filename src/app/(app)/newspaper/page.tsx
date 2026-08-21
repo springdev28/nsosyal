@@ -145,9 +145,12 @@ export default async function NewspaperPage({
           viewer ? (
             <Link
               href="/publish"
+              target="_blank"
+              rel="noopener noreferrer"
+              prefetch
               className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
             >
-              Yayın Atölyesi
+              Yayın Atölyesi <span className="sr-only">yeni sekmede açılır</span>
             </Link>
           ) : null
         }

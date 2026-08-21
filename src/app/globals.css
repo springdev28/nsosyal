@@ -770,7 +770,7 @@
    (`<animateMotion>`) hareket eder ve CSS suresinden etkilenmez. Tek yol
    katmani hic boyamamak. */
 @media (prefers-reduced-motion: reduce) {
-  .ns-mark-particle {
+  .ns-mark-motion-layer {
     display: none;
   }
 }

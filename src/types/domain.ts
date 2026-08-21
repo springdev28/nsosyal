@@ -468,6 +468,31 @@ export interface PublicationBlock extends PublicationRect {
   color: string;
   borderRadius: number;
   objectFit: 'cover' | 'contain';
+  /** Yayin tuvali denetimleri; eski taslaklarda degerler opsiyoneldir. */
+  opacity?: number;
+  borderWidth?: number;
+  borderColor?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  imageFilter?: 'none' | 'grayscale' | 'contrast';
+  rotation?: number;
+  padding?: number;
+  backgroundColor?: string;
+  shadow?: 'none' | 'soft' | 'strong';
+  fontFamily?: 'sans' | 'serif' | 'mono';
+  fontSize?: number;
+  fontWeight?: 400 | 600 | 800;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline';
+  letterSpacing?: number;
+  lineHeight?: number;
+  paragraphIndent?: number;
+  verticalAlign?: 'top' | 'middle' | 'bottom';
+  textTransform?: 'none' | 'uppercase';
+  flipX?: boolean;
+  flipY?: boolean;
+  brightness?: number;
+  contrast?: number;
+  saturation?: number;
   archived: boolean;
 }
 

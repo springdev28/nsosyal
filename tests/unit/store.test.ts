@@ -388,6 +388,73 @@ describe('Yayın Atölyesi alan hakkı', () => {
       expect(resized.draft.archivedBlocks).toHaveLength(1);
     }
   });
+
+  it('Canva tipi blok ayarlarını kaydedip güvenli aralıklarda tutar', () => {
+    const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
+    const started = store.startPublicationDraft(ownerA, { issueDate, page: 4, rect }, NOW);
+    if (!started.ok) return;
+
+    const saved = store.savePublicationDraft(ownerA, started.draft.id, {
+      blocks: [{
+        id: uid('publication-block', 'canva-controls'),
+        type: 'markdown',
+        x: 3,
+        y: 4,
+        width: 6,
+        height: 4,
+        content: '## Deney başlığı',
+        altText: '',
+        color: '#0F172A',
+        borderRadius: 14,
+        objectFit: 'cover',
+        opacity: 0.84,
+        borderWidth: 2,
+        borderColor: '#3D9BFF',
+        textAlign: 'center',
+        imageFilter: 'none',
+        rotation: 15,
+        padding: 12,
+        backgroundColor: '#F8FAFC',
+        shadow: 'soft',
+        fontFamily: 'serif',
+        fontSize: 28,
+        fontWeight: 800,
+        fontStyle: 'italic',
+        textDecoration: 'underline',
+        letterSpacing: 2,
+        lineHeight: 1.6,
+        paragraphIndent: 24,
+        verticalAlign: 'middle',
+        textTransform: 'uppercase',
+        flipX: false,
+        flipY: false,
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+        archived: false,
+      }],
+      anonymous: false,
+      revision: started.draft.revision,
+    }, NOW);
+
+    expect(saved.ok).toBe(true);
+    if (!saved.ok) return;
+    expect(saved.draft.blocks[0]).toMatchObject({
+      rotation: 15,
+      padding: 12,
+      shadow: 'soft',
+      fontFamily: 'serif',
+      fontSize: 28,
+      fontWeight: 800,
+      fontStyle: 'italic',
+      textDecoration: 'underline',
+      letterSpacing: 2,
+      lineHeight: 1.6,
+      paragraphIndent: 24,
+      verticalAlign: 'middle',
+      textTransform: 'uppercase',
+    });
+  });
 });
 
 describe('beğeni ve kaydetme', () => {

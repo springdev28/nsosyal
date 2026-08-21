@@ -51,12 +51,19 @@ export default function CreatePage() {
       <ul className="grid gap-3 sm:grid-cols-2">
         {OPTIONS.map((option) => (
           <li key={option.href}>
-            <Link href={option.href} className="card block h-full p-4 transition-colors hover:border-accent">
+            <Link
+              href={option.href}
+              target={option.href === '/publish' ? '_blank' : undefined}
+              rel={option.href === '/publish' ? 'noopener noreferrer' : undefined}
+              prefetch
+              className="card block h-full p-4 transition-colors hover:border-accent"
+            >
               <span aria-hidden="true" className="text-2xl">
                 {option.icon}
               </span>
               <span className="mt-2 block font-semibold">{option.title}</span>
               <span className="mt-1 block text-sm text-fg-muted">{option.description}</span>
+              {option.href === '/publish' ? <span className="sr-only">Yeni sekmede açılır</span> : null}
             </Link>
           </li>
         ))}

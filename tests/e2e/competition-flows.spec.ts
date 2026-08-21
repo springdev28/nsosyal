@@ -199,7 +199,9 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     // okuyucunun ekraninda gorunmez.
     await expect(page.getByText(/\d+×\d+ · Bölüm içi/)).toHaveCount(0);
 
-    await expect(page.getByRole('link', { name: 'Yayın Atölyesi', exact: true })).toBeVisible();
+    const studioLink = page.getByRole('link', { name: /Yayın Atölyesi/ }).last();
+    await expect(studioLink).toBeVisible();
+    await expect(studioLink).toHaveAttribute('target', '_blank');
   });
 
   test('Yayın Atölyesi yedi sayı, beş sayfa ve 30×40 alan sunar', async ({ page }) => {
@@ -207,9 +209,77 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await page.goto('/publish');
 
     await expect(page.getByRole('heading', { name: 'Yayın Atölyesi' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Ana gezinme' })).toHaveCount(0);
+    await expect(page.getByRole('complementary', { name: 'Arama ve gündem' })).toHaveCount(0);
     await expect(page.getByRole('application', { name: /30 sütun ve 40 satır/ })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sayfa 5' })).toBeVisible();
     await expect(page.getByText(/Sonraki yedi açık gazetenin/)).toBeVisible();
+
+    await page.getByRole('tab', { name: 'Rehber' }).click();
+    await expect(page.getByRole('heading', { name: 'Yayın hazırlama rehberi' })).toBeVisible();
+    await page.getByText('4. Markdown: başlık, vurgu, liste ve bağlantı').click();
+    await expect(page.getByText('[Kaynak](https://ornek.org)')).toBeVisible();
+
+    await page.getByRole('tab', { name: 'Kaynaklar' }).click();
+    await page.getByRole('button', { name: /Nokta dokusu/ }).click();
+    await expect(page.locator('#resource-detail').getByRole('heading', { name: 'Nokta dokusu' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Tasarımda kullan/ })).toBeVisible();
+  });
+
+  test('Yayın Atölyesi Canva tipi metin, düzen ve stil araçlarını tuvale uygular', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/publish');
+
+    await page.getByRole('button', { name: 'Düzenlemeye başla' }).click();
+    await expect(page.getByRole('heading', { name: '2. Tasarla' })).toBeVisible();
+    await page.getByRole('button', { name: /Yazı.*Markdown metin/ }).click();
+
+    const inspector = page.getByRole('region', { name: 'Seçili yazı bloğu özellikleri' });
+    await expect(inspector.getByRole('tab', { name: 'İçerik' })).toBeVisible();
+    await inspector.getByRole('button', { name: 'İtalik' }).click();
+    await expect(inspector.getByRole('button', { name: 'İtalik' })).toHaveAttribute('aria-pressed', 'true');
+
+    await inspector.getByRole('tab', { name: 'Düzen' }).click();
+    await inspector.getByLabel('Paragraf girintisi').fill('24');
+    await inspector.getByLabel('Harf aralığı').fill('2');
+    await inspector.getByLabel('Döndürme').fill('15');
+
+    const textBlock = page.getByRole('button', { name: /Yazı bloğu/ }).first();
+    await expect(textBlock).toHaveAttribute('style', /rotate\(15deg\)/);
+    await expect(textBlock.locator('span').first()).toHaveCSS('text-indent', '24px');
+
+    await inspector.getByRole('button', { name: 'Çoğalt' }).click();
+    await expect(page.getByRole('button', { name: /Yazı bloğu/ })).toHaveCount(2);
+
+    const duplicateInspector = page.getByRole('region', { name: 'Seçili yazı bloğu özellikleri' });
+    await duplicateInspector.getByRole('tab', { name: 'Stil' }).click();
+    await duplicateInspector.getByLabel('Gölge').selectOption('soft');
+    await expect(page.getByRole('button', { name: /Yazı bloğu/ }).last()).not.toHaveCSS('filter', 'none');
+
+    await page.getByRole('button', { name: 'Kaydet' }).click();
+    await expect(page.getByText('Taslak kaydedildi.')).toBeVisible();
+    await page.reload();
+    const unfinished = page.getByRole('heading', { name: 'Yarım kalanlar' }).locator('..');
+    await unfinished.getByRole('button').first().click();
+    await page.getByRole('button', { name: /Yazı bloğu/ }).last().click();
+
+    const restoredInspector = page.getByRole('region', { name: 'Seçili yazı bloğu özellikleri' });
+    await restoredInspector.getByRole('tab', { name: 'Düzen' }).click();
+    await expect(restoredInspector.getByLabel('Paragraf girintisi')).toHaveValue('24');
+    await expect(restoredInspector.getByLabel('Döndürme')).toHaveValue('15');
+    await restoredInspector.getByRole('tab', { name: 'Stil' }).click();
+    await expect(restoredInspector.getByLabel('Gölge')).toHaveValue('soft');
+  });
+
+  test('marka hareketi başlangıç, parçacık, bitiş ve bekleme sırasını taşır', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/feed');
+
+    const mark = page.locator('svg').filter({ has: page.locator('.ns-mark-particle') }).first();
+    await expect(mark.locator('.ns-mark-start-glow')).toHaveCount(1);
+    await expect(mark.locator('.ns-mark-particle animateMotion')).toHaveAttribute('dur', '7.2s');
+    await expect(mark.locator('.ns-mark-particle animateMotion')).toHaveAttribute('keyTimes', '0;0.18;0.62;1');
+    await expect(mark.locator('.ns-mark-end-glow')).toHaveCount(1);
   });
 
   test('gazetenin takvimi ve sayfaları vardır, varsayılan bugündür', async ({ page }) => {
@@ -274,7 +344,10 @@ test.describe('7 · Moderatör topluluk başvurusunu onaylar', () => {
     await application.getByRole('textbox', { name: 'Karar notu' }).fill('Kapsam farklı, onaylandı.');
     await application.getByRole('button', { name: 'Onayla ve topluluğu aç' }).click();
 
-    await expect(page.getByText('Onaylandı').first()).toBeVisible();
+    const reviewedApplication = page
+      .locator('section[aria-labelledby="reviewed-heading"] li')
+      .filter({ hasText: 'İzmir Uydu' });
+    await expect(reviewedApplication.getByText('Onaylandı', { exact: true })).toBeVisible();
 
     await page.goto('/admin');
     await expect(page.getByText('community_application:approved')).toBeVisible();

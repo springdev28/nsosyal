@@ -87,6 +87,7 @@ export function FiveNMark({
   const upperId = `${uid}-upper`;
   const lowerId = `${uid}-lower`;
   const glowId = `${uid}-glow`;
+  const cycleDuration = '7.2s';
 
   return (
     <svg
@@ -155,21 +156,62 @@ export function FiveNMark({
               </feMerge>
             </filter>
           </defs>
+          <path
+            aria-hidden="true"
+            className="ns-mark-motion-layer ns-mark-start-glow"
+            d={RING_LOWER}
+            stroke="#39C5E6"
+            strokeWidth={STROKE_W + 2}
+            filter={`url(#${glowId})`}
+            opacity="0"
+          >
+            <animate
+              attributeName="opacity"
+              values="0;0;1;0.45;0;0"
+              keyTimes="0;0.025;0.075;0.13;0.18;1"
+              dur={cycleDuration}
+              repeatCount="indefinite"
+            />
+          </path>
           <circle
-            className="ns-mark-particle"
+            className="ns-mark-motion-layer ns-mark-particle"
             r="4.5"
             fill={PARTICLE_FILL}
             filter={`url(#${glowId})`}
           >
-            <animateMotion dur="3s" repeatCount="indefinite" path={LINK_PATH} />
+            <animateMotion
+              dur={cycleDuration}
+              repeatCount="indefinite"
+              path={LINK_PATH}
+              keyPoints="0;0;1;1"
+              keyTimes="0;0.18;0.62;1"
+              calcMode="linear"
+            />
             <animate
               attributeName="opacity"
-              values="0;1;1;0"
-              keyTimes="0;0.1;0.88;1"
-              dur="3s"
+              values="0;0;1;1;0;0"
+              keyTimes="0;0.17;0.20;0.59;0.63;1"
+              dur={cycleDuration}
               repeatCount="indefinite"
             />
           </circle>
+          <path
+            aria-hidden="true"
+            className="ns-mark-motion-layer ns-mark-end-glow"
+            d={RING_UPPER}
+            stroke="#5792FF"
+            strokeWidth={STROKE_W + 2}
+            filter={`url(#${glowId})`}
+            opacity="0"
+          >
+            <animate
+              attributeName="opacity"
+              values="0;0;1;0.45;0;0"
+              keyTimes="0;0.59;0.64;0.70;0.76;1"
+              dur={cycleDuration}
+              repeatCount="indefinite"
+            />
+          </path>
         </>
       ) : null}
     </svg>

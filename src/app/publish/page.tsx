@@ -1,13 +1,18 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
+import { PublicationStudio } from '@/app/(app)/publish/PublicationStudio';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 
-import { PublicationStudio } from './PublicationStudio';
-
 export const metadata: Metadata = { title: 'Yayın Atölyesi' };
 
+/**
+ * Yayin Atolyesi ana sosyal uygulama kabugundan bagimsizdir.
+ *
+ * Bu rota sol ana menuyu ve populer sag seridi bilerek kullanmaz: gazete alani
+ * tasarlarken tum ekran tuval, envanter ve denetim araclarina ayrilmalidir.
+ */
 export default async function PublishPage() {
   const viewer = await getViewer();
   if (!viewer) redirect('/login');
@@ -35,12 +40,19 @@ export default async function PublishPage() {
   );
 
   return (
-    <PublicationStudio
-      viewerId={viewer.id}
-      windows={windows}
-      initialDrafts={drafts}
-      owners={owners}
-      anonymousByDefault={viewer.publicationAnonymousByDefault ?? false}
-    />
+    <div className="app-shell min-h-dvh">
+      <a href="#studio-main" className="skip-link">
+        Çalışma alanına atla
+      </a>
+      <main id="studio-main">
+        <PublicationStudio
+          viewerId={viewer.id}
+          windows={windows}
+          initialDrafts={drafts}
+          owners={owners}
+          anonymousByDefault={viewer.publicationAnonymousByDefault ?? false}
+        />
+      </main>
+    </div>
   );
 }

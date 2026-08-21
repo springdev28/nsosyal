@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import { FiveNMark } from '@/components/brand/FiveNMark';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -86,6 +87,8 @@ export function MainNav({
   hasNewIssue: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const viewerUsername = viewer?.username;
   const canModerate = viewer?.role === 'moderator' || viewer?.role === 'admin';
 
   const items: NavItem[] = [
@@ -127,12 +130,36 @@ export function MainNav({
     },
   ];
 
+  useEffect(() => {
+    // Gorunen menuyu kullanici tiklamadan once isitmak, uygulama kabugunun
+    // sunucu verisini yeniden hesaplarken bos bir bekleme hissini onler.
+    const timer = window.setTimeout(() => {
+      const warmPaths = [
+        '/feed',
+        '/notifications',
+        '/explore',
+        '/communities',
+        '/projects',
+        '/newspaper',
+        '/settings',
+        '/about',
+        '/create',
+        '/publish',
+      ];
+      if (viewerUsername) warmPaths.push(`/profile/${viewerUsername}`);
+      if (canModerate) warmPaths.push('/admin');
+      warmPaths.forEach((href) => router.prefetch(href));
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [router, viewerUsername, canModerate]);
+
   return (
     <nav aria-label="Ana gezinme" className="hidden w-[236px] shrink-0 lg:block xl:w-[268px]">
       <div className="rail flex flex-col gap-1 py-3 pr-2">
         {/* Gezinmede yalnizca N isareti durur; kelime markasi yoktur. */}
         <Link
           href="/feed"
+          prefetch
           aria-label="nSosyal ana sayfa"
           className="mb-3 inline-flex w-fit rounded-xl px-2 py-2"
         >
@@ -149,6 +176,7 @@ export function MainNav({
               <li key={item.label}>
                 <Link
                   href={item.href}
+                  prefetch
                   aria-current={active ? 'page' : undefined}
                   className={`group relative flex min-h-12 items-center gap-3.5 rounded-2xl px-3.5 text-[0.98rem] transition-colors ${
                     active
@@ -188,6 +216,7 @@ export function MainNav({
 
         <Link
           href="/create"
+          prefetch
           className="btn-gradient mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full px-4 text-[0.95rem]"
         >
           <Icon name="plus" size={18} strokeWidth={2.4} />
@@ -196,6 +225,7 @@ export function MainNav({
 
         <Link
           href="/publish"
+          prefetch
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 flex min-h-11 items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft px-3.5 text-[0.92rem] font-bold text-accent transition-colors hover:bg-bg-hover"
@@ -289,6 +319,7 @@ export function MobileNav({
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
+                prefetch
                 aria-current={active ? 'page' : undefined}
                 className={`relative flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[0.65rem] ${
                   active ? 'font-semibold text-accent' : 'text-fg-subtle'
