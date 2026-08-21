@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { IstanbulClock } from '@/components/time/IstanbulClock';
+import { Icon } from '@/components/ui/Icon';
 import { toIstanbulDateKey } from '@/lib/time';
 
 /**
@@ -86,8 +88,20 @@ export function IssueCalendar({
   return (
     <nav
       aria-label="Gazete arşivi takvimi"
-      className="mx-auto w-full max-w-md rounded-[var(--radius-card)] border border-line bg-bg-raised p-3 sm:max-w-lg"
+      className="mx-auto w-full max-w-3xl"
     >
+      <details className="group rounded-2xl border border-line bg-bg-raised shadow-sm">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 text-sm transition-colors hover:bg-bg-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+          <Icon name="calendar" size={19} className="shrink-0 text-accent" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold">Bugün · <IstanbulClock /></span>
+            <span className="block truncate text-xs text-fg-subtle">Arşivde açık sayı: {activeDate}</span>
+          </span>
+          <span className="shrink-0 font-semibold text-accent group-open:hidden">Takvimi aç</span>
+          <span className="hidden shrink-0 font-semibold text-accent group-open:inline">Takvimi kapat</span>
+        </summary>
+
+        <div className="border-t border-line p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
         <MonthLink
           href={`/newspaper?ay=${previous}&date=${activeDate}`}
@@ -142,6 +156,8 @@ export function IssueCalendar({
           ))}
         </tbody>
       </table>
+        </div>
+      </details>
     </nav>
   );
 }

@@ -14,7 +14,13 @@ import {
   SESSION_COOKIE,
   getViewer,
 } from '@/lib/auth/session';
-import type { IntentMode, LocationVisibility } from '@/types/domain';
+import type {
+  ConnectedAccountProvider,
+  IntentMode,
+  LocationVisibility,
+  MessageRequestPermission,
+  PhotoTaggingPermission,
+} from '@/types/domain';
 
 /**
  * Oturum ve profil eylemleri.
@@ -115,6 +121,7 @@ export async function completeOnboarding(
   // fazlasini toplar, kullanici sonradan Ayarlar'dan hepsini degistirebilir.
   const goalKeys = parseGoalKeys(formData.getAll('goalKeys').map(String));
   const bio = String(formData.get('bio') ?? '').slice(0, 240);
+  const publicationMessages = String(formData.get('publicationMessages') ?? 'everyone');
 
   getStore().updateProfile(viewer.id, {
     username,
@@ -125,6 +132,11 @@ export async function completeOnboarding(
     locationVisibility: visibility,
     provinceCode: visibility === 'hidden' || visibility === 'online_only' ? null : provinceCode,
     districtCode: visibility === 'district' ? districtCode : null,
+    publicationReservationVisible: formData.get('publicationReservationVisible') === 'on',
+    publicationMessages: ['everyone', 'connections', 'none'].includes(publicationMessages)
+      ? (publicationMessages as 'everyone' | 'connections' | 'none')
+      : 'everyone',
+    publicationAnonymousByDefault: formData.get('publicationAnonymousByDefault') === 'on',
   });
 
   getStore().track(
@@ -155,19 +167,50 @@ export async function updateSettings(_prev: SettingsState, formData: FormData): 
   const rawIntent = String(formData.get('intentMode') ?? '');
   const intentMode = rawIntent ? (rawIntent as IntentMode) : null;
   const goalKeys = parseGoalKeys(formData.getAll('goalKeys').map(String));
-  const bio = String(formData.get('bio') ?? '').slice(0, 240);
+  const rawPhotoTagging = String(formData.get('photoTagging') ?? 'following');
+  const photoTagging: PhotoTaggingPermission = ['everyone', 'following', 'none'].includes(rawPhotoTagging)
+    ? (rawPhotoTagging as PhotoTaggingPermission)
+    : 'following';
+  const rawMessageRequests = String(formData.get('messageRequests') ?? 'following');
+  const messageRequests: MessageRequestPermission = ['everyone', 'following', 'none'].includes(rawMessageRequests)
+    ? (rawMessageRequests as MessageRequestPermission)
+    : 'following';
+  const connectedAccounts = formData
+    .getAll('connectedAccounts')
+    .map(String)
+    .filter((provider): provider is ConnectedAccountProvider => provider === 'google' || provider === 'apple');
+  const mutedWords = String(formData.get('mutedWords') ?? '')
+    .split(/[,\n]/)
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+  const publicationMessages = String(formData.get('publicationMessages') ?? 'everyone');
 
   if ((visibility === 'province' || visibility === 'district') && !provinceCode) {
     return { error: 'Konum paylaşmayı seçtin ama il seçmedin.' };
   }
 
   getStore().updateProfile(viewer.id, {
-    bio,
     intentMode,
     goalKeys,
     locationVisibility: visibility,
     provinceCode: visibility === 'hidden' || visibility === 'online_only' ? null : provinceCode,
     districtCode: visibility === 'district' ? districtCode : null,
+    isPrivate: formData.get('isPrivate') === 'on',
+    photoTagging,
+    discoverableByEmail: formData.get('discoverableByEmail') === 'on',
+    discoverableByPhone: formData.get('discoverableByPhone') === 'on',
+    messageRequests,
+    messageQualityFilter: formData.get('messageQualityFilter') === 'on',
+    sensitiveMediaWarnings: formData.get('sensitiveMediaWarnings') === 'on',
+    imageDescriptionReminder: formData.get('imageDescriptionReminder') === 'on',
+    mutedWords,
+    connectedAccounts,
+    publicationReservationVisible: formData.get('publicationReservationVisible') === 'on',
+    publicationMessages: ['everyone', 'connections', 'none'].includes(publicationMessages)
+      ? (publicationMessages as 'everyone' | 'connections' | 'none')
+      : 'everyone',
+    publicationAnonymousByDefault: formData.get('publicationAnonymousByDefault') === 'on',
   });
 
   const cookieStore = await cookies();

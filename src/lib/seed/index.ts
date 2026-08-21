@@ -16,6 +16,8 @@ import type {
   Project,
   ProjectMember,
   ProjectUpdate,
+  PublicationDraft,
+  PublicationSlot,
   Reminder,
   Report,
   Resource,
@@ -49,6 +51,7 @@ export interface Dataset {
   topics: Topic[];
   profiles: Profile[];
   follows: Array<{ followerId: UUID; followingId: UUID }>;
+  followRequests: Array<{ requesterId: UUID; targetId: UUID; createdAt: string }>;
   communities: Community[];
   communityMembers: CommunityMember[];
   communityApplications: CommunityApplication[];
@@ -65,6 +68,8 @@ export interface Dataset {
   newspaperIssues: NewspaperIssue[];
   newspaperItems: NewspaperItem[];
   adRequests: AdRequest[];
+  publicationDrafts: PublicationDraft[];
+  publicationSlots: PublicationSlot[];
   notifications: Notification[];
   reports: Report[];
   moderationActions: ModerationAction[];
@@ -236,6 +241,7 @@ export function buildDataset(now: Date): Dataset {
     topics: TOPICS,
     profiles,
     follows,
+    followRequests: [],
     communities,
     communityMembers: buildMemberships(now),
     communityApplications: buildApplications(now),
@@ -252,6 +258,8 @@ export function buildDataset(now: Date): Dataset {
     newspaperIssues: issues,
     newspaperItems: items,
     adRequests: buildAdRequests(now),
+    publicationDrafts: [],
+    publicationSlots: [],
     notifications: buildInitialNotifications(now),
     reports: buildInitialReports(now),
     moderationActions: [],

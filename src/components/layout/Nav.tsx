@@ -142,6 +142,7 @@ export function MainNav({
         <ul className="space-y-0.5">
           {items.map((item) => {
             const active = item.match(pathname);
+            const isNewspaper = item.href === '/newspaper';
             const badge =
               item.href === '/notifications' ? unreadCount : item.href === '/newspaper' && hasNewIssue ? -1 : 0;
             return (
@@ -150,10 +151,14 @@ export function MainNav({
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={`group relative flex min-h-12 items-center gap-3.5 rounded-2xl px-3.5 text-[0.98rem] transition-colors ${
-                    active ? 'nav-current font-bold text-accent' : 'text-fg-muted hover:bg-bg-hover hover:text-fg'
-                  }`}
+                    active
+                      ? `nav-current font-bold ${isNewspaper ? '' : 'text-accent'}`
+                      : isNewspaper
+                        ? ''
+                        : 'text-fg-muted hover:bg-bg-hover hover:text-fg'
+                  } ${isNewspaper ? 'nav-newspaper' : ''}`}
                 >
-                  <span className="relative flex">
+                  <span className={`relative flex ${isNewspaper ? 'nav-newspaper__icon' : ''}`}>
                     <Icon name={item.icon} size={22} filled={active} strokeWidth={1.9} />
                     {badge > 0 ? (
                       <span className="absolute -right-2 -top-1.5 min-w-[1.05rem] rounded-full bg-accent px-1 text-center text-[0.62rem] font-bold leading-[1.05rem] text-accent-fg">
@@ -163,12 +168,18 @@ export function MainNav({
                     {badge === -1 ? (
                       <span
                         aria-hidden="true"
-                        className="absolute -right-1 -top-0.5 h-2 w-2 rounded-full bg-accent"
+                        className="nav-newspaper__pulse absolute -right-1 -top-0.5 h-2 w-2 rounded-full"
                       />
                     ) : null}
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className={`truncate ${isNewspaper ? 'nav-newspaper__label' : ''}`}>{item.label}</span>
+                  {isNewspaper ? (
+                    <span aria-hidden="true" className="nav-newspaper__edition ml-auto">
+                      {hasNewIssue ? 'YENİ' : 'GÜNLÜK'}
+                    </span>
+                  ) : null}
                   {badge > 0 ? <span className="sr-only">{badge} okunmamış</span> : null}
+                  {badge === -1 ? <span className="sr-only">Yeni sayı yayımlandı</span> : null}
                 </Link>
               </li>
             );
@@ -181,6 +192,17 @@ export function MainNav({
         >
           <Icon name="plus" size={18} strokeWidth={2.4} />
           Yeni Gönderi
+        </Link>
+
+        <Link
+          href="/publish"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 flex min-h-11 items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft px-3.5 text-[0.92rem] font-bold text-accent transition-colors hover:bg-bg-hover"
+        >
+          <Icon name="newspaper" size={20} />
+          Yayın Atölyesi
+          <span className="sr-only">yeni sekmede açılır</span>
         </Link>
 
         <div className="mt-3 border-t border-line pt-3">
@@ -262,6 +284,7 @@ export function MobileNav({
         {items.map((item) => {
           const active = item.match(pathname);
           const isCreate = item.href === '/create';
+          const isNewspaper = item.href === '/newspaper';
           return (
             <li key={item.href} className="flex-1">
               <Link
@@ -269,14 +292,16 @@ export function MobileNav({
                 aria-current={active ? 'page' : undefined}
                 className={`relative flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[0.65rem] ${
                   active ? 'font-semibold text-accent' : 'text-fg-subtle'
-                }`}
+                } ${isNewspaper ? 'mobile-newspaper-link' : ''}`}
               >
                 {isCreate ? (
                   <span className="btn-gradient flex h-8 w-11 items-center justify-center rounded-full">
                     <Icon name="plus" size={18} strokeWidth={2.4} />
                   </span>
                 ) : (
-                  <Icon name={item.icon} size={21} filled={active} />
+                  <span className={isNewspaper ? 'mobile-newspaper-icon' : undefined}>
+                    <Icon name={item.icon} size={21} filled={active} />
+                  </span>
                 )}
                 {item.label}
                 {item.href === '/newspaper' && hasNewIssue ? (

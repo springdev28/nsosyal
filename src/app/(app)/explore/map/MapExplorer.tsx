@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 
-import type { ProvinceMetric } from '@/components/map/TurkeyMap';
+import type { DistrictMetric, ProvinceMetric } from '@/components/map/TurkeyMap';
 
 /**
  * Harita, MapLibre'i yalnizca tarayicida yukler. SSR sirasinda `window`
@@ -21,11 +21,13 @@ const TurkeyMap = dynamic(() => import('@/components/map/TurkeyMap').then((mod) 
 
 export function MapExplorer({
   metrics,
+  districtMetrics,
   selectedProvince,
   selectedDistrict,
   districtDataProvinces,
 }: {
   metrics: ProvinceMetric[];
+  districtMetrics: DistrictMetric[];
   selectedProvince: string | null;
   selectedDistrict: string | null;
   districtDataProvinces: readonly string[];
@@ -65,6 +67,7 @@ export function MapExplorer({
   return (
     <TurkeyMap
       metrics={metrics}
+      districtMetrics={districtMetrics}
       selectedProvince={selectedProvince}
       selectedDistrict={selectedDistrict}
       districtDataProvinces={districtDataProvinces}

@@ -1,4 +1,4 @@
-import { PROVINCES } from '@/lib/geo';
+import { DISTRICTS, PROVINCES } from '@/lib/geo';
 import type { AppEvent, Community, Post, Project } from '@/types/domain';
 
 import { communityId } from './communities';
@@ -229,6 +229,8 @@ export function buildRegional(now: Date): RegionalSeed {
 
     const random = rng(seedFrom(`nsosyal-regional-${code}`));
     const pick = <T,>(list: readonly T[]): T => list[Math.floor(random() * list.length)];
+    const districtPool = DISTRICTS.filter((district) => district.provinceCode === code);
+    const pickDistrict = () => (districtPool.length > 0 ? pick(districtPool) : null);
 
     // Agirlik hem kayit SAYISINI hem de topluluk buyuklugunu belirler; harita
     // yogunlugu bu iki eksenin toplamindan okunur.
@@ -240,6 +242,7 @@ export function buildRegional(now: Date): RegionalSeed {
     for (let i = 0; i < communityCount; i += 1) {
       const topic = pick(TOPIC_POOL);
       const form = pick(COMMUNITY_FORMS);
+      const district = pickDistrict();
       const slug = `bolge-${code}-${topic}-${i + 1}`;
       communities.push({
         id: communityId(slug),
@@ -250,7 +253,7 @@ export function buildRegional(now: Date): RegionalSeed {
         rootTopicId: topicId(topic),
         scope: 'local',
         provinceCode: code,
-        districtCode: null,
+        districtCode: district?.code ?? null,
         audience: 'Genel',
         rules: [
           'Kendi işini ve sürecini paylaş.',
@@ -270,6 +273,7 @@ export function buildRegional(now: Date): RegionalSeed {
     for (let i = 0; i < eventCount; i += 1) {
       const topic = pick(TOPIC_POOL);
       const form = pick(EVENT_FORMS);
+      const district = form.mode === 'online' ? null : pickDistrict();
       const slug = `bolge-${code}-etkinlik-${i + 1}`;
       // Etkinlikler gecmise ve gelecege yayilir; "bugun", "bu hafta" ve
       // "gelecek 30 gun" filtrelerinin hepsi dolu gelsin.
@@ -288,8 +292,8 @@ export function buildRegional(now: Date): RegionalSeed {
         endsAt: new Date(start.getTime() + form.hours * 3_600_000).toISOString(),
         deadlineAt: null,
         provinceCode: code,
-        districtCode: null,
-        venue: form.mode === 'online' ? null : `${place} merkez`,
+        districtCode: district?.code ?? null,
+        venue: form.mode === 'online' ? null : `${district?.name ?? place} merkez`,
         onlineUrl: form.mode === 'physical' ? null : 'https://ornek.nsosyal.demo/yayin',
         mode: form.mode,
         topicIds: [topicId(topic)],
@@ -301,6 +305,7 @@ export function buildRegional(now: Date): RegionalSeed {
     for (let i = 0; i < projectCount; i += 1) {
       const topic = pick(TOPIC_POOL);
       const form = pick(PROJECT_FORMS);
+      const district = pickDistrict();
       const slug = `bolge-${code}-proje-${i + 1}`;
       projects.push({
         id: projectId(slug),
@@ -311,7 +316,7 @@ export function buildRegional(now: Date): RegionalSeed {
         status: random() > 0.65 ? 'fikir' : 'prototip',
         topicIds: [topicId(topic)],
         provinceCode: code,
-        districtCode: null,
+        districtCode: district?.code ?? null,
         whyText: `${place} için bu konuda derli toplu bir kaynak yoktu; kendi ölçümümüzü yapmaya karar verdik.`,
         howText: 'Haftalık kısa notlar, açık ham veri, iki haftada bir yüz yüze buluşma.',
         needs: form.need,
@@ -328,6 +333,7 @@ export function buildRegional(now: Date): RegionalSeed {
     for (let i = 0; i < postCount; i += 1) {
       const topic = pick(TOPIC_POOL);
       const template = pick(POST_TEMPLATES);
+      const district = pickDistrict();
       const slug = `bolge-${code}-gonderi-${i + 1}`;
       posts.push({
         id: postId(slug),
@@ -338,7 +344,7 @@ export function buildRegional(now: Date): RegionalSeed {
         communityId: null,
         topicIds: [topicId(topic)],
         provinceCode: code,
-        districtCode: null,
+        districtCode: district?.code ?? null,
         projectId: null,
         eventId: null,
         whyStoryId: null,

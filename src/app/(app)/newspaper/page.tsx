@@ -31,34 +31,44 @@ const SECTION_LABEL: Record<NewspaperSection, string> = {
  */
 const ITEMS_PER_PAGE = 4;
 
+const INTEREST_KEYWORDS: Record<string, string[]> = {
+  'havacilik-uzay': ['havacılık', 'uzay', 'roket', 'iha', 'uydu', 'uçuş'],
+  biyoteknoloji: ['biyoteknoloji', 'biyolab', 'laboratuvar', 'hücre', 'sera'],
+  robotik: ['robotik', 'robot', 'devre', 'sensör', 'maker'],
+  'yapay-zeka': ['yapay zekâ', 'model', 'veri', 'nlp', 'algoritma'],
+  surdurulebilirlik: ['sürdürülebilirlik', 'enerji', 'ges', 'iklim', 'rüzgâr'],
+};
+
+function normalizeForInterest(value: string): string {
+  return value
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ');
+}
+
 /**
  * nGazete (PROJECT_SPEC 7.9 / 17.12 / 17.18-8).
  *
  * Gercek bir dijital gazete: masthead, sayi ve tarih, manset hiyerarsisi,
  * gorseller, bolum etiketleri, kolon kompozisyonu ve SAYFALAR.
  *
- * --- Bu surumde duzeltilen dort sey ---
+ * --- Bu surumde korunan temel davranislar ---
  *
  * 1. SAYFA YOKTU. Butun sayi tek bir uzun kaydirma seridiydi. Gazetenin
  *    sayfasi vardir; okuyucu "2. sayfa"ya gecer. Artik mansetten sonraki
  *    kartlar sayfalara boluunur ve altta sayfa gezinmesi durur.
  *
- * 2. TAKVIM YOKTU. Arsive erisim uc adet tarih rozetiydi. Artik bir ay
- *    takvimi var; sayisi olan gunler tiklanir, bugun isaretlidir ve
- *    varsayilan sayi BUGUNUN sayisidir.
+ * 2. Arsiv takvimi varsayilan durumda tek satirlik bir bugun dugmesidir;
+ *    istendiginde ay izgarasina acilir. Varsayilan sayi BUGUNUN sayisidir.
  *
  * 3. GRID'DE DELIKLER VARDI. Sabit satir/kolon span'leri kartlarin gercek
  *    yuksekligiyle ortusmuyordu; kisa bir kartin altinda kocaman bos alanlar
  *    kaliyordu. Manset tam genislikte durur, geri kalani CSS kolonlarina
  *    akar - gercek gazete davranisi, hem de bosluk birakmadan.
  *
- * 4. OKUYUCUYA REKLAM ENVANTERI GOSTERILIYORDU. Sponsorlu kartlarin altinda
- *    "600x400 - Bolum ici genis" yaziyordu. Bu reklamveren tarafinin verisi;
- *    okuyucunun ekraninda isi yok (spec 7.9: gelir modeli anlatimi
- *    reklamveren, yonetici, Hakkinda ve dokumantasyon yuzeylerine aittir).
- *    Envanter verisi silinmedi, yalnizca okuyucu goruunumunden cikarildi;
- *    /newspaper/advertise ve yonetici ekrani ayni kayitlari kullanmaya
- *    devam ediyor.
+ * 4. Turuncu vurgu odeme kaynagini degil, okurun kalici ilgi alanlariyla
+ *    eslesen haberleri anlatir. Icerigin yonetsel kaynagi kayitta korunur.
  */
 export default async function NewspaperPage({
   searchParams,
@@ -106,32 +116,23 @@ export default async function NewspaperPage({
   const lead = composed[0] ?? null;
   const rest = composed.slice(1);
 
-  /*
-   * Editoryal ve ucretli kartlar AYRI sayfalanir.
-   *
-   * Duz sayfalama yanlisti: sponsorlu kartlarin onceligi en dusuk oldugu icin
-   * hepsi sona dusuyor ve son sayfada yigiliyordu. Gercek bir gazetede reklam
-   * her sayfada bulunur. Editoryal icerik sayfalari belirler; ucretli kartlar
-   * sayfalara sirayla dagitilir ve sayfanin ortasina, kolon akisinin icine
-   * yerlesir.
-   */
-  const editorial = rest.filter((entry) => !entry.item.sponsored);
-  const sponsoredItems = rest.filter((entry) => entry.item.sponsored);
-
-  const pageCount = Math.max(1, Math.ceil(editorial.length / ITEMS_PER_PAGE));
+  // Okuyucu kompozisyonunda sponsor/editor ayrimi yoktur; her iki kaynak da
+  // ayni yayin sirasina girer. Bir sayi en fazla bes sayfadir.
+  const pageCount = Math.min(5, Math.max(1, Math.ceil(rest.length / ITEMS_PER_PAGE)));
   const requested = Number(sayfa);
   const page = Number.isFinite(requested) ? Math.min(Math.max(1, Math.trunc(requested)), pageCount) : 1;
 
-  const pageEditorial = editorial.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const pageSponsored = sponsoredItems.filter((_, index) => index % pageCount === page - 1);
-  const pageItems = [
-    ...pageEditorial.slice(0, Math.ceil(pageEditorial.length / 2)),
-    ...pageSponsored,
-    ...pageEditorial.slice(Math.ceil(pageEditorial.length / 2)),
-  ];
-
-  const hasSponsored = composed.some((entry) => entry.item.sponsored);
-  const canAdvertise = viewer?.kind === 'organization' || viewer?.role === 'admin';
+  const pageItems = rest.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const interestTerms = (viewer?.topicIds ?? [])
+    .map((id) => store.getTopic(id))
+    .filter((topic): topic is NonNullable<typeof topic> => Boolean(topic))
+    .flatMap((topic) => [topic.name, topic.slug, ...(INTEREST_KEYWORDS[topic.slug] ?? [])])
+    .flatMap((term) => normalizeForInterest(term).split(/\s+/))
+    .filter((term) => term.length >= 4);
+  const isForViewer = (entry: NewspaperItemView) => {
+    const text = normalizeForInterest(`${entry.item.title} ${entry.item.standfirst ?? ''} ${entry.item.body}`);
+    return interestTerms.some((term) => text.includes(term));
+  };
   const pageHref = (target: number) =>
     `/newspaper?date=${current.issue.issueDate}&ay=${month}${target > 1 ? `&sayfa=${target}` : ''}`;
 
@@ -141,12 +142,12 @@ export default async function NewspaperPage({
         as="h1"
         title="nGazete"
         action={
-          canAdvertise ? (
+          viewer ? (
             <Link
-              href="/newspaper/advertise"
+              href="/publish"
               className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
             >
-              İlan ver
+              Yayın Atölyesi
             </Link>
           ) : null
         }
@@ -168,9 +169,9 @@ export default async function NewspaperPage({
         latestMonth={months[months.length - 1] ?? month}
       />
 
-      <Card className="overflow-hidden">
+      <Card className="newspaper-sheet mx-auto max-w-4xl overflow-hidden">
           {/* Masthead */}
-          <header className="border-b-4 border-double border-line-strong bg-bg-sunken px-4 py-5 text-center sm:px-6">
+          <header className="newspaper-masthead border-b-4 border-double border-line-strong px-4 py-6 text-center sm:px-8">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-fg-subtle">
               nSosyal
             </p>
@@ -203,24 +204,15 @@ export default async function NewspaperPage({
             </h2>
             <p className="mx-auto mt-1 max-w-xl text-sm text-fg-muted">{current.issue.standfirst}</p>
 
-            {/*
-              Ucretli yerlesim aciklamasi TEK YERDE durur.
-              Her kartin ustunde tekrarlanan "Sponsorlu" rozeti gurultuydu;
-              ama aciklamayi tamamen kaldirmak ucretli icerigi editoryal
-              icerikten ayirt edilemez hale getirirdi. Cozum: sayida bir kez
-              soyle, kartta da sponsorun adiyla ve renkli seritle isaretle.
-            */}
-            {hasSponsored ? (
-              <p className="mx-auto mt-2 max-w-xl border-t border-line pt-2 text-[0.7rem] text-fg-subtle">
-                Bu sayıda ücretli yerleşimler var. Sponsor adıyla ve renkli şeritle işaretlenir.
-              </p>
-            ) : null}
+            <p className="mx-auto mt-2 max-w-xl border-t border-line pt-2 text-[0.7rem] text-fg-subtle">
+              Turuncu şerit, ilgi alanlarınla eşleşen haberleri gösterir.
+            </p>
           </header>
 
           {/* Manset yalnizca birinci sayfada, tam genislikte. */}
           {lead && page === 1 ? (
             <div className="border-b border-line">
-              <LeadCell entry={lead} />
+              <LeadCell entry={lead} highlighted={isForViewer(lead)} />
             </div>
           ) : null}
 
@@ -232,7 +224,7 @@ export default async function NewspaperPage({
           */}
           <div className="gap-x-7 px-4 py-4 sm:px-6 md:columns-2 2xl:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
             {pageItems.map((entry) => (
-              <ColumnCell key={entry.item.id} entry={entry} />
+              <ColumnCell key={entry.item.id} entry={entry} highlighted={isForViewer(entry)} />
             ))}
           </div>
 
@@ -304,7 +296,7 @@ function PageLink({
 }
 
 /** Mansetin kendisi: sayfanin ustunde, tam genislikte, en buyuk hiyerarsi. */
-function LeadCell({ entry }: { entry: NewspaperItemView }) {
+function LeadCell({ entry, highlighted }: { entry: NewspaperItemView; highlighted: boolean }) {
   const { item } = entry;
 
   const body = (
@@ -319,8 +311,8 @@ function LeadCell({ entry }: { entry: NewspaperItemView }) {
         />
       ) : null}
 
-      <div className="px-4 pb-5 sm:px-6">
-        <SectionTag item={item} />
+      <div className={`px-4 pb-5 sm:px-6 ${highlighted ? 'border-l-4 border-signal-500 bg-signal-50 pt-4 dark:bg-signal-900/25' : ''}`}>
+        <SectionTag item={item} highlighted={highlighted} />
         <h3 className="mt-1 font-serif text-3xl font-bold leading-tight sm:text-4xl">
           {item.title}
         </h3>
@@ -350,11 +342,10 @@ function LeadCell({ entry }: { entry: NewspaperItemView }) {
 /**
  * Kolon icindeki kart.
  *
- * Sponsorlu kartlar da AYNI kolon akisina girer - gazetenin grid'i icinde
- * yasarlar, ayri bir listeye yigilmazlar (spec 17.18/8). Editoryal karttan
- * ayirt edilirler ama okuyucuya envanter olculeri gosterilmez.
+ * Tum haber kaynaklari AYNI kolon akisina girer; okuyucu kompozisyonu odeme
+ * turune gore bolunmez. Yalnizca okurun ilgisi turuncu seritle vurgulanir.
  */
-function ColumnCell({ entry }: { entry: NewspaperItemView }) {
+function ColumnCell({ entry, highlighted }: { entry: NewspaperItemView; highlighted: boolean }) {
   const { item } = entry;
   const isFeature = item.layoutVariant === 'feature';
   const isBrief = item.layoutVariant === 'brief';
@@ -371,13 +362,13 @@ function ColumnCell({ entry }: { entry: NewspaperItemView }) {
         <CoverTile
           seed={item.imageSeed}
           glyph={item.imageGlyph}
-          height={item.sponsored ? 104 : 128}
+          height={128}
           rounded="all"
           className="mb-3"
         />
       ) : null}
 
-      <SectionTag item={item} />
+      <SectionTag item={item} highlighted={highlighted} />
 
       <h3 className={`mt-1 ${headingClass}`}>{item.title}</h3>
 
@@ -393,7 +384,7 @@ function ColumnCell({ entry }: { entry: NewspaperItemView }) {
     </>
   );
 
-  const className = item.sponsored
+  const className = highlighted
     ? 'block border-l-2 border-signal-500 bg-signal-50 p-3 dark:bg-signal-900/25'
     : 'block';
 
@@ -410,22 +401,14 @@ function ColumnCell({ entry }: { entry: NewspaperItemView }) {
 /**
  * Bolum etiketi.
  *
- * Sponsorlu kartta bolum adi yerine kaynagin kendisi yazilir. "Sponsorlu"
- * kelimesi ayrica rozet olarak TEKRARLANMAZ: gazetenin ucretli alanlari zaten
- * sponsorlu alanlardir ve bunu masthead altindaki tek satir soyler; her kartin
- * ustunde bir daha yazmak gurultudur.
+ * Turuncu vurgu odeme turunu degil, okurun ilgi alanlariyla eslesmeyi anlatir.
+ * Editoryal kaynak bilgisi kartin normal yazar/kaynak satirinda korunur.
  */
-function SectionTag({ item }: { item: NewspaperItemView['item'] }) {
-  if (item.sponsored) {
+function SectionTag({ item, highlighted }: { item: NewspaperItemView['item']; highlighted: boolean }) {
+  if (highlighted) {
     return (
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-signal-700 dark:text-signal-300">
-        {/*
-          signal-600 (#d96b04) acik temada beyaza karsi 3.47:1 veriyordu;
-          10.9px normal agirlikta bu esik 4.5:1 (WCAG 1.4.3). signal-700
-          beyazda 5.51:1, sponsorlu kartin signal-50 zemininde 4.8:1.
-          Koyu temada signal-300 zaten yeterli.
-        */}
-        {item.sponsorName ?? 'Sponsorlu içerik'}
+        İlgine göre · {SECTION_LABEL[item.section]}
       </p>
     );
   }

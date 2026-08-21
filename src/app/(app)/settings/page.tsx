@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { signOut } from '@/actions/auth';
 import { Card, SectionHeader } from '@/components/ui';
 import { getViewer, prefersReducedMotion } from '@/lib/auth/session';
+import { getStore } from '@/lib/data/store';
 import { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES } from '@/lib/geo';
 
 import { SettingsForm } from './SettingsForm';
@@ -15,23 +16,42 @@ export default async function SettingsPage() {
   if (!viewer) return null;
 
   const reducedMotion = await prefersReducedMotion();
+  const followRequests = getStore().listFollowRequestProfiles(viewer.id);
 
   return (
     <div className="space-y-4">
       <SectionHeader as="h1" title="Ayarlar" description="Gizlilik, konum, erişilebilirlik ve akış tercihleri." />
 
+      <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+        <div><h2 className="font-semibold">Profil bilgileri</h2><p className="mt-0.5 text-sm text-fg-muted">Fotoğraf, kapak, ad, tanıtım, doğum tarihi ve bağlantılar.</p></div>
+        <Link href={`/profile/${viewer.username}/edit`} className="inline-flex min-h-10 items-center rounded-full border border-line px-4 text-sm font-semibold hover:bg-bg-hover">Profili düzenle</Link>
+      </Card>
+
       <SettingsForm
         provinces={[...PROVINCES]}
         districts={[...DISTRICTS]}
         districtDataProvinces={DISTRICT_DATA_PROVINCES}
+        followRequests={followRequests}
         initial={{
-          bio: viewer.bio,
           intentMode: viewer.intentMode,
           goalKeys: viewer.goalKeys,
           locationVisibility: viewer.locationVisibility,
           provinceCode: viewer.provinceCode,
           districtCode: viewer.districtCode,
           reducedMotion,
+          publicationReservationVisible: viewer.publicationReservationVisible ?? true,
+          publicationMessages: viewer.publicationMessages ?? 'everyone',
+          publicationAnonymousByDefault: viewer.publicationAnonymousByDefault ?? false,
+          isPrivate: viewer.isPrivate,
+          photoTagging: viewer.photoTagging,
+          discoverableByEmail: viewer.discoverableByEmail,
+          discoverableByPhone: viewer.discoverableByPhone,
+          messageRequests: viewer.messageRequests,
+          messageQualityFilter: viewer.messageQualityFilter,
+          sensitiveMediaWarnings: viewer.sensitiveMediaWarnings,
+          imageDescriptionReminder: viewer.imageDescriptionReminder,
+          mutedWords: viewer.mutedWords,
+          connectedAccounts: viewer.connectedAccounts,
         }}
       />
 

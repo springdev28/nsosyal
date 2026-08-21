@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge, Icon } from '@/components/ui';
+import { Icon } from '@/components/ui';
 
 /**
  * Gunun ilk oturumunda acilan gazete kapagi (PROJECT_SPEC 6.6 / 7.9).
@@ -21,14 +21,12 @@ export function NewspaperAutoOpen({
   title,
   standfirst,
   leadTitle,
-  sponsoredCount,
   closeDelaySeconds,
 }: {
   issueDate: string;
   title: string;
   standfirst: string;
   leadTitle: string;
-  sponsoredCount: number;
   closeDelaySeconds: number;
 }) {
   const [open, setOpen] = useState(true);
@@ -171,12 +169,8 @@ export function NewspaperAutoOpen({
           </p>
         ) : null}
 
-        <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-fg-muted">
-          <Badge tone="sponsored">Sponsorlu</Badge>
-          <span>
-            Bu sayıda {sponsoredCount} ücretli alan var ve hepsi açıkça işaretli. Ücretli görünürlük yalnızca
-            gazetede yer alır; kişisel akış sıralaman bundan etkilenmez.
-          </span>
+        <p className="mt-3 rounded-xl border-l-2 border-signal-500 bg-signal-50 px-3 py-2 text-sm text-fg-muted dark:bg-signal-900/25">
+          Turuncu şeritler, ilgi alanlarınla eşleşen haberleri gösterir.
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">

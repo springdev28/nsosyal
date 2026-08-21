@@ -37,6 +37,10 @@ export interface ProvinceMetric {
   people: number;
 }
 
+export interface DistrictMetric extends ProvinceMetric {
+  provinceCode: string;
+}
+
 /**
  * Yogunluk skalasi. Tek renk ailesi (mavi -> camgobegi), sirali, bes durak.
  * Harita dolgusu ve legend ayni diziyi okur; ikisi elle senkronlanmaz.
@@ -71,8 +75,34 @@ const LEGEND_GRADIENT = `linear-gradient(90deg, ${DENSITY_STOPS.map(
   ({ at, color }) => `${color} ${Math.round(at * 100)}%`,
 ).join(', ')})`;
 
+function metricTooltipHtml(metric: ProvinceMetric | DistrictMetric | undefined): string {
+  if (!metric) return '';
+  const rows: Array<[string, number]> = [
+    ['Topluluk', metric.communities],
+    ['Etkinlik', metric.events],
+    ['Proje', metric.projects],
+    ['Paylaşım', metric.posts],
+    ['Kurum', metric.organizations],
+    ['Kişi', metric.people],
+  ];
+  const filled = rows.filter(([, value]) => value > 0);
+  const name = metric.name.replace(/[&<>\"]/g, (ch) =>
+    ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&quot;',
+  );
+  const body = filled.length
+    ? filled
+        .map(
+          ([label, value]) =>
+            `<span class="ns-map-popup__row"><span>${label}</span><b>${value.toLocaleString('tr-TR')}</b></span>`,
+        )
+        .join('')
+    : '<span class="ns-map-popup__empty">Bu filtrede sonuç yok</span>';
+  return `<strong class="ns-map-popup__title">${name}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} sonuç</span><span class="ns-map-popup__grid">${body}</span>`;
+}
+
 export function TurkeyMap({
   metrics,
+  districtMetrics,
   selectedProvince,
   selectedDistrict,
   districtDataProvinces,
@@ -80,6 +110,7 @@ export function TurkeyMap({
   onSelectDistrict,
 }: {
   metrics: ProvinceMetric[];
+  districtMetrics: DistrictMetric[];
   selectedProvince: string | null;
   selectedDistrict: string | null;
   districtDataProvinces: readonly string[];
@@ -93,6 +124,7 @@ export function TurkeyMap({
   const [districtsLoaded, setDistrictsLoaded] = useState(false);
   // Hover/secim degerini metin olarak da yaziyoruz: harita tek basina yeterli degil.
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
+  const [hoveredDistrict, setHoveredDistrict] = useState<string | null>(null);
 
   // Callback'ler her renderda degisebilir; harita olaylari icin sabit referans tutuyoruz.
   const selectProvinceRef = useRef(onSelectProvince);
@@ -103,6 +135,8 @@ export function TurkeyMap({
   // guncel metrikleri bir ref uzerinden gorurler.
   const metricsRef = useRef(metrics);
   metricsRef.current = metrics;
+  const districtMetricsRef = useRef(districtMetrics);
+  districtMetricsRef.current = districtMetrics;
   const selectedProvinceRef = useRef(selectedProvince);
   selectedProvinceRef.current = selectedProvince;
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -224,8 +258,11 @@ export function TurkeyMap({
     });
     popupRef.current = popup;
 
-    const tooltipHtml = (code: string) => {
-      const metric = metricsRef.current.find((entry) => entry.code === code);
+    const tooltipHtml = (code: string, level: 'province' | 'district' = 'province') => {
+      const metric =
+        level === 'province'
+          ? metricsRef.current.find((entry) => entry.code === code)
+          : districtMetricsRef.current.find((entry) => entry.code === code);
       if (!metric) return '';
       const rows: Array<[string, number]> = [
         ['Topluluk', metric.communities],
@@ -353,7 +390,7 @@ export function TurkeyMap({
     }
   }, [selectedProvince, metrics, ready]);
 
-  // Pilot il secildiginde ilce katmanini ekle, birakildiginda kaldir.
+  // Il secildiginde o ilin ilce choropleth katmanini ekle, birakildiginda kaldir.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -371,6 +408,7 @@ export function TurkeyMap({
     if (map.getSource('districts')) return;
 
     let cancelled = false;
+    let detachEvents = () => {};
     void (async () => {
       try {
         const response = await fetch(`/geo/districts-${selectedProvince}.geojson`);
@@ -391,7 +429,12 @@ export function TurkeyMap({
               SELECTED_FILL,
               ['boolean', ['feature-state', 'hover'], false],
               HOVER_FILL,
-              '#1c5580',
+              [
+                'interpolate',
+                ['linear'],
+                ['coalesce', ['feature-state', 'density'], 0],
+                ...DENSITY_STOPS.flatMap(({ at, color }) => [at, color]),
+              ],
             ],
             'fill-opacity': 0.85,
           },
@@ -406,16 +449,49 @@ export function TurkeyMap({
           },
         });
         setDistrictsLoaded(true);
+        let hoveredDistrictCode: string | null = null;
 
-        map.on('click', 'district-fill', (event) => {
+        const clickDistrict = (event: maplibregl.MapLayerMouseEvent) => {
           const code = (event.features?.[0] as MapGeoJSONFeature | undefined)?.properties?.code as
             | string
             | undefined;
           if (code) selectDistrictRef.current(code);
-        });
-        map.on('mouseenter', 'district-fill', () => {
+        };
+        const moveDistrict = (event: maplibregl.MapLayerMouseEvent) => {
+          const code = (event.features?.[0] as MapGeoJSONFeature | undefined)?.properties?.code as
+            | string
+            | undefined;
           map.getCanvas().style.cursor = 'pointer';
-        });
+          if (hoveredDistrictCode && hoveredDistrictCode !== code) {
+            map.setFeatureState({ source: 'districts', id: hoveredDistrictCode }, { hover: false });
+          }
+          hoveredDistrictCode = code ?? null;
+          if (code) map.setFeatureState({ source: 'districts', id: code }, { hover: true });
+          setHoveredDistrict(code ?? null);
+          if (code) {
+            popupRef.current
+              ?.setLngLat(event.lngLat)
+              .setHTML(metricTooltipHtml(districtMetricsRef.current.find((entry) => entry.code === code)))
+              .addTo(map);
+          }
+        };
+        const leaveDistrict = () => {
+          map.getCanvas().style.cursor = '';
+          if (hoveredDistrictCode) {
+            map.setFeatureState({ source: 'districts', id: hoveredDistrictCode }, { hover: false });
+          }
+          hoveredDistrictCode = null;
+          setHoveredDistrict(null);
+          popupRef.current?.remove();
+        };
+        map.on('click', 'district-fill', clickDistrict);
+        map.on('mousemove', 'district-fill', moveDistrict);
+        map.on('mouseleave', 'district-fill', leaveDistrict);
+        detachEvents = () => {
+          map.off('click', 'district-fill', clickDistrict);
+          map.off('mousemove', 'district-fill', moveDistrict);
+          map.off('mouseleave', 'district-fill', leaveDistrict);
+        };
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'İlçe verisi yüklenemedi');
       }
@@ -423,8 +499,22 @@ export function TurkeyMap({
 
     return () => {
       cancelled = true;
+      detachEvents();
     };
   }, [selectedProvince, districtDataProvinces, ready]);
+
+  // Ilce sonuc sayilarini da il katmaniyla ayni olcekte feature-state'e isle.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !districtsLoaded) return;
+    const max = districtMetrics.reduce((peak, metric) => Math.max(peak, metric.total), 0);
+    for (const metric of districtMetrics) {
+      map.setFeatureState(
+        { source: 'districts', id: metric.code },
+        { total: metric.total, density: max > 0 ? metric.total / max : 0 },
+      );
+    }
+  }, [districtMetrics, districtsLoaded]);
 
   // Secili ilce vurgusu.
   useEffect(() => {
@@ -440,8 +530,10 @@ export function TurkeyMap({
 
   // Hover varsa onu, yoksa secili ili yaz. Ayni sayi listede de var; bu yalnizca
   // haritanin uzerinde dururken baglami kaybetmemek icin.
-  const readoutCode = hoveredProvince ?? selectedProvince;
-  const readout = readoutCode ? (metrics.find((m) => m.code === readoutCode) ?? null) : null;
+  const readoutCode = hoveredDistrict ?? hoveredProvince ?? selectedDistrict ?? selectedProvince;
+  const readout = readoutCode
+    ? ([...districtMetrics, ...metrics].find((metric) => metric.code === readoutCode) ?? null)
+    : null;
 
   return (
     <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-line">

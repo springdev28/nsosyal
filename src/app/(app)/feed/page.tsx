@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Composer } from '@/components/feed/Composer';
 import { PostCard } from '@/components/feed/PostCard';
+import { StoryRail } from '@/components/feed/StoryRail';
 import { ChipRow, EmptyState, FilterChip, Icon, InfoNote, TopTabs } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
@@ -48,6 +49,7 @@ export default async function FeedPage({
   const newVoicesOnly = params.filtre === 'yeni-sesler';
 
   const posts = store.getFeed({ viewerId: viewer.id, intentMode, newVoicesOnly, limit: 40 });
+  const stories = store.listWhyStories({ viewerId: viewer.id }).slice(0, 12);
 
   const memberCommunities = store
     .getMemberCommunityIds(viewer.id)
@@ -77,6 +79,8 @@ export default async function FeedPage({
       />
 
       <h1 className="sr-only">Ana akış</h1>
+
+      <StoryRail stories={stories} />
 
       <section aria-labelledby="intent-heading" className="mb-3 px-1 sm:px-3">
         <h2 id="intent-heading" className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg-subtle">

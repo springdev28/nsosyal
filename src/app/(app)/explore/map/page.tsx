@@ -61,6 +61,14 @@ export default async function MapPage({
     mode: filters.mode,
     query: filters.query,
   });
+  const districtSummaries = filters.province
+    ? store.getDistrictSummaries(filters.province, {
+        topicId: topic?.id ?? null,
+        range,
+        mode: filters.mode,
+        query: filters.query,
+      })
+    : [];
 
   const results = filters.province ? store.discover(storeFilters) : null;
   const province = provinceByCode(filters.province);
@@ -82,6 +90,7 @@ export default async function MapPage({
 
       <MapExplorer
         metrics={summaries}
+        districtMetrics={districtSummaries}
         selectedProvince={filters.province}
         selectedDistrict={filters.district}
         districtDataProvinces={DISTRICT_DATA_PROVINCES}
@@ -111,7 +120,7 @@ export default async function MapPage({
             }
           />
         ) : (
-          <ul className="scroll-x hide-scrollbar flex gap-2 pb-1">
+          <ul className="filter-strip gap-2 pb-1">
             {withResults.slice(0, 24).map((entry) => (
               <li key={entry.code}>
                 <Link
@@ -153,7 +162,7 @@ export default async function MapPage({
                 <p id="district-list-label" className="mb-1 text-xs font-semibold uppercase tracking-wide text-fg-subtle">
                   İlçeler
                 </p>
-                <ul aria-labelledby="district-list-label" className="scroll-x hide-scrollbar flex gap-1.5 pb-1">
+                <ul aria-labelledby="district-list-label" className="filter-strip flex gap-1.5 pb-1">
                   <li>
                     <Link
                       href={buildFilterHref(currentPath, filters, { district: null })}
@@ -167,7 +176,9 @@ export default async function MapPage({
                       Tüm il
                     </Link>
                   </li>
-                  {districts.map((entry) => (
+                  {districts.map((entry) => {
+                    const metric = districtSummaries.find((summary) => summary.code === entry.code);
+                    return (
                     <li key={entry.code}>
                       <Link
                         href={buildFilterHref(currentPath, filters, { district: entry.code })}
@@ -179,9 +190,11 @@ export default async function MapPage({
                         }`}
                       >
                         {entry.name}
+                        <span className="ml-1 text-xs opacity-70">{metric?.total ?? 0}</span>
                       </Link>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </div>
             ) : (

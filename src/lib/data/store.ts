@@ -12,6 +12,10 @@ import type {
   Post,
   Profile,
   Project,
+  PublicationBlock,
+  PublicationDraft,
+  PublicationRect,
+  PublicationSlot,
   Reminder,
   Report,
   Resource,
@@ -26,6 +30,7 @@ import type {
   CommunitySummary,
   CommunityView,
   ContextChip,
+  DistrictSummary,
   DiscoveryResults,
   EventSummary,
   EventView,
@@ -41,12 +46,19 @@ import type {
   WhyStoryView,
 } from '@/types/view';
 
-import { districtName, provinceName, PROVINCES } from '@/lib/geo';
+import { districtName, provinceName, DISTRICTS, PROVINCES } from '@/lib/geo';
 import { placementByCode } from '@/lib/newspaper/inventory';
 import { rankPosts, type RankingViewer } from '@/lib/ranking/rank';
 import { buildDataset, type Dataset } from '@/lib/seed';
 import { uid } from '@/lib/seed/ids';
-import { eventOverlaps, isWithin, toIstanbulDateKey, type DateRange } from '@/lib/time';
+import {
+  addDays,
+  eventOverlaps,
+  isWithin,
+  startOfIstanbulDay,
+  toIstanbulDateKey,
+  type DateRange,
+} from '@/lib/time';
 
 /**
  * Demo veri deposu.
@@ -91,7 +103,61 @@ export interface DiscoveryFilters {
   query?: string;
 }
 
+export interface PublicationWindow {
+  issueDate: string;
+  closesAt: string;
+  publishesAt: string;
+  open: boolean;
+  slots: PublicationSlot[];
+}
+
+export type PublicationMutationResult =
+  | { ok: true; draft: PublicationDraft; slot?: PublicationSlot; price?: number }
+  | { ok: false; code: 'invalid' | 'closed' | 'conflict' | 'stale' | 'outside'; message: string };
+
 const NEW_VOICE_THRESHOLD = 120;
+
+const PUBLICATION_COLUMNS = 30;
+const PUBLICATION_ROWS = 40;
+const PUBLICATION_UNIT_PRICE = 10;
+
+function cleanPublicationRect(rect: PublicationRect): PublicationRect | null {
+  const clean = {
+    x: Math.round(rect.x),
+    y: Math.round(rect.y),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+  };
+  if (
+    clean.x < 0 ||
+    clean.y < 0 ||
+    clean.width < 1 ||
+    clean.height < 1 ||
+    clean.x + clean.width > PUBLICATION_COLUMNS ||
+    clean.y + clean.height > PUBLICATION_ROWS
+  ) {
+    return null;
+  }
+  return clean;
+}
+
+function publicationRectsOverlap(left: PublicationRect, right: PublicationRect): boolean {
+  return (
+    left.x < right.x + right.width &&
+    left.x + left.width > right.x &&
+    left.y < right.y + right.height &&
+    left.y + left.height > right.y
+  );
+}
+
+function publicationRectContains(parent: PublicationRect, child: PublicationRect): boolean {
+  return (
+    child.x >= parent.x &&
+    child.y >= parent.y &&
+    child.x + child.width <= parent.x + parent.width &&
+    child.y + child.height <= parent.y + parent.height
+  );
+}
 
 function normalize(value: string): string {
   return value
@@ -158,6 +224,7 @@ export class DemoStore {
         displayName: 'Bilinmeyen hesap',
         avatarEmoji: '❔',
         avatarTone: '#6b7d96',
+        avatarUrl: null,
         kind: 'person',
         verified: false,
         demo: true,
@@ -170,6 +237,7 @@ export class DemoStore {
       displayName: profile.displayName,
       avatarEmoji: profile.avatarEmoji,
       avatarTone: profile.avatarTone,
+      avatarUrl: profile.avatarUrl,
       kind: profile.kind,
       verified: profile.verified,
       demo: true,
@@ -290,14 +358,55 @@ export class DemoStore {
     return this.data.follows.filter((edge) => edge.followerId === profileId).map((edge) => edge.followingId);
   }
 
+  listFollowingProfiles(profileId: UUID): ProfileSummary[] {
+    return this.getFollowing(profileId).map((id) => this.profileSummary(id));
+  }
+
   getFollowers(profileId: UUID): UUID[] {
     return this.data.follows.filter((edge) => edge.followingId === profileId).map((edge) => edge.followerId);
+  }
+
+  listFollowerProfiles(profileId: UUID): ProfileSummary[] {
+    return this.getFollowers(profileId).map((id) => this.profileSummary(id));
+  }
+
+  listProfileSuggestions(profileId: UUID, limit = 6): ProfileSummary[] {
+    const profile = this.getProfile(profileId);
+    if (!profile) return [];
+    const following = new Set(this.getFollowing(profileId));
+    return this.data.profiles
+      .filter((candidate) => candidate.id !== profileId && !following.has(candidate.id))
+      .map((candidate) => ({
+        candidate,
+        overlap: candidate.topicIds.filter((topicId) => profile.topicIds.includes(topicId)).length,
+      }))
+      .sort((left, right) => right.overlap - left.overlap || right.candidate.followerCount - left.candidate.followerCount)
+      .slice(0, limit)
+      .map(({ candidate }) => this.profileSummary(candidate.id));
   }
 
   isFollowing(followerId: UUID, followingId: UUID): boolean {
     return this.data.follows.some(
       (edge) => edge.followerId === followerId && edge.followingId === followingId,
     );
+  }
+
+  hasFollowRequest(requesterId: UUID, targetId: UUID): boolean {
+    return this.data.followRequests.some(
+      (request) => request.requesterId === requesterId && request.targetId === targetId,
+    );
+  }
+
+  listFollowRequestProfiles(targetId: UUID): ProfileSummary[] {
+    return this.data.followRequests
+      .filter((request) => request.targetId === targetId)
+      .map((request) => this.profileSummary(request.requesterId));
+  }
+
+  canViewProfile(profileId: UUID, viewerId: UUID | null): boolean {
+    const profile = this.getProfile(profileId);
+    if (!profile || !profile.isPrivate) return true;
+    return viewerId === profileId || Boolean(viewerId && this.isFollowing(viewerId, profileId));
   }
 
   getMemberCommunityIds(profileId: UUID): UUID[] {
@@ -387,6 +496,13 @@ export class DemoStore {
     return this.data.comments
       .filter((comment) => comment.postId === postId)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((comment) => ({ comment, author: this.profileSummary(comment.authorId) }));
+  }
+
+  listCommentsByAuthor(profileId: UUID): CommentView[] {
+    return this.data.comments
+      .filter((comment) => comment.authorId === profileId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .map((comment) => ({ comment, author: this.profileSummary(comment.authorId) }));
   }
 
@@ -766,6 +882,33 @@ export class DemoStore {
     });
   }
 
+  /** Seçili il için ilçe choropleth'inin ve erişilebilir listenin kaynağı. */
+  getDistrictSummaries(provinceCode: string, filters: DiscoveryFilters = {}): DistrictSummary[] {
+    return DISTRICTS.filter((district) => district.provinceCode === provinceCode).map((district) => {
+      const results = this.discover({ ...filters, provinceCode, districtCode: district.code });
+      const total =
+        results.communities.length +
+        results.events.length +
+        results.projects.length +
+        results.posts.length +
+        results.organizations.length +
+        results.profiles.length;
+
+      return {
+        code: district.code,
+        provinceCode,
+        name: district.name,
+        communities: results.communities.length,
+        events: results.events.length,
+        projects: results.projects.length,
+        posts: results.posts.length,
+        organizations: results.organizations.length,
+        people: results.profiles.length,
+        total,
+      };
+    });
+  }
+
   /**
    * Konum + zaman + konu filtreleriyle butun varlik turlerinde arama.
    *
@@ -895,6 +1038,261 @@ export class DemoStore {
   hasIssueForToday(now: Date = new Date()): boolean {
     const key = toIstanbulDateKey(now);
     return this.data.newspaperIssues.some((issue) => issue.issueDate === key && issue.status === 'published');
+  }
+
+  // --- Yayin Atolyesi ----------------------------------------------------
+
+  listPublicationWindows(now: Date = new Date()): PublicationWindow[] {
+    const today = startOfIstanbulDay(now);
+    let firstIssue = addDays(today, 1);
+    // Bir sonraki sayinin taslagi onceki gun Istanbul saatiyle 20.00'de kapanir.
+    if (now.getTime() >= firstIssue.getTime() - 4 * 3_600_000) {
+      firstIssue = addDays(firstIssue, 1);
+    }
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const issueStart = addDays(firstIssue, index);
+      const issueDate = toIstanbulDateKey(issueStart);
+      const closesAt = new Date(issueStart.getTime() - 4 * 3_600_000);
+      return {
+        issueDate,
+        closesAt: closesAt.toISOString(),
+        publishesAt: new Date(issueStart.getTime() + 6 * 3_600_000).toISOString(),
+        open: now.getTime() < closesAt.getTime(),
+        slots: this.data.publicationSlots
+          .filter((slot) => slot.issueDate === issueDate)
+          .sort((a, b) => a.page - b.page || a.rect.y - b.rect.y || a.rect.x - b.rect.x),
+      };
+    });
+  }
+
+  listPublicationDrafts(ownerId: UUID): PublicationDraft[] {
+    return this.data.publicationDrafts
+      .filter((draft) => draft.ownerId === ownerId)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  getPublicationDraft(draftId: UUID, ownerId: UUID): PublicationDraft | null {
+    return this.data.publicationDrafts.find((draft) => draft.id === draftId && draft.ownerId === ownerId) ?? null;
+  }
+
+  startPublicationDraft(
+    ownerId: UUID,
+    input: { issueDate: string; page: number; rect: PublicationRect; anonymous?: boolean },
+    now: Date = new Date(),
+  ): PublicationMutationResult {
+    const rect = cleanPublicationRect(input.rect);
+    if (!rect || input.page < 1 || input.page > 5) {
+      return { ok: false, code: 'invalid', message: 'Alan 30×40 sayfanın içinde ve 1–5. sayfalardan birinde olmalı.' };
+    }
+    if (!this.listPublicationWindows(now).some((window) => window.issueDate === input.issueDate && window.open)) {
+      return { ok: false, code: 'closed', message: 'Bu sayının taslak süresi kapandı. Açık sayılardan birini seç.' };
+    }
+
+    const existing = this.data.publicationDrafts.find(
+      (draft) =>
+        draft.ownerId === ownerId &&
+        draft.issueDate === input.issueDate &&
+        draft.page === input.page &&
+        draft.status !== 'paid',
+    );
+    if (existing) return { ok: true, draft: existing };
+
+    const stamp = now.toISOString();
+    const profile = this.getProfile(ownerId);
+    const draft: PublicationDraft = {
+      id: this.nextId('publication-draft'),
+      ownerId,
+      issueDate: input.issueDate,
+      page: input.page,
+      rect,
+      blocks: [],
+      archivedBlocks: [],
+      status: 'editing',
+      anonymous: input.anonymous ?? profile?.publicationAnonymousByDefault ?? false,
+      revision: 1,
+      createdAt: stamp,
+      updatedAt: stamp,
+    };
+    this.data.publicationDrafts.unshift(draft);
+    return { ok: true, draft };
+  }
+
+  resizePublicationDraft(
+    ownerId: UUID,
+    draftId: UUID,
+    rectInput: PublicationRect,
+    revision: number,
+    now: Date = new Date(),
+  ): PublicationMutationResult {
+    const draft = this.getPublicationDraft(draftId, ownerId);
+    const rect = cleanPublicationRect(rectInput);
+    if (!draft || !rect) return { ok: false, code: 'invalid', message: 'Taslak veya alan geçerli değil.' };
+    if (draft.revision !== revision) {
+      return { ok: false, code: 'stale', message: 'Taslak başka bir işlemde değişti. Yenileyip tekrar dene.' };
+    }
+    if (!this.listPublicationWindows(now).some((window) => window.issueDate === draft.issueDate && window.open)) {
+      return { ok: false, code: 'closed', message: 'Bu sayının taslak süresi kapandı.' };
+    }
+
+    draft.archivedBlocks.push(...draft.blocks.map((block) => ({ ...block, archived: true })));
+    draft.blocks = [];
+    draft.rect = rect;
+    draft.status = 'editing';
+    draft.revision += 1;
+    draft.updatedAt = now.toISOString();
+    this.data.publicationSlots = this.data.publicationSlots.filter(
+      (slot) => slot.draftId !== draft.id || slot.status === 'paid',
+    );
+    return { ok: true, draft };
+  }
+
+  savePublicationDraft(
+    ownerId: UUID,
+    draftId: UUID,
+    input: { blocks: PublicationBlock[]; anonymous: boolean; revision: number; submit?: boolean },
+    now: Date = new Date(),
+  ): PublicationMutationResult {
+    const draft = this.getPublicationDraft(draftId, ownerId);
+    if (!draft) return { ok: false, code: 'invalid', message: 'Taslak bulunamadı.' };
+    if (draft.revision !== input.revision) {
+      return { ok: false, code: 'stale', message: 'Taslak sunucuda değişti. Yenileyip tekrar dene.' };
+    }
+    if (!this.listPublicationWindows(now).some((window) => window.issueDate === draft.issueDate && window.open)) {
+      return { ok: false, code: 'closed', message: 'Bu sayının taslak süresi kapandı.' };
+    }
+
+    const blocks = input.blocks.map((block) => ({
+      ...block,
+      content: block.content.slice(0, 4_000),
+      altText: block.altText.slice(0, 300),
+      borderRadius: Math.max(0, Math.min(48, Math.round(block.borderRadius))),
+      archived: false,
+    }));
+    if (blocks.some((block) => !cleanPublicationRect(block) || !publicationRectContains(draft.rect, block))) {
+      return {
+        ok: false,
+        code: 'outside',
+        message: 'Kırmızı işaretli tasarım bloklarını seçili alanın içine taşımalısın.',
+      };
+    }
+
+    draft.blocks = blocks;
+    draft.anonymous = input.anonymous;
+    draft.status = input.submit ? 'submitted' : 'editing';
+    draft.revision += 1;
+    draft.updatedAt = now.toISOString();
+    return { ok: true, draft };
+  }
+
+  reservePublicationArea(
+    ownerId: UUID,
+    draftId: UUID,
+    revision: number,
+    now: Date = new Date(),
+  ): PublicationMutationResult {
+    const draft = this.getPublicationDraft(draftId, ownerId);
+    if (!draft) return { ok: false, code: 'invalid', message: 'Taslak bulunamadı.' };
+    if (draft.revision !== revision) {
+      return { ok: false, code: 'stale', message: 'Taslak değişti. Rezervasyondan önce yenile.' };
+    }
+    if (!this.listPublicationWindows(now).some((window) => window.issueDate === draft.issueDate && window.open)) {
+      return { ok: false, code: 'closed', message: 'Bu sayının rezervasyon süresi kapandı.' };
+    }
+
+    const conflict = this.data.publicationSlots.find(
+      (slot) =>
+        slot.draftId !== draft.id &&
+        slot.issueDate === draft.issueDate &&
+        slot.page === draft.page &&
+        publicationRectsOverlap(slot.rect, draft.rect),
+    );
+    if (conflict) {
+      return {
+        ok: false,
+        code: 'conflict',
+        message: 'Bu alan başka bir kullanıcı tarafından rezerve edilmiş veya satın alınmış.',
+      };
+    }
+
+    this.data.publicationSlots = this.data.publicationSlots.filter((slot) => slot.draftId !== draft.id);
+    const slot: PublicationSlot = {
+      id: this.nextId('publication-slot'),
+      ownerId,
+      draftId: draft.id,
+      issueDate: draft.issueDate,
+      page: draft.page,
+      rect: draft.rect,
+      status: 'reserved',
+      anonymous: draft.anonymous,
+      createdAt: now.toISOString(),
+      expiresAt: this.listPublicationWindows(now).find((window) => window.issueDate === draft.issueDate)?.closesAt ?? null,
+    };
+    this.data.publicationSlots.push(slot);
+    return { ok: true, draft, slot };
+  }
+
+  purchasePublicationArea(
+    ownerId: UUID,
+    draftId: UUID,
+    revision: number,
+    now: Date = new Date(),
+  ): PublicationMutationResult {
+    const draft = this.getPublicationDraft(draftId, ownerId);
+    if (!draft) return { ok: false, code: 'invalid', message: 'Taslak bulunamadı.' };
+    if (draft.revision !== revision) {
+      return { ok: false, code: 'stale', message: 'Ödeme öncesi taslak değişti. Sayfayı yenileyip tekrar dene.' };
+    }
+    if (draft.blocks.some((block) => !publicationRectContains(draft.rect, block))) {
+      return { ok: false, code: 'outside', message: 'Alan dışındaki bloklar düzeltilmeden ödeme başlatılamaz.' };
+    }
+    if (!this.listPublicationWindows(now).some((window) => window.issueDate === draft.issueDate && window.open)) {
+      return { ok: false, code: 'closed', message: 'Bu sayının ödeme süresi kapandı.' };
+    }
+
+    // Kesin hak yalnizca paid kayittir; rezervasyon odemeyi engellemez.
+    const paidConflict = this.data.publicationSlots.find(
+      (slot) =>
+        slot.status === 'paid' &&
+        slot.draftId !== draft.id &&
+        slot.issueDate === draft.issueDate &&
+        slot.page === draft.page &&
+        publicationRectsOverlap(slot.rect, draft.rect),
+    );
+    if (paidConflict) {
+      return {
+        ok: false,
+        code: 'conflict',
+        message: 'Alan ödeme başlamadan hemen önce satın alındı. Para çekilmedi; tasarımın arşivde korunuyor.',
+      };
+    }
+
+    this.data.publicationSlots = this.data.publicationSlots.filter(
+      (slot) =>
+        slot.draftId === draft.id ||
+        slot.status === 'paid' ||
+        slot.issueDate !== draft.issueDate ||
+        slot.page !== draft.page ||
+        !publicationRectsOverlap(slot.rect, draft.rect),
+    );
+    this.data.publicationSlots = this.data.publicationSlots.filter((slot) => slot.draftId !== draft.id);
+    const slot: PublicationSlot = {
+      id: this.nextId('publication-slot'),
+      ownerId,
+      draftId: draft.id,
+      issueDate: draft.issueDate,
+      page: draft.page,
+      rect: draft.rect,
+      status: 'paid',
+      anonymous: draft.anonymous,
+      createdAt: now.toISOString(),
+      expiresAt: null,
+    };
+    this.data.publicationSlots.push(slot);
+    draft.status = 'paid';
+    draft.revision += 1;
+    draft.updatedAt = now.toISOString();
+    return { ok: true, draft, slot, price: draft.rect.width * draft.rect.height * PUBLICATION_UNIT_PRICE };
   }
 
   listAdRequests(status?: ModerationStatus): AdRequestView[] {
@@ -1044,7 +1442,31 @@ export class DemoStore {
       if (target) target.followerCount = Math.max(0, target.followerCount - 1);
       return false;
     }
+    if (target?.isPrivate) {
+      const requestIndex = this.data.followRequests.findIndex(
+        (request) => request.requesterId === followerId && request.targetId === followingId,
+      );
+      if (requestIndex >= 0) {
+        this.data.followRequests.splice(requestIndex, 1);
+        return false;
+      }
+      this.data.followRequests.push({ requesterId: followerId, targetId: followingId, createdAt: new Date().toISOString() });
+      return false;
+    }
     this.data.follows.push({ followerId, followingId });
+    if (target) target.followerCount += 1;
+    return true;
+  }
+
+  resolveFollowRequest(targetId: UUID, requesterId: UUID, approve: boolean): boolean {
+    const index = this.data.followRequests.findIndex(
+      (request) => request.requesterId === requesterId && request.targetId === targetId,
+    );
+    if (index < 0) return false;
+    this.data.followRequests.splice(index, 1);
+    if (!approve || this.isFollowing(requesterId, targetId)) return true;
+    this.data.follows.push({ followerId: requesterId, followingId: targetId });
+    const target = this.getProfile(targetId);
     if (target) target.followerCount += 1;
     return true;
   }
@@ -1422,7 +1844,7 @@ export class DemoStore {
       profileId: input.organizationId,
       type: 'ad_request',
       title: 'İlan başvurun alındı',
-      body: 'Başvurun incelemede. Onaylanırsa seçtiğin sayıda "Sponsorlu" etiketiyle yayımlanacak.',
+      body: 'Başvurun incelemede. Onaylanırsa seçtiğin sayıların gazete kompozisyonunda yayımlanacak.',
       entityType: 'ad_request',
       entityId: request.id,
       href: '/newspaper/advertise',
@@ -1497,7 +1919,7 @@ export class DemoStore {
       action: `ad_request:${decision}`,
       entityType: 'ad_request',
       entityId: requestId,
-      note: decision === 'approved' ? 'Gazete sayısına sponsorlu kart olarak eklendi.' : 'Yayımlanmadı.',
+      note: decision === 'approved' ? 'Ücretli yerleşim gazete sayısına eklendi.' : 'Yayımlanmadı.',
       createdAt: new Date().toISOString(),
     });
 
@@ -1507,7 +1929,7 @@ export class DemoStore {
       title: `İlan başvurun ${decision === 'approved' ? 'onaylandı' : 'reddedildi'}`,
       body:
         decision === 'approved'
-          ? 'İlanın gazetede "Sponsorlu" etiketiyle yayımlandı.'
+          ? 'İlanın gazete kompozisyonunda yayımlandı.'
           : 'İlanın yayımlanmadı. Kurallara uygun bir içerikle tekrar başvurabilirsin.',
       entityType: 'ad_request',
       entityId: requestId,

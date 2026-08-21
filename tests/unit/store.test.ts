@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { DemoStore } from '@/lib/data/store';
+import { DISTRICT_DATA_PROVINCES } from '@/lib/geo';
 import { profileId } from '@/lib/seed/profiles';
 import { communityId } from '@/lib/seed/communities';
 import { eventId } from '@/lib/seed/events';
@@ -62,6 +63,12 @@ describe('seed bütünlüğü', () => {
       range: resolvePreset('next-30', NOW),
     });
     expect(events.length).toBeGreaterThan(0);
+  });
+
+  it('81 ilin tamamında ilçe haritası ve yoğunluk özeti vardır', () => {
+    expect(DISTRICT_DATA_PROVINCES).toHaveLength(81);
+    expect(store.getDistrictSummaries('06').length).toBeGreaterThan(20);
+    expect(store.getDistrictSummaries('35').some((district) => district.name === 'Bornova')).toBe(true);
   });
 
   it('akış yalnızca proje içeriğinden oluşmaz: gündelik paylaşım ve mizah da var', () => {
@@ -304,6 +311,85 @@ describe('nGazete ve gelir modeli', () => {
   });
 });
 
+describe('Yayın Atölyesi alan hakkı', () => {
+  const ownerA = profileId('elif.demo');
+  const ownerB = profileId('baran.demo');
+  const rect = { x: 2, y: 3, width: 8, height: 6 };
+
+  it('her an sonraki yedi açık sayı ve en fazla beş sayfa sunar', () => {
+    const windows = store.listPublicationWindows(NOW);
+    expect(windows).toHaveLength(7);
+    expect(windows.every((window) => window.open)).toBe(true);
+    expect(new Date(windows[0].closesAt).getTime()).toBeGreaterThan(NOW.getTime());
+  });
+
+  it('rezervasyon niyettir; başka kullanıcının ödemesini engellemez', () => {
+    const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
+    const first = store.startPublicationDraft(ownerA, { issueDate, page: 1, rect }, NOW);
+    const second = store.startPublicationDraft(ownerB, { issueDate, page: 1, rect }, NOW);
+    expect(first.ok && second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+
+    expect(store.reservePublicationArea(ownerA, first.draft.id, first.draft.revision, NOW).ok).toBe(true);
+    const paid = store.purchasePublicationArea(ownerB, second.draft.id, second.draft.revision, NOW);
+    expect(paid.ok).toBe(true);
+    if (paid.ok) expect(paid.price).toBe(480);
+  });
+
+  it('kesin satın alınmış alan ödeme başlamadan çakışmayı durdurur', () => {
+    const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
+    const first = store.startPublicationDraft(ownerA, { issueDate, page: 2, rect }, NOW);
+    const second = store.startPublicationDraft(ownerB, { issueDate, page: 2, rect }, NOW);
+    if (!first.ok || !second.ok) return;
+
+    expect(store.purchasePublicationArea(ownerA, first.draft.id, first.draft.revision, NOW).ok).toBe(true);
+    const result = store.purchasePublicationArea(ownerB, second.draft.id, second.draft.revision, NOW);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.code).toBe('conflict');
+  });
+
+  it('alan dışındaki blok kaydedilemez, alan değişince bloklar arşivlenir', () => {
+    const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
+    const started = store.startPublicationDraft(ownerA, { issueDate, page: 3, rect }, NOW);
+    if (!started.ok) return;
+    const block = {
+      id: uid('publication-block', 'outside'),
+      type: 'markdown' as const,
+      x: 0,
+      y: 0,
+      width: 4,
+      height: 4,
+      content: '# Tasarım',
+      altText: '',
+      color: '#E9EFF7',
+      borderRadius: 8,
+      objectFit: 'cover' as const,
+      archived: false,
+    };
+    const rejected = store.savePublicationDraft(ownerA, started.draft.id, {
+      blocks: [block],
+      anonymous: false,
+      revision: started.draft.revision,
+    }, NOW);
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.code).toBe('outside');
+
+    const inside = { ...block, x: 3, y: 4 };
+    const saved = store.savePublicationDraft(ownerA, started.draft.id, {
+      blocks: [inside],
+      anonymous: false,
+      revision: started.draft.revision,
+    }, NOW);
+    if (!saved.ok) return;
+    const resized = store.resizePublicationDraft(ownerA, saved.draft.id, { x: 12, y: 4, width: 8, height: 6 }, saved.draft.revision, NOW);
+    expect(resized.ok).toBe(true);
+    if (resized.ok) {
+      expect(resized.draft.blocks).toHaveLength(0);
+      expect(resized.draft.archivedBlocks).toHaveLength(1);
+    }
+  });
+});
+
 describe('beğeni ve kaydetme', () => {
   const viewer = profileId('baran.demo');
 
@@ -343,6 +429,21 @@ describe('takip', () => {
 
     store.toggleFollow(viewer, target);
     expect(store.getProfile(target)!.followerCount).toBe(before);
+  });
+
+  it('gizli hesapta doğrudan takip yerine onay isteği oluşturur', () => {
+    const viewer = profileId('elif.demo');
+    const target = profileId('zeynep.bio');
+    store.updateProfile(target, { isPrivate: true });
+
+    expect(store.toggleFollow(viewer, target)).toBe(false);
+    expect(store.isFollowing(viewer, target)).toBe(false);
+    expect(store.hasFollowRequest(viewer, target)).toBe(true);
+    expect(store.canViewProfile(target, viewer)).toBe(false);
+
+    expect(store.resolveFollowRequest(target, viewer, true)).toBe(true);
+    expect(store.isFollowing(viewer, target)).toBe(true);
+    expect(store.canViewProfile(target, viewer)).toBe(true);
   });
 });
 

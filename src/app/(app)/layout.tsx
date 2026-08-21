@@ -58,7 +58,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           title={issue.issue.title}
           standfirst={issue.issue.standfirst}
           leadTitle={issue.items[0]?.item.title ?? ''}
-          sponsoredCount={issue.items.filter((entry) => entry.item.sponsored).length}
           /* Erisilebilirlik tercihi varsa bekleme uygulanmaz (PROJECT_SPEC 7.9). */
           closeDelaySeconds={reducedMotion ? 0 : 3}
         />

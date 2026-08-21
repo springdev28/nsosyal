@@ -238,6 +238,19 @@
   --color-dim-kim: var(--dim-kim);
 }
 
+.profile-banner-pattern {
+  background:
+    radial-gradient(circle at 18% 32%, rgb(255 255 255 / 0.18) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 68%, rgb(57 197 230 / 0.35) 0 1px, transparent 2px),
+    linear-gradient(112deg, transparent 20%, rgb(255 255 255 / 0.08) 20.5%, transparent 21%),
+    linear-gradient(145deg, rgb(57 197 230 / 0.14), transparent 46%, rgb(76 101 246 / 0.25));
+  background-size: 38px 38px, 52px 52px, 100% 100%, 100% 100%;
+}
+
+.profile-hero {
+  box-shadow: 0 22px 62px -54px rgb(57 197 230 / 0.8);
+}
+
 /* --- Temel katman --------------------------------------------------------- */
 
 @layer base {
@@ -373,6 +386,124 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
   }
 
+  /* nGazete gezinmede editorial bir yuzey gibi parlar; palet marka mavilerinde
+     kalir ve hareket, genel reduced-motion kuraliyla durur. */
+  .nav-newspaper {
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--brand-cyan) 32%, var(--border));
+    background:
+      radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--brand-cyan) 22%, transparent), transparent 35%),
+      linear-gradient(112deg, color-mix(in srgb, var(--brand-cobalt) 17%, var(--bg-raised)), color-mix(in srgb, var(--brand-cyan) 13%, var(--bg-sunken)));
+    color: color-mix(in srgb, var(--fg) 82%, var(--brand-cyan));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 11%, transparent),
+      0 14px 34px -26px color-mix(in srgb, var(--brand-cyan) 82%, transparent);
+  }
+
+  .nav-newspaper::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset: -45% auto -45% -35%;
+    width: 28%;
+    transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.3), transparent);
+    animation: ns-newspaper-glint 4.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .nav-newspaper::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    right: -1.25rem;
+    top: 50%;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand-blue) 18%, transparent);
+    filter: blur(18px);
+    transform: translateY(-50%);
+    animation: ns-newspaper-aura 3.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .nav-newspaper > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-newspaper:hover {
+    border-color: color-mix(in srgb, var(--brand-cyan) 58%, var(--border));
+    color: var(--fg);
+    filter: brightness(1.07) saturate(1.08);
+  }
+
+  .nav-newspaper__icon {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.65rem;
+    color: color-mix(in srgb, var(--fg) 38%, var(--brand-cyan));
+    background: linear-gradient(145deg, color-mix(in srgb, var(--brand-cyan) 22%, transparent), color-mix(in srgb, var(--brand-cobalt) 16%, transparent));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-cyan) 24%, transparent);
+  }
+
+  .nav-newspaper__label {
+    font-weight: 760;
+    letter-spacing: -0.012em;
+  }
+
+  .nav-newspaper__edition {
+    border: 1px solid color-mix(in srgb, var(--brand-cyan) 34%, transparent);
+    border-radius: 999px;
+    padding: 0.2rem 0.42rem;
+    background: color-mix(in srgb, var(--brand-cyan) 10%, transparent);
+    color: color-mix(in srgb, var(--fg) 68%, var(--brand-cyan));
+    font-size: 0.57rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+
+  .nav-newspaper__pulse {
+    background: var(--brand-cyan);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-cyan) 62%, transparent);
+    animation: ns-newspaper-pulse 2.2s ease-out infinite;
+  }
+
+  .mobile-newspaper-link {
+    color: color-mix(in srgb, var(--fg) 54%, var(--brand-cyan));
+    font-weight: 700;
+  }
+
+  .mobile-newspaper-icon {
+    position: relative;
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--brand-cyan) 34%, var(--border));
+    border-radius: 0.8rem;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--brand-cyan) 20%, var(--bg-raised)), color-mix(in srgb, var(--brand-cobalt) 18%, var(--bg-sunken)));
+    box-shadow: 0 10px 24px -18px color-mix(in srgb, var(--brand-cyan) 90%, transparent);
+    animation: ns-newspaper-icon-float 3.4s ease-in-out infinite;
+  }
+
+  .mobile-newspaper-icon::after {
+    content: '';
+    position: absolute;
+    right: 0.2rem;
+    top: 0.2rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 999px;
+    background: var(--brand-cyan);
+    box-shadow: 0 0 0.55rem var(--brand-cyan);
+  }
+
   .auth-shell {
     position: relative;
     isolation: isolate;
@@ -426,6 +557,17 @@
   .scroll-x {
     overflow-x: auto;
     scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 0.25rem;
+  }
+
+  /* Filtre ve eylem dugmeleri kolon kenarinda yarim kalmaz; yeni satira akar. */
+  .filter-strip {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    overflow: visible;
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -435,6 +577,37 @@
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  @media (min-width: 48rem) {
+    .scroll-x.flex {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+
+  .story-ring {
+    background: var(--gradient-cta);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-cyan) 22%, transparent);
+  }
+
+  .story-strip {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+  }
+
+  .newspaper-sheet {
+    background-image:
+      linear-gradient(90deg, transparent 0 49.85%, color-mix(in srgb, var(--border) 45%, transparent) 50%, transparent 50.15%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg-raised) 97%, white), var(--bg-raised));
+    box-shadow: 0 30px 80px -58px rgb(0 0 0 / 0.8);
+  }
+
+  .newspaper-masthead {
+    background:
+      linear-gradient(115deg, color-mix(in srgb, var(--brand-cyan) 8%, transparent), transparent 38%),
+      linear-gradient(245deg, color-mix(in srgb, var(--brand-cobalt) 8%, transparent), transparent 42%),
+      var(--bg-sunken);
   }
 
   /* Sol gezinme ve sag panel kendi icinde kayar, sayfa degil. */
@@ -516,6 +689,63 @@
 
 .ns-map-popup__empty {
   color: rgb(255 255 255 / 0.6);
+}
+
+/* Yayin Atolyesi sayfasi 30x40 birimlik A4 oranli bir calisma zemini kullanir. */
+.publication-grid {
+  background-color: #fff;
+  background-image:
+    linear-gradient(to right, rgb(15 23 42 / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(15 23 42 / 0.1) 1px, transparent 1px);
+  background-size: calc(100% / 30) calc(100% / 40);
+}
+
+@keyframes ns-newspaper-glint {
+  0%,
+  58% {
+    left: -35%;
+    opacity: 0;
+  }
+  68% {
+    opacity: 0.9;
+  }
+  86%,
+  100% {
+    left: 118%;
+    opacity: 0;
+  }
+}
+
+@keyframes ns-newspaper-aura {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translateY(-50%) scale(0.88);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-50%) scale(1.12);
+  }
+}
+
+@keyframes ns-newspaper-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-cyan) 62%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.42rem transparent;
+  }
+}
+
+@keyframes ns-newspaper-icon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.12rem);
+  }
 }
 
 /* 5N secicinin acilma hareketi. Yarim disk sol kenardan yayilir.

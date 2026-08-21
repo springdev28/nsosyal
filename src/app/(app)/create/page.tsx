@@ -31,10 +31,10 @@ const OPTIONS = [
     description: 'Yerel veya niş bir topluluk başlat. Moderatör onayından sonra açılır.',
   },
   {
-    href: '/newspaper/advertise',
+    href: '/publish',
     icon: '📰',
-    title: 'nGazete’de ilan ver',
-    description: 'Kurumlar için ücretli görünürlük. Akış sıralamasını etkilemez.',
+    title: 'Yayın Atölyesi’ni aç',
+    description: 'nGazete’de alan seç, tasarımını kaydet ve yayın hakkını kesinleştir.',
   },
 ];
 

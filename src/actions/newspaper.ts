@@ -83,7 +83,7 @@ export async function submitAdRequest(_prev: AdRequestState, formData: FormData)
 
   return {
     message:
-      'Başvurun alındı ve "incelemede" durumunda. Onaylanırsa seçtiğin sayıda açıkça "Sponsorlu" etiketiyle yayımlanır.',
+      'Başvurun alındı ve incelemeye gönderildi. Onaylanırsa seçtiğin sayıların gazete kompozisyonunda yayımlanır.',
   };
 }
 

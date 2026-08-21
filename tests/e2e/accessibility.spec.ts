@@ -30,9 +30,11 @@ const PAGES = [
   { path: '/projects/ruzgar-olcer', name: 'Proje sayfası' },
   { path: '/events/izmir-model-roket-atolyesi', name: 'Etkinlik sayfası' },
   { path: '/newspaper', name: 'nGazete' },
+  { path: '/publish', name: 'Yayın Atölyesi' },
   { path: '/notifications', name: 'Bildirimler' },
   { path: '/settings', name: 'Ayarlar' },
   { path: '/profile/elif.demo', name: 'Profil' },
+  { path: '/profile/elif.demo/edit', name: 'Profil düzenleme' },
   { path: '/create/project', name: 'Proje oluşturma formu' },
   { path: '/about', name: 'Hakkında' },
 ];
@@ -46,7 +48,8 @@ test.describe('axe taraması', () => {
 
       // Ihlal varsa hangisi oldugunu raporda gormek istiyoruz.
       const summary = results.violations.map(
-        (violation) => `${violation.id} (${violation.impact}): ${violation.nodes.length} düğüm`,
+        (violation) =>
+          `${violation.id} (${violation.impact}): ${violation.nodes.length} düğüm; ${violation.nodes.map((node) => node.target.join(' ')).join(', ')}`,
       );
       expect(summary, `${entry.name} ihlalleri`).toEqual([]);
     });

@@ -52,7 +52,15 @@ export type IconName =
   | 'text'
   | 'question'
   | 'megaphone'
-  | 'book';
+  | 'book'
+  | 'user'
+  | 'camera'
+  | 'link'
+  | 'instagram'
+  | 'github'
+  | 'linkedin'
+  | 'youtube'
+  | 'x';
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -297,6 +305,52 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M5 17.5v1a2 2 0 0 0 2 2h11" />
     </>
   ),
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 20c0-4.2 3.2-6.8 7.5-6.8s7.5 2.6 7.5 6.8" />
+    </>
+  ),
+  camera: (
+    <>
+      <path d="M5 7.5h3l1.4-2h5.2l1.4 2h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
+      <circle cx="12" cy="13" r="3.3" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="m9.5 14.5 5-5" />
+      <path d="M7.4 16.6 5.8 18.2a3 3 0 0 1-4.2-4.2l3.2-3.2A3 3 0 0 1 9 10.7" />
+      <path d="m17.2 13.2 3.2-3.2a3 3 0 0 0-4.2-4.2l-1.6 1.6" />
+    </>
+  ),
+  instagram: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.4 6.7h.01" />
+    </>
+  ),
+  github: (
+    <>
+      <path d="M9 19.5c-4.6 1.4-4.6-2.3-6.4-2.8" />
+      <path d="M15 21v-3.6c.1-1-.4-1.8-.9-2.2 3-.3 6.1-1.5 6.1-6.5A5 5 0 0 0 18.9 5c.1-.9-.1-1.8-.4-2.6 0 0-1.1-.4-3.6 1.4a12.2 12.2 0 0 0-6 0C6.4 2 5.3 2.4 5.3 2.4 5 3.2 4.8 4.1 5 5a5 5 0 0 0-1.3 3.7c0 5 3.1 6.2 6.1 6.5-.5.4-.9 1.1-.9 2.2V21" />
+    </>
+  ),
+  linkedin: (
+    <>
+      <rect x="4" y="9" width="3.5" height="11" />
+      <path d="M5.8 4.5h.01" />
+      <path d="M11 20V9h3.3v1.7c1-1.4 2.2-2 3.6-2 2.2 0 3.1 1.5 3.1 4.2V20h-3.5v-6.2c0-1.5-.5-2.2-1.7-2.2-1.3 0-1.8.9-1.8 2.6V20Z" />
+    </>
+  ),
+  youtube: (
+    <>
+      <path d="M21 8.2a2.5 2.5 0 0 0-1.8-1.8C17.7 6 12 6 12 6s-5.7 0-7.2.4A2.5 2.5 0 0 0 3 8.2 25 25 0 0 0 2.6 12 25 25 0 0 0 3 15.8a2.5 2.5 0 0 0 1.8 1.8C6.3 18 12 18 12 18s5.7 0 7.2-.4a2.5 2.5 0 0 0 1.8-1.8 25 25 0 0 0 .4-3.8 25 25 0 0 0-.4-3.8Z" />
+      <path d="m10 9 5 3-5 3Z" />
+    </>
+  ),
+  x: <path d="M5 4.5 19 19.5M18.5 4.5 5.5 19.5" />,
 };
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

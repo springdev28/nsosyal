@@ -31,6 +31,15 @@ test.describe('1 · Demo girişi ve ana akış', () => {
     await loginAs(page, 'user');
     await expect(page.getByText('Neden gösteriliyor?').first()).toBeVisible();
   });
+
+  test('Neden hikâyeleri hızlı hikâye şeridinde görünür', async ({ page }) => {
+    await loginAs(page, 'user');
+    const stories = page.getByRole('region', { name: 'Günün hikâyeleri' });
+    await expect(stories).toBeVisible();
+    // "Hikâye ekle" disinda en az bir profil halkasi olmali. Halka adinda
+    // yazar ve baslik vardir; urun etiketini tekrar etmek zorunda degildir.
+    expect(await stories.getByRole('link').count()).toBeGreaterThan(1);
+  });
 });
 
 test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
@@ -62,7 +71,7 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await expect(page.getByRole('link', { name: /Model Roket Atölyesi/ }).first()).toBeVisible();
   });
 
-  test('ilçe verisi olan ilde drill-down açılır', async ({ page }) => {
+  test('her ilde aynı harita üzerinde ilçe yoğunluğu açılır', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/explore/map?province=35');
 
@@ -71,6 +80,10 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await expect(districts.getByRole('link', { name: 'Bornova' })).toBeVisible();
     await districts.getByRole('link', { name: 'Bornova' }).click();
     await expect(page).toHaveURL(/district=35-07/);
+
+    await page.goto('/explore/map?province=06');
+    const ankaraDistricts = page.getByRole('list', { name: 'İlçeler' });
+    await expect(ankaraDistricts.getByRole('link', { name: /Çankaya/ })).toBeVisible();
   });
 
   test('sonuç bulunmayan filtrede yol gösteren boş durum çıkar', async ({ page }) => {
@@ -157,7 +170,7 @@ test.describe('5 · Neden hikâyesinden projeye geçiş', () => {
   });
 });
 
-test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
+test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
   test('gazete ilk oturumda açılır ve kapatma 3 saniye sonra etkinleşir', async ({ page }) => {
     await loginKeepingNewspaper(page, 'user');
 
@@ -171,31 +184,32 @@ test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
     await expect(dialog).toBeHidden();
   });
 
-  test('ücretli yerleşim bir kez açıklanır, envanter okuyucuya gösterilmez', async ({ page }) => {
+  test('okuyucu ödeme türüne göre ayrım görmez, turuncu ilgi eşleşmesini anlatır', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/newspaper');
 
     await expect(page.getByRole('heading', { name: 'nGazete', level: 1 })).toBeVisible();
 
-    // Sponsorlu kartlar gazete kompozisyonunun ICINDE durur. Spec 7.9 ayri bir
-    // "ucretli alanlar" listesini ismen yasakliyor; o basligin geri gelmesi
-    // kurali sessizce bozardi.
     await expect(page.getByRole('heading', { name: 'Ücretli alanlar' })).toHaveCount(0);
-
-    // Aciklama TEK yerde, masthead altinda durur. Her kartin ustunde
-    // tekrarlanan rozet gurultuydu; ama aciklamayi hic yazmamak ucretli
-    // icerigi editoryal icerikten ayirt edilemez yapardi.
-    await expect(page.getByText(/Bu sayıda ücretli yerleşimler var/)).toBeVisible();
-
-    // Sponsor kendi adiyla isaretlidir.
-    await expect(page.getByText(/Ege Teknopark \(Demo\)/).first()).toBeVisible();
+    await expect(page.getByText(/Turuncu şerit, ilgi alanlarınla eşleşen/)).toBeVisible();
+    await expect(page.getByText('Sponsorlu')).toHaveCount(0);
+    await expect(page.getByText(/İlgine göre/).first()).toBeVisible();
 
     // Reklam envanteri (olcu, yerlesim kodu) reklamveren tarafinin verisidir;
     // okuyucunun ekraninda gorunmez.
     await expect(page.getByText(/\d+×\d+ · Bölüm içi/)).toHaveCount(0);
 
-    await page.getByRole('link', { name: /Demo Günü başvuruları açık/ }).first().click();
-    await expect(page).toHaveURL(/\/events\//);
+    await expect(page.getByRole('link', { name: 'Yayın Atölyesi', exact: true })).toBeVisible();
+  });
+
+  test('Yayın Atölyesi yedi sayı, beş sayfa ve 30×40 alan sunar', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/publish');
+
+    await expect(page.getByRole('heading', { name: 'Yayın Atölyesi' })).toBeVisible();
+    await expect(page.getByRole('application', { name: /30 sütun ve 40 satır/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sayfa 5' })).toBeVisible();
+    await expect(page.getByText(/Sonraki yedi açık gazetenin/)).toBeVisible();
   });
 
   test('gazetenin takvimi ve sayfaları vardır, varsayılan bugündür', async ({ page }) => {
@@ -205,6 +219,7 @@ test.describe('6 · nGazete ve ücretli alan ayrımı', () => {
     // Takvim: arsive erisim uc tarih rozeti degil, gercek bir ay izgarasi.
     const calendar = page.getByRole('navigation', { name: 'Gazete arşivi takvimi' });
     await expect(calendar).toBeVisible();
+    await calendar.getByText('Takvimi aç').click();
 
     // Varsayilan sayi bugunun sayisidir.
     await expect(page.getByText('Bugünün sayısı')).toBeVisible();

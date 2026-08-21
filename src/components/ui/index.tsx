@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { ComponentProps, ReactNode } from 'react';
 
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -23,7 +24,7 @@ export function Card({
 }: {
   children: ReactNode;
   className?: string;
-  as?: 'div' | 'article' | 'section' | 'li';
+  as?: 'div' | 'article' | 'section' | 'li' | 'ul';
   id?: string;
 }) {
   return (
@@ -57,7 +58,7 @@ export function Avatar({
   size = 40,
   ring = false,
 }: {
-  profile: Pick<ProfileSummary, 'avatarTone' | 'displayName' | 'kind'>;
+  profile: Pick<ProfileSummary, 'avatarTone' | 'avatarUrl' | 'displayName' | 'kind'>;
   size?: number;
   /** Hikaye/one cikan halkasi. */
   ring?: boolean;
@@ -66,7 +67,7 @@ export function Avatar({
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold text-white ${
+      className={`relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full font-semibold text-white ${
         ring ? 'outline outline-2 outline-offset-2 outline-accent' : ''
       }`}
       style={{
@@ -80,7 +81,18 @@ export function Avatar({
         borderRadius: profile.kind === 'organization' ? size * 0.28 : '9999px',
       }}
     >
-      {initials}
+      {profile.avatarUrl ? (
+        <Image
+          src={profile.avatarUrl}
+          alt=""
+          fill
+          sizes={`${size}px`}
+          unoptimized
+          className="object-cover"
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }
@@ -91,7 +103,7 @@ export function AvatarStack({
   size = 28,
   max = 4,
 }: {
-  profiles: Array<Pick<ProfileSummary, 'avatarTone' | 'displayName' | 'kind'>>;
+  profiles: Array<Pick<ProfileSummary, 'avatarTone' | 'avatarUrl' | 'displayName' | 'kind'>>;
   size?: number;
   max?: number;
 }) {
@@ -353,8 +365,8 @@ export function Stat({ label, value }: { label: string; value: ReactNode }) {
 
 export function ChipRow({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <div className="scroll-x hide-scrollbar -mx-1 px-1 pb-1" role="group" aria-label={label}>
-      <div className="flex w-max gap-2">{children}</div>
+    <div className="-mx-1 min-w-0 px-1 pb-1" role="group" aria-label={label}>
+      <div className="filter-strip gap-2">{children}</div>
     </div>
   );
 }

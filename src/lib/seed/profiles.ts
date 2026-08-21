@@ -39,6 +39,8 @@ function build(input: SeedProfileInput, now: Date): Profile {
     bio: input.bio,
     avatarEmoji: input.avatarEmoji,
     avatarTone: input.avatarTone,
+    avatarUrl: null,
+    bannerUrl: null,
     kind: input.kind ?? 'person',
     role: input.role ?? 'user',
     verified: input.verified ?? false,
@@ -53,6 +55,19 @@ function build(input: SeedProfileInput, now: Date): Profile {
     createdAt: new Date(now.getTime() - input.daysAgo * 86_400_000).toISOString(),
     demo: true,
     followerCount: input.followerCount,
+    birthDate: null,
+    birthDateVisibility: 'private',
+    links: [],
+    isPrivate: false,
+    photoTagging: 'following',
+    discoverableByEmail: false,
+    discoverableByPhone: false,
+    messageRequests: 'following',
+    messageQualityFilter: true,
+    sensitiveMediaWarnings: true,
+    imageDescriptionReminder: true,
+    mutedWords: [],
+    connectedAccounts: [],
   };
 }
 

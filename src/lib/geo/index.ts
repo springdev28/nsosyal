@@ -1,5 +1,6 @@
 import type { District, Province } from '@/types/domain';
-import { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES } from './regions.generated';
+import { DISTRICT_DATA_PROVINCES, DISTRICTS } from './districts.generated';
+import { PROVINCES } from './regions.generated';
 
 export { DISTRICT_DATA_PROVINCES, DISTRICTS, PROVINCES };
 

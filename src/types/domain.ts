@@ -81,6 +81,26 @@ export type Scope = 'local' | 'national' | 'online';
 
 export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'changes_requested';
 
+export type ProfileLinkPlatform =
+  | 'instagram'
+  | 'github'
+  | 'linkedin'
+  | 'youtube'
+  | 'x'
+  | 'website';
+
+export interface ProfileLink {
+  id: UUID;
+  label: string;
+  url: string;
+  platform: ProfileLinkPlatform;
+}
+
+export type BirthDateVisibility = 'public' | 'followers' | 'private';
+export type PhotoTaggingPermission = 'everyone' | 'following' | 'none';
+export type MessageRequestPermission = 'everyone' | 'following' | 'none';
+export type ConnectedAccountProvider = 'google' | 'apple';
+
 // --- Cografya -----------------------------------------------------------
 
 export interface Province {
@@ -106,6 +126,8 @@ export interface Profile {
   bio: string;
   avatarEmoji: string;
   avatarTone: string;
+  avatarUrl: string | null;
+  bannerUrl: string | null;
   kind: 'person' | 'organization';
   role: Role;
   verified: boolean;
@@ -124,6 +146,25 @@ export interface Profile {
   /** Sentetik demo hesabi isareti - jurinin gercek kisi sanmamasi icin. */
   demo: true;
   followerCount: number;
+  birthDate: string | null;
+  birthDateVisibility: BirthDateVisibility;
+  links: ProfileLink[];
+  isPrivate: boolean;
+  photoTagging: PhotoTaggingPermission;
+  discoverableByEmail: boolean;
+  discoverableByPhone: boolean;
+  messageRequests: MessageRequestPermission;
+  messageQualityFilter: boolean;
+  sensitiveMediaWarnings: boolean;
+  imageDescriptionReminder: boolean;
+  mutedWords: string[];
+  connectedAccounts: ConnectedAccountProvider[];
+  /** Yayin Atolyesi rezervasyonlarinda profilin gorunurlugu. */
+  publicationReservationVisible?: boolean;
+  /** Rezervasyon uzerinden kimlerin mesaj baslatabilecegi. */
+  publicationMessages?: 'everyone' | 'connections' | 'none';
+  /** Yeni gazete taslaklarinin varsayilan kimligi. */
+  publicationAnonymousByDefault?: boolean;
 }
 
 export interface Topic {
@@ -395,7 +436,7 @@ export interface NewspaperItem {
   /** 1 en yuksek. Manset ve bolum sirasi bundan cikar. */
   priority: number;
   publicationOrder: number;
-  /** true ise kart zorunlu olarak "Sponsorlu" etiketi tasir. */
+  /** Odeme kaynagini yonetimde korur; okuyucu arayuzunde ayri bir rozet uretmez. */
   sponsored: boolean;
   sponsorName: string | null;
   /** Ucretli alan bilgileri; sponsored=false ise hepsi null. */
@@ -404,6 +445,59 @@ export interface NewspaperItem {
   heightPx: number | null;
   priceSnapshot: number | null;
   campaignId: UUID | null;
+}
+
+// --- Yayin Atolyesi ------------------------------------------------------
+
+export interface PublicationRect {
+  /** 30 sutunlu sayfada sifir tabanli baslangic. */
+  x: number;
+  /** 40 satirli sayfada sifir tabanli baslangic. */
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type PublicationBlockType = 'markdown' | 'image' | 'shape';
+
+export interface PublicationBlock extends PublicationRect {
+  id: UUID;
+  type: PublicationBlockType;
+  content: string;
+  altText: string;
+  color: string;
+  borderRadius: number;
+  objectFit: 'cover' | 'contain';
+  archived: boolean;
+}
+
+export interface PublicationDraft {
+  id: UUID;
+  ownerId: UUID;
+  issueDate: string;
+  page: number;
+  rect: PublicationRect;
+  blocks: PublicationBlock[];
+  archivedBlocks: PublicationBlock[];
+  status: 'editing' | 'submitted' | 'paid';
+  anonymous: boolean;
+  revision: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface PublicationSlot {
+  id: UUID;
+  ownerId: UUID;
+  draftId: UUID;
+  issueDate: string;
+  page: number;
+  rect: PublicationRect;
+  /** Rezervasyon niyet, paid ise kesin alan hakkidir. */
+  status: 'reserved' | 'paid';
+  anonymous: boolean;
+  createdAt: Timestamp;
+  expiresAt: Timestamp | null;
 }
 
 export interface AdRequest {

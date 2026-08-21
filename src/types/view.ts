@@ -45,6 +45,7 @@ export interface ProfileSummary {
   displayName: string;
   avatarEmoji: string;
   avatarTone: string;
+  avatarUrl?: string | null;
   kind: Profile['kind'];
   verified: boolean;
   demo: true;
@@ -216,6 +217,11 @@ export interface ProvinceSummary {
   organizations: number;
   people: number;
   total: number;
+}
+
+/** Seçili il içinde aynı varlık kırılımını taşıyan ilçe yoğunluğu. */
+export interface DistrictSummary extends ProvinceSummary {
+  provinceCode: string;
 }
 
 export interface DiscoveryResults {
