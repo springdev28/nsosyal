@@ -97,6 +97,12 @@
   --surface-highlight: rgb(255 255 255 / 0.075);
   --surface-shadow: 0 24px 64px -48px rgb(0 0 0 / 0.95);
 
+  /* Okuyucu, arsiv ve Yayin Atolyesi ayni gazete kagidini kullanir. Bu
+     degisken tema yuzeyiyle bagli kaldigi icin ornek sayilar ve ilan onizlemesi
+     birbirinden kopuk acik/koyu tuvaller uretemez. */
+  --newspaper-paper: var(--bg-raised);
+  --newspaper-grid-line: color-mix(in srgb, var(--border-strong) 48%, transparent);
+
   /* Birincil eylem gradyani (Yeni Gonderi, Paylas) */
   --gradient-cta: linear-gradient(112deg, var(--brand-cyan) 0%, var(--brand-blue) 52%, var(--brand-cobalt) 100%);
 
@@ -610,7 +616,27 @@
     display: none;
   }
 
+  /* Gazete bir uygulama karti degil, kendi koyu kagit yuzeyidir. Yerel
+     degiskenler acik gorunumda da okuyucu ve arsiv sayilarinin beyaza donmesini
+     onler; ayni siniflar Yayin Atolyesi tuvallerine de uygulanir. */
+  .newspaper-sheet,
+  .publication-grid,
+  .publication-preview {
+    --newspaper-paper: #111a2a;
+    --newspaper-grid-line: rgb(53 73 104 / 0.48);
+    --bg-raised: #111a2a;
+    --bg-sunken: #0d1422;
+    --bg-hover: #18243a;
+    --fg: #f5f8fd;
+    --fg-muted: #acb8c9;
+    --fg-subtle: #8998ad;
+    --border: #223149;
+    --border-strong: #354968;
+    color: var(--fg);
+  }
+
   .newspaper-sheet {
+    background-color: var(--newspaper-paper);
     background-image:
       linear-gradient(90deg, transparent 0 49.85%, color-mix(in srgb, var(--border) 45%, transparent) 50%, transparent 50.15%),
       linear-gradient(180deg, color-mix(in srgb, var(--bg-raised) 97%, white), var(--bg-raised));
@@ -707,16 +733,17 @@
 
 /* Yayin Atolyesi sayfasi 30x40 birimlik A4 oranli bir calisma zemini kullanir. */
 .publication-grid {
-  background-color: #fff;
+  background-color: var(--newspaper-paper);
   background-image:
-    linear-gradient(to right, rgb(15 23 42 / 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(15 23 42 / 0.1) 1px, transparent 1px);
+    linear-gradient(to right, var(--newspaper-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--newspaper-grid-line) 1px, transparent 1px);
   background-size: calc(100% / 30) calc(100% / 40);
 }
 
-/* Onizleme, secim izgara ve cercevelerini degil okuyucuya gidecek temiz ciktiyi gosterir. */
+/* Onizleme, secim izgara ve cercevelerini degil okuyucuya gidecek temiz ciktiyi
+   gosterir; kagit rengi ise arsivdeki ornek sayilarla ayni kalir. */
 .publication-preview {
-  background-color: #fff;
+  background-color: var(--newspaper-paper);
   background-image: none;
 }
 

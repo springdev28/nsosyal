@@ -262,7 +262,7 @@ function AreaSelector({ page, slots, value, onChange, disabled = false }: {
         ref={pageRef}
         role="application"
         aria-label={`${page}. sayfa, 30 sütun ve 40 satır alan seçici`}
-        className={`publication-grid relative aspect-[3/4] touch-none overflow-hidden rounded-xl border border-line-strong bg-white ${disabled ? '' : 'cursor-crosshair'}`}
+        className={`publication-grid relative aspect-[3/4] touch-none overflow-hidden rounded-xl border border-line-strong ${disabled ? '' : 'cursor-crosshair'}`}
         onPointerDown={(event) => {
           if (disabled || !pageRef.current || event.target !== event.currentTarget) return;
           const anchor = pointInPage(pageRef.current, event);
@@ -428,7 +428,7 @@ function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds
       aria-label="İlan yerleşim tuvali"
       tabIndex={readonly ? -1 : 0}
       data-preview-canvas={readonly ? 'true' : undefined}
-      className={`${readonly ? 'publication-preview' : 'publication-grid'} relative mx-auto aspect-[3/4] w-full max-w-[610px] touch-none overflow-hidden rounded-xl border border-line-strong bg-white shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent`}
+      className={`${readonly ? 'publication-preview' : 'publication-grid'} relative mx-auto aspect-[3/4] w-full max-w-[610px] touch-none overflow-hidden rounded-xl border border-line-strong shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent`}
       onPointerMove={move}
       onPointerUp={(event) => finish(event.pointerId)}
       onPointerCancel={(event) => finish(event.pointerId)}
