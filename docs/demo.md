@@ -118,13 +118,15 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
-2. Bir blok 30×40 grid üzerinde sürüklenir, ardından ok tuşlarıyla hassas biçimde
-   hareket ettirilir.
-3. İçerik, düzen ve stil sekmelerinden Markdown, tipografi, hizalama, kenarlık,
-   gölge ve görsel ayarlarından birkaçının değiştiği gösterilir.
-4. Tasarım rehberi ve tekrar kullanılabilir doku/kaynaklar açılır; bir blok
-   kopyalanır veya silinir.
-5. Taslak kaydedilip yeniden açıldığında ayarların korunduğu doğrulanır.
+2. Kullanıcı gelecek yedi sayıdan ve en çok beş sayfadan birini seçer; 30×40
+   koyu gazete kâğıdı üzerinde boş bir dörtgen alan belirler.
+3. Canva veya başka bir tasarım aracından dışa aktarılmış PNG, JPG ya da WebP
+   kreatif yüklenir; alan içinde taşınır ve köşe tutamaçlarıyla boyutlandırılır.
+4. Normal üye için bir iç bağlantılı CTA eklenir. Yayınevi üyeliğinde üç CTA,
+   dış bağlantı, özel stil ve yüzde beş ilan indirimi gösterilebilir.
+5. Önizlemede yalnızca temiz gazete çıktısı görünür; seçim çerçevesi, ızgara ve
+   editör kontrolleri görünmez. Taslak kaydedilip yeniden açıldığında kreatif ve
+   CTA ayarlarının korunduğu doğrulanır.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.

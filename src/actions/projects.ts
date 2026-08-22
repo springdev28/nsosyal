@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
-import { ACCEPTED_VIDEO_TYPES, MAX_VIDEO_BYTES } from '@/lib/media/constraints';
+import { validateVideoUpload } from '@/lib/media/constraints';
 import type { Project, WhyStory } from '@/types/domain';
 
 /**
@@ -31,13 +31,8 @@ export interface ProjectFormState {
 }
 
 async function storeUploadedVideo(file: File): Promise<{ path: string } | { error: string }> {
-  if (!(ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type)) {
-    return { error: 'Yalnızca MP4 veya WebM video yükleyebilirsin.' };
-  }
-  if (file.size > MAX_VIDEO_BYTES) {
-    const mb = Math.round(file.size / (1024 * 1024));
-    return { error: `Dosya çok büyük (${mb} MB). Sınır 50 MB.` };
-  }
+  const validationError = validateVideoUpload(file);
+  if (validationError) return { error: validationError };
 
   const extension = file.type === 'video/webm' ? 'webm' : 'mp4';
   const name = `${randomUUID()}.${extension}`;
@@ -70,6 +65,17 @@ export async function createProject(_prev: ProjectFormState, formData: FormData)
   const shareLocation = formData.get('shareLocation') === 'on';
   const store = getStore();
 
+  // Dosya once dogrulanip yazilir. Gecersiz/yazilamayan bir video, artik
+  // kullanicinin karsisinda yarim proje birakmaz ve yeniden deneme kopya proje
+  // uretmez. Demo deposundaki create islemi bundan sonra hatasiz ve senkrondur.
+  const file = formData.get('pitch');
+  let uploadedVideoPath: string | null = null;
+  if (file instanceof File && file.size > 0) {
+    const result = await storeUploadedVideo(file);
+    if ('error' in result) return { error: result.error };
+    uploadedVideoPath = result.path;
+  }
+
   const project = store.createProject({
     ownerId: viewer.id,
     title,
@@ -84,20 +90,12 @@ export async function createProject(_prev: ProjectFormState, formData: FormData)
     communityIds: formData.getAll('communities').map(String).filter(Boolean),
   });
 
-  // Pitch videosu istege baglidir; proje onsuz da olusur.
-  const file = formData.get('pitch');
-  if (file instanceof File && file.size > 0) {
-    const result = await storeUploadedVideo(file);
-    if ('error' in result) {
-      // Proje kaydedildi; yalnizca video basarisiz oldu. Kullaniciya durumu net soyle.
-      return {
-        error: `Proje oluşturuldu ama video yüklenemedi: ${result.error} Projeden tekrar deneyebilirsin.`,
-      };
-    }
+  // Pitch istege baglidir; basarili dosya yazimi proje kaydina burada baglanir.
+  if (uploadedVideoPath) {
     const media = store.addMedia({
       postId: null,
       mediaType: 'video',
-      storagePath: result.path,
+      storagePath: uploadedVideoPath,
       caption: `${title} · pitch`,
       altText: String(formData.get('pitchTranscript') ?? '').slice(0, 1000),
       durationSec: null,
