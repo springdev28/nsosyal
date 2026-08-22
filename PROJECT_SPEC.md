@@ -178,7 +178,10 @@ Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ür�
 Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi türü, konu,
 herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
 Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir. Görsel
-sınırı 12 MB, video sınırı 50 MB'dir ve medya açıklaması zorunludur. Akıştaki
+sınırı 12 MB'dir; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu, video
+dosyasını yazmadan önce MIME, byte sayısı ve MP4/WebM kapsayıcı süresini doğrular;
+süre okunamazsa veya MIME ile kapsayıcı uyuşmazsa yüklemeyi reddeder. Medya
+açıklaması zorunludur. Akıştaki
 medyalı gönderilerin ilk 12'si tam ekran hikâye izleyicisinde açılır. Görsel
 hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dönüşü ve
 `prefers-reduced-motion` davranışı uygulanmıştır. Dosyalar demo modunda yerel
@@ -204,7 +207,12 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
-Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
+Mevcut demo yolunda pitch video en fazla 90 saniye ve 50 MB olabilir. İstemci
+metadata ile hızlı geri bildirim verir; sunucu MIME, byte sayısı ve MP4/WebM
+kapsayıcı süresini proje kaydı açılmadan ve dosya yazılmadan önce yeniden
+doğrular. Doğrulama başarısızsa yarım proje kaydı oluşmaz. Production Storage,
+codec/transcode, kötü amaçlı dosya taraması ve retry-idempotency hattı hâlâ
+planlanandır.
 
 ## 11. nGazete
 
