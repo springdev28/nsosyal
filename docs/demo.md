@@ -139,8 +139,10 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 5. Demo Yayınevi aboneliği açılarak üç CTA, dış `https` linki, gradyan/hareket ve
    yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
    değildir.
-6. Taslak önizlenir, rezerve edilir ve demo ödeme tamamlanır. Kreatif, alt metin
-   ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna düştüğü gösterilir.
+6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
+   görünmediği doğrulanır. Ardından taslak rezerve edilir ve demo ödeme tamamlanır.
+   Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
+   düştüğü gösterilir.
 7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
    bildirimi oluşturduğu doğrulanır.
 

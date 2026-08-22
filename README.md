@@ -136,8 +136,10 @@ Mevcut prototipte yayın üretimi `/publish` adresindeki bağımsız Yayın Atö
 çalışır. Bu rota ana uygulama kabuğunun dışında, yeni sekmede açılır. Kullanıcı
 30×40 grid üzerinde alan seçer, Canva veya başka bir araçtan dışa aktardığı tek
 PNG/JPG/WebP kreatifi yükler, zorunlu alt metni girer ve CTA butonlarını seçili
-alan içinde sürükleyip yeniden boyutlandırır. Standart hesap bir CTA ve yalnızca
-nSosyal içi bağlantı kullanabilir. Demo Yayınevi aboneliği üç CTA, dış `https`
+alan içinde sürükleyip yeniden boyutlandırır. Önizleme düzenleme ızgarasını ve
+alan seçim çerçevesini gizleyerek okuyucuya gidecek temiz yüzeyi gösterir.
+Standart hesap bir CTA ve yalnızca nSosyal içi bağlantı kullanabilir. Demo
+Yayınevi aboneliği üç CTA, dış `https`
 bağlantısı, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi sağlar. Abonelik
 akışı 200 TL/ay tutarını gösterir; gerçek tahsilat yapmaz. Ödeme simülasyonu
 sonrasında kreatif, alt metin ve bağlantılar moderasyon kuyruğuna girer.

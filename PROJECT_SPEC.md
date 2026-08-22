@@ -227,8 +227,8 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 - 30×40 grid üzerinde sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
   yeniden boyutlandırma;
 - tek PNG/JPG/WebP kreatif yükleme, 8 MB sunucu sınırı ve zorunlu alt metin;
-- kreatif ile seçili alan içinde CTA butonları; taslak kaydetme, önizleme,
-  rezervasyon ve demo ödeme;
+- kreatif ile seçili alan içinde CTA butonları; düzenleme ızgarası ve alan seçim
+  çerçevesi olmadan temiz önizleme; taslak kaydetme, rezervasyon ve demo ödeme;
 - standart hesapta bir CTA ve yalnızca nSosyal içi bağlantılar;
 - 200 TL/ay olarak gösterilen demo Yayınevi aboneliğinde üç CTA, dış `https`
   bağlantıları, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi;

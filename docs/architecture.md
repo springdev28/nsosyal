@@ -293,8 +293,10 @@ Karar kaydı:
 kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` önce 30×40 grid
 üzerinden sayı, sayfa ve alan seçtirir. Sonraki aşamada kullanıcı tek bir
 PNG/JPG/WebP kreatif yükler, alt metni girer ve kreatif ile CTA butonlarını seçili
-alan içinde sürükleyip yeniden boyutlandırır. Önizleme, rezervasyon ve demo ödeme
-aynı state machine'in sonraki aşamalarıdır.
+alan içinde sürükleyip yeniden boyutlandırır. Önizleme aşamasında tuval
+`publication-preview` sınıfına geçer; düzenleme ızgarası ile seçili alan çerçevesi
+render edilmez. Rezervasyon ve demo ödeme aynı state machine'in sonraki
+aşamalarıdır.
 
 Dosya yükleme `src/actions/publication.ts` içinde sunucuda yeniden doğrulanır ve
 demo modunda `public/uploads/publication` altına yazılır. `DemoStore` tek kreatif,
