@@ -1,3 +1,7 @@
+/**
+ * Profil bilgisi ve medya yuklemelerini sunucuda dogrular. Dosya ve profil kaydi
+ * ayni eylem sinirinda yonetilerek tarayicinin keyfi storage yolu yazmasi onlenir.
+ */
 'use server';
 
 import { randomUUID } from 'node:crypto';

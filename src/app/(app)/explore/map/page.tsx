@@ -1,3 +1,7 @@
+/**
+ * Nerede sorgusunu URL filtrelerinden kurar, yogunluk verisini Store'dan alir ve
+ * ayni sonucu hem harita hem erisilebilir liste icin hazirlar.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

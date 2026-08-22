@@ -1,3 +1,7 @@
+/**
+ * Ilan talebinin kreatif, yerlesim ve yayin araligi girdilerini toplar. Fiyat ve
+ * yetki son karari newspaper Server Action'inda yeniden hesaplanir.
+ */
 'use client';
 
 import { useActionState, useState } from 'react';

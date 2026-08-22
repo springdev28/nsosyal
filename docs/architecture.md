@@ -231,9 +231,13 @@ durumunu gözetmeli ve videonun metin/caption eşdeğerini sağlamalıdır.
 Proje pitch'i 90 saniye/50 MB gibi bir ürün limiti taşıyorsa limit yalnızca UI
 metni olmamalıdır. Client ve server tarafında doğrulanmalıdır.
 
-Project create + upload akışında validation başarısızlığı yarım project kaydı
-bırakmamalı ve retry duplicate project üretmemelidir. Bu davranış transaction,
-pre-validation veya idempotent create yöntemiyle çözülmelidir.
+Mevcut `createProject` Action'ı isteğe bağlı pitch'i ortak MIME/50 MB kuralıyla
+doğrular ve yerel dosyaya proje kaydından önce yazar. Doğrulama veya yazma hatası
+olursa `DemoStore.createProject` çağrılmaz; böylece yarım proje ve yeniden denemede
+kopya proje oluşmaz. Bu prototip sıralaması dosya sistemi ile veri deposu arasında
+gerçek transaction sağlamaz: dosya yazıldıktan sonraki beklenmeyen bir store hatası
+yetim dosya bırakabilir. Production yolunda kalıcı Storage, gerçek içerik/süre
+doğrulaması ve transaction/outbox ya da orphan temizliği gerekir.
 
 ## 8. Oturum, roller ve güvenlik
 

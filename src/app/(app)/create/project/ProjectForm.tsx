@@ -1,3 +1,7 @@
+/**
+ * Yasayan proje kaydinin temel alanlari ve pitch dosyasi icin istemci formudur.
+ * Medya sinirlari projects action'inda tekrar kontrol edilir.
+ */
 'use client';
 
 import { useActionState, useState } from 'react';

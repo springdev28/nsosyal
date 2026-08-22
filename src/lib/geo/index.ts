@@ -1,3 +1,7 @@
+/**
+ * Uretilmis il/ilce kataloglarini uygulamanin kullandigi arama yardimcilariyla
+ * birlestirir. Sayfalar generated dosyalara baglanmak yerine bu siniri kullanir.
+ */
 import type { District, Province } from '@/types/domain';
 import { DISTRICT_DATA_PROVINCES, DISTRICTS } from './districts.generated';
 import { PROVINCES } from './regions.generated';

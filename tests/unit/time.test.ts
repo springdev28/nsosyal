@@ -1,3 +1,7 @@
+/**
+ * Urun gunu Europe/Istanbul sinirinda hesaplandigi icin tarih yardimcilarini
+ * yaz/kis saati ve ay gecislerinden bagimsiz, deterministik orneklerle sinar.
+ */
 import { describe, expect, it } from 'vitest';
 
 import {

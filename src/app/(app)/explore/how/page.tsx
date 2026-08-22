@@ -1,3 +1,4 @@
+/** Nasil kaynaklarini seviye, tur ve topluluk baglaminda filtreleyip listeler. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

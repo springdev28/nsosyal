@@ -1,3 +1,7 @@
+/**
+ * Ana akis ViewModel'lerini kalici tercihler ve gecici niyetle sunucuda siralar.
+ * Composer ve PostCard'lar hazir veriyi render eder; sponsorluk bu yola girmez.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

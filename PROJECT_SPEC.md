@@ -204,7 +204,11 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
-Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
+Mevcut prototipte isteğe bağlı pitch yalnızca MP4 veya WebM olabilir ve sunucuda
+50 MB byte sınırıyla doğrulanır. Dosya proje kaydından önce yazılır; geçersiz tür,
+büyük dosya veya yazma hatası `DemoStore` içinde yarım proje bırakmaz ve yeniden
+denemede kopya proje üretmez. 90 saniye sınırı hâlâ tarayıcı metadata'sına dayanır;
+production Storage/worker yolu gerçek içerik ve süreyi yeniden doğrulamalıdır.
 
 ## 11. nGazete
 

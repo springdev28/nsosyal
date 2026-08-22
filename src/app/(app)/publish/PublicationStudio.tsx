@@ -1,3 +1,9 @@
+/**
+ * Yayin Atolyesi'nin alan secimi, dosya yerlesimi ve odeme onizlemesini tek
+ * istemci state machine'i icinde tutar. Sunucuya kalici yazilar yalnizca
+ * publication action'lariyla gider; bu dosya tarayici icindeki gecici taslagi
+ * ve dogrudan manipulasyon davranislarini yonetir.
+ */
 'use client';
 
 import Image from 'next/image';
@@ -256,7 +262,7 @@ function AreaSelector({ page, slots, value, onChange, disabled = false }: {
         ref={pageRef}
         role="application"
         aria-label={`${page}. sayfa, 30 sütun ve 40 satır alan seçici`}
-        className={`publication-grid relative aspect-[3/4] touch-none overflow-hidden rounded-xl border border-line-strong bg-white ${disabled ? '' : 'cursor-crosshair'}`}
+        className={`publication-grid relative aspect-[3/4] touch-none overflow-hidden rounded-xl border border-line-strong ${disabled ? '' : 'cursor-crosshair'}`}
         onPointerDown={(event) => {
           if (disabled || !pageRef.current || event.target !== event.currentTarget) return;
           const anchor = pointInPage(pageRef.current, event);
@@ -421,7 +427,8 @@ function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds
       role="application"
       aria-label="İlan yerleşim tuvali"
       tabIndex={readonly ? -1 : 0}
-      className="publication-grid relative mx-auto aspect-[3/4] w-full max-w-[610px] touch-none overflow-hidden rounded-xl border border-line-strong bg-white shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+      data-preview-canvas={readonly ? 'true' : undefined}
+      className={`${readonly ? 'publication-preview' : 'publication-grid'} relative mx-auto aspect-[3/4] w-full max-w-[610px] touch-none overflow-hidden rounded-xl border border-line-strong shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent`}
       onPointerMove={move}
       onPointerUp={(event) => finish(event.pointerId)}
       onPointerCancel={(event) => finish(event.pointerId)}
@@ -450,7 +457,8 @@ function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds
         }
       }}
     >
-      <div className="pointer-events-none absolute z-10 border-2 border-accent bg-accent/5" style={rectStyle(draft.rect)} />
+      {/* Alan cercevesi bir duzenleme yardimcisidir; gazete onizlemesinin parcasi degildir. */}
+      {!readonly ? <div className="pointer-events-none absolute z-10 border-2 border-accent bg-accent/5" style={rectStyle(draft.rect)} /> : null}
       {blocks.map((block) => {
         const selected = selectedIds.includes(block.id);
         const outside = !contains(draft.rect, block);

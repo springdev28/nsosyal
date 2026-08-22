@@ -1,3 +1,4 @@
+/** Kok rotayi oturum ve onboarding durumuna gore gercek baslangic ekranina yonlendirir. */
 import { redirect } from 'next/navigation';
 
 import { getViewer, hasCompletedOnboarding } from '@/lib/auth/session';

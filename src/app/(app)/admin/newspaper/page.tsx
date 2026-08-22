@@ -1,3 +1,7 @@
+/**
+ * Kurum ilan taleplerini inceler, fiyat snapshot'ini ve gazete grid yerlesimini
+ * yetkili kullaniciya gosterir. Bu karar feed ranking'e veri aktarmaz.
+ */
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';

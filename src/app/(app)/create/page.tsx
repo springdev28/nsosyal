@@ -1,3 +1,4 @@
+/** Kullaniciya post, proje ve Neden hikayesi olusturma yollarini tek giriste sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

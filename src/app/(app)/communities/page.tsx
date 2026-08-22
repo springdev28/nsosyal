@@ -1,3 +1,4 @@
+/** Topluluk katalogunu konu ve kapsam filtreleriyle sunucu tarafinda listeler. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

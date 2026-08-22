@@ -1,3 +1,4 @@
+/** Topluluk basvuru formuna konu, il ve mevcut benzer topluluk baglamini saglar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

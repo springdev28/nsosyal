@@ -142,7 +142,7 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
    değildir.
 6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
    görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
-   taslak rezerve edilir ve demo ödeme tamamlanır.
+   taslak kaydedilip yeniden açılır, sonra rezerve edilir ve demo ödeme tamamlanır.
    Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
    düştüğü gösterilir.
 7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı

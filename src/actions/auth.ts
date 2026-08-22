@@ -1,3 +1,8 @@
+/**
+ * Oturum, onboarding ve kalici tercih yazilarinin sunucu siniridir. Cookie ve
+ * profil mutasyonlari tarayici bilesenlerinde yapilmaz; basarili degisimlerden
+ * sonra ilgili Server Component rotalari yeniden dogrulanir.
+ */
 'use server';
 
 import { cookies } from 'next/headers';

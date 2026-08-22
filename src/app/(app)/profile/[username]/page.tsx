@@ -1,3 +1,7 @@
+/**
+ * Profil kimligini banner, avatar, baglantilar, sosyal sayaclar ve icerik
+ * sekmeleriyle kurar. Sahiplik durumuna gore Duzenle veya Takip eylemi sunar.
+ */
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';

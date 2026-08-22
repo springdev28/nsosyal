@@ -1,3 +1,7 @@
+/**
+ * Ayarlarin istemci etkilesimini yonetir; form state'i yalnizca taslaktir.
+ * Kalici degerler updateSettings action'inda dogrulanip DemoStore'a yazilir.
+ */
 'use client';
 
 import { useActionState, useMemo, useState } from 'react';

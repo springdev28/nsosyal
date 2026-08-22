@@ -1,3 +1,7 @@
+/**
+ * PostViewModel'i ortak sosyal kart diline cevirir. Begenme ve kaydetme eylemleri
+ * Server Action'a gider; kart ham domain join'i veya ranking hesabi yapmaz.
+ */
 import Link from 'next/link';
 
 import { toggleLike, toggleSave } from '@/actions/social';

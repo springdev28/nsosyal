@@ -1,3 +1,7 @@
+/**
+ * Projeyi bitmis portfolyo karti yerine ilerleme, ekip, Neden, Nasil ve etkinlik
+ * baglari olan yasayan bir sosyal nesne olarak sunar.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

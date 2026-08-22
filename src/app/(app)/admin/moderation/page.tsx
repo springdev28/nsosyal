@@ -1,3 +1,7 @@
+/**
+ * Topluluk basvurularini benzerlik baglamiyla inceletir. Her karar communities
+ * action'i uzerinden moderasyon loguna yazilir.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

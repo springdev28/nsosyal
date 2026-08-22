@@ -233,12 +233,23 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
 
   test('Yayın Atölyesi yedi sayı, beş sayfa ve 30×40 alan sunar', async ({ page }) => {
     await loginAs(page, 'user');
+
+    // Alan secimi ayri bir beyaz tuval degil, okuyucunun gordugu gazete
+    // kagidinin uzerinde yapilir. Arsiv ve ornek sayilar da ayni yuzeyi kullanir.
+    await page.goto('/newspaper');
+    const newspaperPaper = await page.locator('.newspaper-sheet').evaluate((element) =>
+      getComputedStyle(element).backgroundColor,
+    );
+    expect(newspaperPaper).not.toBe('rgb(255, 255, 255)');
+
     await page.goto('/publish');
 
     await expect(page.getByRole('heading', { name: 'Yayın Atölyesi' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Ana gezinme' })).toHaveCount(0);
     await expect(page.getByRole('complementary', { name: 'Arama ve gündem' })).toHaveCount(0);
-    await expect(page.getByRole('application', { name: /30 sütun ve 40 satır/ })).toBeVisible();
+    const areaSelector = page.getByRole('application', { name: /30 sütun ve 40 satır/ });
+    await expect(areaSelector).toBeVisible();
+    await expect(areaSelector).toHaveCSS('background-color', newspaperPaper);
     await expect(page.getByRole('button', { name: 'Sayfa 5' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Menüyü daralt' })).toBeVisible();
     await page.getByRole('button', { name: 'Menüyü daralt' }).click();
@@ -288,6 +299,15 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await unfinished.getByRole('button').first().click();
     await expect(page.getByRole('button', { name: 'Yüklenen tasarım' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'CTA butonu: Projeyi gör' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Önizle' }).click();
+    const preview = page.locator('[data-preview-canvas="true"]');
+    await expect(preview).toBeVisible();
+    // Duzenleme izgarasi ve alan cercevesi gazete ciktisina sizmamali; temiz
+    // cikti yine koyu gazete kagidinda kalmali.
+    await expect(preview).toHaveCSS('background-image', 'none');
+    await expect(preview).toHaveCSS('background-color', 'rgb(17, 26, 42)');
+    await expect(preview.locator('[class~="bg-accent/5"]')).toHaveCount(0);
   });
 
   test('marka hareketi başlangıç, parçacık, bitiş ve bekleme sırasını taşır', async ({ page }) => {

@@ -1,3 +1,7 @@
+/**
+ * Avatar, banner, bio ve dis baglanti girdilerini yonetir. Dosya yukleme ve URL
+ * guvenlik karari profile Server Action'inda yeniden dogrulanir.
+ */
 'use client';
 
 import Image from 'next/image';

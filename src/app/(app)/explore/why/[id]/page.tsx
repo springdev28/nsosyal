@@ -1,3 +1,4 @@
+/** Tek Neden hikayesini yazari, konusu ve bagli projesiyle birlikte sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

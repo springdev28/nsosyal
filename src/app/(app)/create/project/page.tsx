@@ -1,3 +1,4 @@
+/** Proje formunun konu, topluluk ve oturum baglamini sunucuda hazirlar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

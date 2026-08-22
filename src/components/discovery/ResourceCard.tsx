@@ -1,3 +1,4 @@
+/** Kaynak ViewModel'ini moderator durumu ve bagli toplulukla ortak kartta sunar. */
 import Link from 'next/link';
 
 import { Badge, Card } from '@/components/ui';

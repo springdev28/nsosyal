@@ -1,3 +1,8 @@
+/**
+ * Yayin Atolyesi'nin taslak, rezervasyon, kreatif, satin alma ve uyelik
+ * mutasyonlarini yetkili sunucu yoluna toplar. Son alan cakismasi kontrolu para
+ * cekme niyetinden hemen once burada yapilir.
+ */
 'use server';
 
 import { randomUUID } from 'node:crypto';

@@ -1,3 +1,8 @@
+/**
+ * Oturum acmis rotalarin masaustu kolonlarini ve mobil gezinme kabugunu kurar.
+ * Sayfalar yalnizca merkez icerigi verir; ortak arama, gundem ve tema davranisi
+ * burada tek yerde kalir.
+ */
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 

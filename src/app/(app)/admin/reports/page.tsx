@@ -1,3 +1,4 @@
+/** Icerik raporlarini yetkili personele sunar ve cozum notunu denetim yoluna yazar. */
 import type { Metadata } from 'next';
 
 import { resolveReport } from '@/actions/communities';

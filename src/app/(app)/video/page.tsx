@@ -1,3 +1,4 @@
+/** Kisa video akisinda baglam, metin esdegeri ve sosyal eylemleri birlikte sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

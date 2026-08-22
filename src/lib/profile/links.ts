@@ -1,3 +1,7 @@
+/**
+ * Profil baglantilarini guvenli platform turlerine ve ortak ikon adlarina cevirir.
+ * URL tanima burada merkezilesir; profil bilesenleri host kurali kopyalamaz.
+ */
 import type { IconName } from '@/components/ui';
 import type { ProfileLinkPlatform } from '@/types/domain';
 

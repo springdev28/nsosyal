@@ -1,3 +1,8 @@
+/**
+ * Ana akistaki hizli gonderi formunu ve gecici medya/5N alanlarini yonetir.
+ * Gercek yazma createPost Server Action'inda kalir; bu bilesen yalnizca form
+ * deneyimi ve istemci geri bildiriminden sorumludur.
+ */
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';

@@ -1,3 +1,8 @@
+/**
+ * Tum sentetik veri ailelerini tek deterministik demo snapshot'inda birlestirir.
+ * DemoStore yalnizca bu ciktiyi alir; bireysel seed modulleri runtime veri yolu
+ * haline gelmez.
+ */
 import type {
   AdRequest,
   AnalyticsEvent,
