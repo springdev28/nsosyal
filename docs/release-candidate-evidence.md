@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
-Tarih: 22 Ağustos 2026  
-Doğrulanan kaynak SHA: `9413542e840ffb8e7e74c0f9c866851cc9cafac0`  
+Tarih: 23 Ağustos 2026
+Doğrulanan kaynak SHA: `9c5a31436b14a6c1c5eb44f2e5360567d9a97f41`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -37,7 +37,7 @@ Durum sözlüğü:
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
 | Topluluğa katılma → kaynak; başvuru → moderatör kararı → denetim kaydı | `/communities/[slug]`, `/communities/apply`, `/admin/moderation`, `/admin` | Server Actions → `DemoStore`; rol denetimi sunucuda | `competition-flows` 4 ve 7; store birim testleri | İlgili kullanıcı yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Neden hikâyesi → bağlı yaşayan proje | `/explore/why`, `/explore/why/[id]`, `/projects/[slug]` | `DemoStore` view modelleri; oluşturma Server Action üzerinden | `competition-flows` 5 iki viewportta geçti | Neden ve proje yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
-| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action dosyayı doğrulayıp yazar; proje bundan sonra oluşturulur | 3 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut artık yarım/kopya proje açmaz | Demo doğrulandı |
+| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action MIME, byte ve kapsayıcı süresini doğrulayıp yazar; proje bundan sonra oluşturulur | 7 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut/süre yarım veya kopya proje açmaz | Demo doğrulandı |
 | nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking birim testleri | `/newspaper` 1440×1000 ve 390×844 incelendi; koyu kâğıt, kolonlar ve taşma kontrol edildi; axe temiz | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
@@ -49,8 +49,8 @@ Durum sözlüğü:
 | Kimlik doğrulama | Sentetik hesap seçimi ve demo oturum çerezi | Supabase Auth ve gerçek hesap yaşam döngüsü |
 | Uygulama verisi | Süreç belleğindeki deterministik `DemoStore` | Supabase Postgres adapteri; mevcut migration ve RLS sözleşmelerini kullanan runtime yol |
 | Kalıcılık | Aynı çalışan sunucu süreci boyunca; reset veya yeniden dağıtım veriyi sıfırlar | Kalıcı veritabanı, yedekleme ve gözlemlenebilirlik |
-| Medya | Pitch ve gazete kreatifi Node sunucusunun yerel dosya sistemine yazılır | Supabase Storage, MIME içerik doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
-| Video süresi | İstemci 90 saniye uyarısı verir; sunucu MIME ve 50 MB sınırını doğrular | Worker/transcoder tarafında güvenilir süre ölçümü ve yeniden kodlama |
+| Medya | Pitch ve gazete kreatifi Node sunucusunun yerel dosya sistemine yazılır | Supabase Storage, codec doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
+| Video süresi | İstemci metadata ile hızlı geri bildirim verir; sunucu MP4 `mvhd` veya WebM `Info/Duration` alanından süreyi tekrar ölçer ve 90 saniye/50 MB sınırını uygular | Worker/transcoder tarafında codec çözme, yeniden kodlama ve kötü amaçlı dosya taraması |
 | nGazete ödeme | Çakışma denetimi ve fiyat sonucu üreten demo işlemi | Gerçek ödeme sağlayıcısı, idempotency key, webhook ve muhasebe kaydı |
 | Yayın Atölyesi üyeliği | 200₺/ay yetkilerini gösteren demo profil bayrağı | Faturalandırma ile bağlı entitlement ve yenileme/iptal durumu |
 | Dağıtım | `main` push'unu Hostinger ve Render ayrı ayrı çekip derler; `/api/health` SHA bildirir | Aynı yöntem korunur; SHA eşitliği yayın kapısıdır |
@@ -61,13 +61,13 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `9413542e840ffb8e7e74c0f9c866851cc9cafac0` için:
+Kaynak SHA `9c5a31436b14a6c1c5eb44f2e5360567d9a97f41` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 124/124 birim testi |
+| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 128/128 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e` | İlk tam koşuda 140 geçti; işletim sistemi `ERR_NETWORK_IO_SUSPENDED` nedeniyle zaman aşımına uğrayan 4 senaryo temiz sunucuda `--last-failed` ile 4/4 geçti. Yeni moderasyon senaryosu ayrıca iki viewportta 2/2 geçti. Atlanan yok |
+| `npm run test:e2e` | 143/144 geçti. Koşu İstanbul saatinde 22 Ağustos'tan 23 Ağustos'a geçerken, 22 Ağustos seed'iyle başlayan sunucuda günün sayısını arayan tek mobil modal testi başarısız oldu; aynı test yeni gün seed'iyle temiz sunucuda `--last-failed` ile 1/1 geçti. Ürün hatası veya atlanan test yok |
 | Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
@@ -93,11 +93,11 @@ sentetik E2E bunun yerine geçmez.
 adapteri, Auth ve Storage entegrasyonu tamamlanana kadar aday yalnızca yarışma
 prototipi olarak sunulmalıdır.
 
-### Yüksek: sunucu tarafında gerçek video süresi ölçülmüyor
+### Orta: production video işleme hattı yok
 
-MIME ve byte sınırı artık proje kaydından önce doğrulanıyor. Ancak 90 saniye
-sınırı tarayıcı metadata'sına dayanıyor; production worker/transcoder kanıtı
-olmadan güvenlik sınırı kabul edilmemelidir.
+Sunucu MP4/WebM kapsayıcısından gerçek süreyi okuyup kayıt öncesi sınırı uygular.
+Ancak codec çözme/yeniden kodlama, virüs taraması ve kalıcı Storage worker'ı
+bulunmadığından bu doğrulayıcı production medya hattının yerine geçmez.
 
 ### Yüksek: tam manuel erişilebilirlik turu eksik
 
