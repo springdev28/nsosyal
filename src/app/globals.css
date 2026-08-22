@@ -446,6 +446,7 @@
     display: grid;
     width: 2rem;
     height: 2rem;
+    flex: 0 0 2rem;
     place-items: center;
     border-radius: 0.65rem;
     color: color-mix(in srgb, var(--fg) 38%, var(--brand-cyan));
@@ -471,6 +472,12 @@
   }
 
   .nav-newspaper__pulse {
+    position: absolute;
+    right: 0.18rem;
+    top: 0.18rem;
+    width: 0.32rem;
+    height: 0.32rem;
+    border-radius: 999px;
     background: var(--brand-cyan);
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-cyan) 62%, transparent);
     animation: ns-newspaper-pulse 2.2s ease-out infinite;

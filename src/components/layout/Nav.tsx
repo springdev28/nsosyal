@@ -186,7 +186,7 @@ export function MainNav({
                         : 'text-fg-muted hover:bg-bg-hover hover:text-fg'
                   } ${isNewspaper ? 'nav-newspaper' : ''}`}
                 >
-                  <span className={`relative flex ${isNewspaper ? 'nav-newspaper__icon' : ''}`}>
+                  <span className={`relative flex items-center justify-center ${isNewspaper ? 'nav-newspaper__icon' : ''}`}>
                     <Icon name={item.icon} size={22} filled={active && !isNewspaper} strokeWidth={1.9} />
                     {badge > 0 ? (
                       <span className="absolute -right-2 -top-1.5 min-w-[1.05rem] rounded-full bg-accent px-1 text-center text-[0.62rem] font-bold leading-[1.05rem] text-accent-fg">
@@ -196,7 +196,7 @@ export function MainNav({
                     {badge === -1 ? (
                       <span
                         aria-hidden="true"
-                        className="nav-newspaper__pulse absolute -right-1 -top-0.5 h-2 w-2 rounded-full"
+                        className="nav-newspaper__pulse"
                       />
                     ) : null}
                   </span>

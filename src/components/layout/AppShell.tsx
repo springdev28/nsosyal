@@ -85,11 +85,11 @@ export function AppShell({
 
 function SearchBox() {
   return (
-    <form action="/explore" method="get" role="search" className="min-w-0 flex-1">
+    <form action="/explore" method="get" role="search" className="min-w-0 flex-1 px-0.5">
       <label htmlFor="global-search" className="sr-only">
         Ara
       </label>
-      <div className="flex min-h-11 items-center gap-2 rounded-full bg-bg-raised px-4 ring-1 ring-[var(--accent-line)] focus-within:ring-2 focus-within:ring-accent">
+      <div className="flex min-h-11 items-center gap-2 rounded-full border border-[var(--accent-line)] bg-bg-raised px-4 focus-within:border-accent focus-within:ring-1 focus-within:ring-inset focus-within:ring-accent">
         <Icon name="search" size={17} className="shrink-0 text-fg-subtle" />
         <input
           id="global-search"

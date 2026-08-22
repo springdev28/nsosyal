@@ -100,9 +100,9 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ),
   newspaper: (
     <>
-      <path d="M4.5 5.5h12v14h-12z" />
-      <path d="M16.5 9h3v8.5a2 2 0 0 1-2 2h-1" />
-      <path d="M7 9h7M7 12h7M7 15h4" />
+      <path d="M4 5h13.5v14.5H6a2 2 0 0 1-2-2z" />
+      <path d="M17.5 8.5H20v9a2 2 0 0 1-2 2h-.5" />
+      <path d="M7 8h7.5M7 11h7.5M7 14h3M12 14h2.5M7 17h7.5" />
     </>
   ),
   beaker: (
