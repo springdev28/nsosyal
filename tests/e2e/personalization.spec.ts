@@ -76,8 +76,12 @@ test.describe('Anlık niyet modu isteğe bağlıdır', () => {
     await loginAs(page, 'user');
     await page.goto('/feed?mod=yok');
 
-    // Mod secilmedigini arayuz de soyler.
-    await expect(page.getByText(/platform amaçlarına göre sıralanıyor/i)).toBeVisible();
+    // Metinle aciklamak yerine secili cip durumu kullaniciya gosterilir.
+    const defaultMode = page
+      .getByRole('group', { name: 'Akış niyet modu' })
+      .getByRole('link', { name: 'Amaçlarıma göre' });
+    await expect(defaultMode).toBeVisible();
+    await expect(defaultMode).toHaveAttribute('aria-current', 'true');
 
     // Akis bos degil ve kartlar hâlâ gerekce tasiyabiliyor.
     await expect(page.getByRole('article').first()).toBeVisible();
