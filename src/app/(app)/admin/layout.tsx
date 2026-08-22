@@ -43,16 +43,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               Raporlar
             </Link>
           </li>
-          {isAdminUser ? (
-            <li>
-              <Link
-                href="/admin/newspaper"
-                className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm text-fg-muted hover:bg-bg-sunken"
-              >
-                Gazete ve ilanlar
-              </Link>
-            </li>
-          ) : null}
+          <li>
+            <Link
+              href="/admin/newspaper"
+              className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm text-fg-muted hover:bg-bg-sunken"
+            >
+              Gazete ve ilanlar
+            </Link>
+          </li>
         </ul>
       </nav>
 

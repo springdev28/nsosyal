@@ -1,8 +1,12 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
 import { revalidatePath } from 'next/cache';
 
-import { getViewer } from '@/lib/auth/session';
+import { canModerate, getViewer } from '@/lib/auth/session';
 import { getStore, type PublicationMutationResult } from '@/lib/data/store';
 import type { PublicationBlock, PublicationRect } from '@/types/domain';
 
@@ -13,6 +17,45 @@ function unauthorized(): PublicationMutationResult {
 function refreshPublicationPages(): void {
   revalidatePath('/publish');
   revalidatePath('/newspaper');
+  revalidatePath('/admin/newspaper');
+}
+
+export type PublicationUploadResult =
+  | { ok: true; path: string; fileName: string }
+  | { ok: false; message: string };
+
+export async function uploadPublicationCreativeAction(formData: FormData): Promise<PublicationUploadResult> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, message: 'Dosya yüklemek için giriş yapmalısın.' };
+  const file = formData.get('creative');
+  if (!(file instanceof File) || file.size === 0) return { ok: false, message: 'Bir tasarım dosyası seç.' };
+  if (file.size > 8 * 1024 * 1024) return { ok: false, message: 'Tasarım dosyası en fazla 8 MB olabilir.' };
+
+  const extensionByType: Record<string, string> = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+  };
+  const extension = extensionByType[file.type];
+  if (!extension) return { ok: false, message: 'Canva tasarımını PNG, JPG veya WebP olarak dışa aktarıp yükle.' };
+
+  const directory = path.join(process.cwd(), 'public', 'uploads', 'publication');
+  await mkdir(directory, { recursive: true });
+  const storedName = `${viewer.id.slice(0, 12)}-${randomUUID()}.${extension}`;
+  await writeFile(path.join(directory, storedName), Buffer.from(await file.arrayBuffer()));
+  getStore().track('publication_creative_uploaded', { type: file.type, size: file.size }, viewer.id);
+  return { ok: true, path: `/uploads/publication/${storedName}`, fileName: file.name.slice(0, 120) };
+}
+
+export async function activatePublicationSubscriptionAction(): Promise<
+  { ok: true; monthlyPrice: number } | { ok: false; message: string }
+> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, message: 'Abonelik için giriş yapmalısın.' };
+  getStore().updateProfile(viewer.id, { publicationSubscriber: true });
+  getStore().track('publication_subscription_activated', { monthlyPrice: 200 }, viewer.id);
+  refreshPublicationPages();
+  return { ok: true, monthlyPrice: 200 };
 }
 
 export async function startPublicationDraftAction(input: {
@@ -83,4 +126,21 @@ export async function purchasePublicationAreaAction(input: {
     refreshPublicationPages();
   }
   return result;
+}
+
+export async function reviewPublicationDraftAction(formData: FormData): Promise<void> {
+  const viewer = await getViewer();
+  if (!viewer || !canModerate(viewer)) return;
+  const draftId = String(formData.get('draftId') ?? '');
+  const decision = String(formData.get('decision') ?? '');
+  const note = String(formData.get('note') ?? '').trim();
+  if (!draftId || !['approved', 'rejected', 'changes_requested'].includes(decision)) return;
+  getStore().reviewPublicationDraft(
+    draftId,
+    viewer.id,
+    decision as 'approved' | 'rejected' | 'changes_requested',
+    note,
+  );
+  getStore().track('publication_draft_reviewed', { draftId, decision }, viewer.id);
+  refreshPublicationPages();
 }

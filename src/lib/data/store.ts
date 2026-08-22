@@ -120,6 +120,7 @@ const NEW_VOICE_THRESHOLD = 120;
 const PUBLICATION_COLUMNS = 30;
 const PUBLICATION_ROWS = 40;
 const PUBLICATION_UNIT_PRICE = 10;
+const PUBLICATION_SUBSCRIBER_DISCOUNT = 0.05;
 
 function cleanPublicationRect(rect: PublicationRect): PublicationRect | null {
   const clean = {
@@ -157,6 +158,15 @@ function publicationRectContains(parent: PublicationRect, child: PublicationRect
     child.x + child.width <= parent.x + parent.width &&
     child.y + child.height <= parent.y + parent.height
   );
+}
+
+function cleanPublicationColor(value: string | undefined, fallback: string): string {
+  return /^#[0-9a-f]{6}$/i.test(value ?? '') ? value! : fallback;
+}
+
+function publicationLinkAllowed(value: string, subscriber: boolean): boolean {
+  if (/^\/(?!\/)[a-z0-9/_?&=.#%-]*$/i.test(value)) return true;
+  return subscriber && /^https:\/\/[a-z0-9.-]+(?:\/[a-z0-9/_?&=.#%+-]*)?$/i.test(value);
 }
 
 function normalize(value: string): string {
@@ -1109,6 +1119,8 @@ export class DemoStore {
       blocks: [],
       archivedBlocks: [],
       status: 'editing',
+      moderationStatus: 'not_submitted',
+      subscriber: profile?.publicationSubscriber === true,
       anonymous: input.anonymous ?? profile?.publicationAnonymousByDefault ?? false,
       revision: 1,
       createdAt: stamp,
@@ -1139,6 +1151,7 @@ export class DemoStore {
     draft.blocks = [];
     draft.rect = rect;
     draft.status = 'editing';
+    draft.moderationStatus = 'not_submitted';
     draft.revision += 1;
     draft.updatedAt = now.toISOString();
     this.data.publicationSlots = this.data.publicationSlots.filter(
@@ -1162,6 +1175,8 @@ export class DemoStore {
       return { ok: false, code: 'closed', message: 'Bu sayının taslak süresi kapandı.' };
     }
 
+    const profile = this.getProfile(ownerId);
+    const subscriber = profile?.publicationSubscriber === true;
     const blocks = input.blocks.map((block) => ({
       ...block,
       content: block.content.slice(0, 4_000),
@@ -1192,9 +1207,16 @@ export class DemoStore {
       contrast: Math.max(0.5, Math.min(1.5, block.contrast ?? 1)),
       saturation: Math.max(0, Math.min(2, block.saturation ?? 1)),
       resourceId: typeof block.resourceId === 'string' ? block.resourceId.slice(0, 80) : undefined,
-      animation: ['none', 'float', 'pulse', 'drift', 'wave'].includes(block.animation ?? '')
+      animation: ['none', 'float', 'pulse', 'drift', 'wave', 'shine'].includes(block.animation ?? '')
         ? block.animation
         : 'none',
+      role: block.role,
+      linkUrl: typeof block.linkUrl === 'string' ? block.linkUrl.trim().slice(0, 500) : undefined,
+      buttonVariant: ['pill', 'rounded', 'square', 'outline', 'gradient'].includes(block.buttonVariant ?? '')
+        ? block.buttonVariant
+        : 'rounded',
+      gradientFrom: cleanPublicationColor(block.gradientFrom, '#35C9E8'),
+      gradientTo: cleanPublicationColor(block.gradientTo, '#3156F5'),
       archived: false,
     }));
     if (blocks.some((block) => !cleanPublicationRect(block) || !publicationRectContains(draft.rect, block))) {
@@ -1205,9 +1227,42 @@ export class DemoStore {
       };
     }
 
+    const creatives = blocks.filter((block) => block.role === 'creative');
+    const buttons = blocks.filter((block) => block.role === 'cta');
+    if (creatives.length > 1 || blocks.some((block) => !['creative', 'cta'].includes(block.role ?? ''))) {
+      return { ok: false, code: 'invalid', message: 'Bir ilanda tek tasarım dosyası ve CTA butonları bulunabilir.' };
+    }
+    if (creatives.some((block) => block.type !== 'image' || !/^\/uploads\/publication\/[a-z0-9._-]+$/i.test(block.content))) {
+      return { ok: false, code: 'invalid', message: 'Tasarım dosyasını Yayın Atölyesi yükleme alanından eklemelisin.' };
+    }
+    if (creatives.some((block) => block.altText.trim().length < 3)) {
+      return { ok: false, code: 'invalid', message: 'Yüklenen tasarım için kısa bir görsel açıklaması gir.' };
+    }
+    const buttonLimit = subscriber ? 3 : 1;
+    if (buttons.length > buttonLimit) {
+      return { ok: false, code: 'invalid', message: `Bu hesap en fazla ${buttonLimit} CTA butonu kullanabilir.` };
+    }
+    if (buttons.some((block) => block.type !== 'shape' || block.content.trim().length < 2 || !publicationLinkAllowed(block.linkUrl ?? '', subscriber))) {
+      return {
+        ok: false,
+        code: 'invalid',
+        message: subscriber
+          ? 'Buton metni ve geçerli bir nSosyal ya da https bağlantısı gir.'
+          : 'Standart hesap butonları yalnızca /profile, /post, /project veya /explore gibi nSosyal bağlantılarına gidebilir.',
+      };
+    }
+    if (!subscriber && buttons.some((block) => block.buttonVariant === 'gradient' || block.animation !== 'none')) {
+      return { ok: false, code: 'invalid', message: 'Özel gradyan ve hareketli butonlar Yayınevi aboneliğine dahildir.' };
+    }
+    if (input.submit && creatives.length !== 1) {
+      return { ok: false, code: 'invalid', message: 'Önizleme ve ödeme için önce tasarım dosyanı yüklemelisin.' };
+    }
+
     draft.blocks = blocks;
     draft.anonymous = input.anonymous;
+    draft.subscriber = subscriber;
     draft.status = input.submit ? 'submitted' : 'editing';
+    draft.moderationStatus = 'not_submitted';
     draft.revision += 1;
     draft.updatedAt = now.toISOString();
     return { ok: true, draft };
@@ -1274,6 +1329,9 @@ export class DemoStore {
     if (draft.blocks.some((block) => !publicationRectContains(draft.rect, block))) {
       return { ok: false, code: 'outside', message: 'Alan dışındaki bloklar düzeltilmeden ödeme başlatılamaz.' };
     }
+    if (draft.blocks.filter((block) => block.role === 'creative').length !== 1) {
+      return { ok: false, code: 'invalid', message: 'Ödeme için önce tek bir tasarım dosyası yükleyip kaydetmelisin.' };
+    }
     if (!this.listPublicationWindows(now).some((window) => window.issueDate === draft.issueDate && window.open)) {
       return { ok: false, code: 'closed', message: 'Bu sayının ödeme süresi kapandı.' };
     }
@@ -1318,9 +1376,61 @@ export class DemoStore {
     };
     this.data.publicationSlots.push(slot);
     draft.status = 'paid';
+    draft.moderationStatus = 'pending';
+    draft.subscriber = this.getProfile(ownerId)?.publicationSubscriber === true;
     draft.revision += 1;
     draft.updatedAt = now.toISOString();
-    return { ok: true, draft, slot, price: draft.rect.width * draft.rect.height * PUBLICATION_UNIT_PRICE };
+    const basePrice = draft.rect.width * draft.rect.height * PUBLICATION_UNIT_PRICE;
+    const price = draft.subscriber ? Math.round(basePrice * (1 - PUBLICATION_SUBSCRIBER_DISCOUNT)) : basePrice;
+    for (const moderator of this.data.profiles.filter((profile) => profile.role === 'moderator' || profile.role === 'admin')) {
+      this.pushNotification({
+        profileId: moderator.id,
+        type: 'publication',
+        title: 'Yeni gazete ilanı incelemede',
+        body: `${draft.issueDate} tarihli ${draft.page}. sayfa ilanı görsel ve bağlantı kontrolü bekliyor.`,
+        entityType: 'publication_draft',
+        entityId: draft.id,
+        href: '/admin/newspaper',
+      });
+    }
+    return { ok: true, draft, slot, price };
+  }
+
+  listPublicationDraftsForModeration(): PublicationDraft[] {
+    return this.data.publicationDrafts
+      .filter((draft) => draft.moderationStatus === 'pending')
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  reviewPublicationDraft(
+    draftId: UUID,
+    moderatorId: UUID,
+    decision: 'approved' | 'rejected' | 'changes_requested',
+    note = '',
+  ): PublicationDraft | null {
+    const draft = this.data.publicationDrafts.find((entry) => entry.id === draftId && entry.status === 'paid');
+    if (!draft) return null;
+    draft.moderationStatus = decision;
+    draft.updatedAt = new Date().toISOString();
+    this.data.moderationActions.push({
+      id: this.nextId('moderation-action'),
+      moderatorId,
+      action: `publication_draft:${decision}`,
+      entityType: 'publication_draft',
+      entityId: draft.id,
+      note: note.slice(0, 500) || (decision === 'approved' ? 'Görsel ve bağlantılar onaylandı.' : 'Yayın öncesi düzeltme gerekli.'),
+      createdAt: new Date().toISOString(),
+    });
+    this.pushNotification({
+      profileId: draft.ownerId,
+      type: 'publication',
+      title: decision === 'approved' ? 'Gazete ilanın onaylandı' : 'Gazete ilanın için işlem gerekiyor',
+      body: decision === 'approved' ? 'İlanın seçtiğin sayıda yayımlanmaya hazır.' : note || 'Moderasyon ekibi tasarım veya bağlantıda düzeltme istedi.',
+      entityType: 'publication_draft',
+      entityId: draft.id,
+      href: '/publish',
+    });
+    return draft;
   }
 
   listAdRequests(status?: ModerationStatus): AdRequestView[] {

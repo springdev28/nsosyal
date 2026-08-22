@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { reviewAdRequest } from '@/actions/newspaper';
+import { reviewPublicationDraftAction } from '@/actions/publication';
 import { Badge, Card, EmptyState, InfoNote, SectionHeader } from '@/components/ui';
-import { getViewer, isAdmin } from '@/lib/auth/session';
+import { canModerate, getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatDate, formatRelative } from '@/lib/time';
 
@@ -30,12 +32,13 @@ const STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'dan
  */
 export default async function AdminNewspaperPage() {
   const viewer = await getViewer();
-  if (!isAdmin(viewer)) redirect('/admin');
+  if (!canModerate(viewer)) redirect('/admin');
 
   const store = getStore();
   const pending = store.listAdRequests('pending');
   const decided = store.listAdRequests().filter((entry) => entry.request.status !== 'pending');
   const issues = store.listIssues();
+  const publicationDrafts = store.listPublicationDraftsForModeration();
 
   return (
     <div className="space-y-4">
@@ -48,6 +51,49 @@ export default async function AdminNewspaperPage() {
         Onaylanan ilan yalnızca gazete sayısına “Sponsorlu” kart olarak eklenir. Sıralama kodunda sponsorlu bir
         alan yoktur; ödeme hiçbir kullanıcının akışını değiştiremez.
       </InfoNote>
+
+      <section aria-labelledby="publication-review-heading">
+        <SectionHeader title={<span id="publication-review-heading">Yayın Atölyesi incelemesi ({publicationDrafts.length})</span>} />
+        {publicationDrafts.length === 0 ? (
+          <EmptyState icon="shield" title="İncelenecek atölye ilanı yok" description="Ödemesi kesinleşen dosya ve CTA bağlantıları burada görünür." />
+        ) : (
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {publicationDrafts.map((draft) => {
+              const creative = draft.blocks.find((block) => block.role === 'creative');
+              const buttons = draft.blocks.filter((block) => block.role === 'cta');
+              const owner = store.getProfile(draft.ownerId);
+              return (
+                <li key={draft.id}>
+                  <Card className="overflow-hidden p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="relative aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
+                        {creative ? <Image src={creative.content} alt={creative.altText} fill unoptimized className="object-contain" sizes="112px" /> : null}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold">{draft.issueDate} · Sayfa {draft.page}</h3>
+                        <p className="mt-1 text-sm text-fg-muted">{owner?.displayName ?? 'Bilinmeyen hesap'} · {draft.rect.width}×{draft.rect.height} birim</p>
+                        <p className="mt-2 text-xs text-fg-subtle">Alt metin: {creative?.altText ?? 'Yok'}</p>
+                        <ul className="mt-2 space-y-1 text-xs">
+                          {buttons.map((button) => <li key={button.id}><strong>{button.content}</strong> → <span className="break-all text-fg-muted">{button.linkUrl}</span></li>)}
+                        </ul>
+                      </div>
+                    </div>
+                    <form action={reviewPublicationDraftAction} className="mt-4 space-y-2">
+                      <input type="hidden" name="draftId" value={draft.id} />
+                      <label className="block text-sm font-medium">İnceleme notu<textarea name="note" rows={2} className="mt-1 w-full rounded-xl border border-line bg-bg-sunken p-3 text-sm" /></label>
+                      <div className="flex flex-wrap gap-2">
+                        <button type="submit" name="decision" value="approved" className="min-h-10 rounded-full bg-accent px-4 text-sm font-bold text-accent-fg">Onayla</button>
+                        <button type="submit" name="decision" value="changes_requested" className="min-h-10 rounded-full border border-warning/50 bg-warning-soft px-4 text-sm font-bold text-warning">Düzeltme iste</button>
+                        <button type="submit" name="decision" value="rejected" className="min-h-10 rounded-full border border-danger/50 bg-danger-soft px-4 text-sm font-bold text-danger">Reddet</button>
+                      </div>
+                    </form>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <section aria-labelledby="pending-ads">
         <SectionHeader title={<span id="pending-ads">Bekleyen başvurular ({pending.length})</span>} />

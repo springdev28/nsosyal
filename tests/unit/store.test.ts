@@ -331,9 +331,20 @@ describe('Yayın Atölyesi alan hakkı', () => {
     if (!first.ok || !second.ok) return;
 
     expect(store.reservePublicationArea(ownerA, first.draft.id, first.draft.revision, NOW).ok).toBe(true);
-    const paid = store.purchasePublicationArea(ownerB, second.draft.id, second.draft.revision, NOW);
+    const savedSecond = store.savePublicationDraft(ownerB, second.draft.id, {
+      blocks: [{
+        id: uid('publication-block', 'reservation-payment'), role: 'creative', type: 'image',
+        ...rect, content: '/uploads/publication/reservation.png', altText: 'Rezervasyon ilanı',
+        color: '#FFFFFF', borderRadius: 0, objectFit: 'contain', archived: false,
+      }],
+      anonymous: false,
+      revision: second.draft.revision,
+      submit: true,
+    }, NOW);
+    if (!savedSecond.ok) return;
+    const paid = store.purchasePublicationArea(ownerB, second.draft.id, savedSecond.draft.revision, NOW);
     expect(paid.ok).toBe(true);
-    if (paid.ok) expect(paid.price).toBe(480);
+    if (paid.ok) expect(paid.price).toBe(456);
   });
 
   it('kesin satın alınmış alan ödeme başlamadan çakışmayı durdurur', () => {
@@ -342,8 +353,16 @@ describe('Yayın Atölyesi alan hakkı', () => {
     const second = store.startPublicationDraft(ownerB, { issueDate, page: 2, rect }, NOW);
     if (!first.ok || !second.ok) return;
 
-    expect(store.purchasePublicationArea(ownerA, first.draft.id, first.draft.revision, NOW).ok).toBe(true);
-    const result = store.purchasePublicationArea(ownerB, second.draft.id, second.draft.revision, NOW);
+    const creative = (suffix: string) => ({
+      id: uid('publication-block', suffix), role: 'creative' as const, type: 'image' as const,
+      ...rect, content: `/uploads/publication/${suffix}.png`, altText: 'Gazete ilan tasarımı',
+      color: '#FFFFFF', borderRadius: 0, objectFit: 'contain' as const, archived: false,
+    });
+    const savedFirst = store.savePublicationDraft(ownerA, first.draft.id, { blocks: [creative('paid-first')], anonymous: false, revision: first.draft.revision, submit: true }, NOW);
+    const savedSecond = store.savePublicationDraft(ownerB, second.draft.id, { blocks: [creative('paid-second')], anonymous: false, revision: second.draft.revision, submit: true }, NOW);
+    if (!savedFirst.ok || !savedSecond.ok) return;
+    expect(store.purchasePublicationArea(ownerA, first.draft.id, savedFirst.draft.revision, NOW).ok).toBe(true);
+    const result = store.purchasePublicationArea(ownerB, second.draft.id, savedSecond.draft.revision, NOW);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.code).toBe('conflict');
   });
@@ -354,13 +373,14 @@ describe('Yayın Atölyesi alan hakkı', () => {
     if (!started.ok) return;
     const block = {
       id: uid('publication-block', 'outside'),
-      type: 'markdown' as const,
+      role: 'creative' as const,
+      type: 'image' as const,
       x: 0,
       y: 0,
       width: 4,
       height: 4,
-      content: '# Tasarım',
-      altText: '',
+      content: '/uploads/publication/test.png',
+      altText: 'Deney tasarımı',
       color: '#E9EFF7',
       borderRadius: 8,
       objectFit: 'cover' as const,
@@ -389,75 +409,62 @@ describe('Yayın Atölyesi alan hakkı', () => {
     }
   });
 
-  it('Canva tipi blok ayarlarını kaydedip güvenli aralıklarda tutar', () => {
+  it('standart ve abone CTA sınırlarını sunucuda uygular', () => {
     const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
     const started = store.startPublicationDraft(ownerA, { issueDate, page: 4, rect }, NOW);
     if (!started.ok) return;
 
-    const saved = store.savePublicationDraft(ownerA, started.draft.id, {
-      blocks: [{
-        id: uid('publication-block', 'canva-controls'),
-        type: 'markdown',
+    const creative = {
+        id: uid('publication-block', 'creative-standard'),
+        role: 'creative' as const,
+        type: 'image' as const,
         x: 3,
         y: 4,
         width: 6,
         height: 4,
-        content: '## Deney başlığı',
-        altText: '',
-        color: '#0F172A',
-        borderRadius: 14,
-        objectFit: 'cover',
-        opacity: 0.84,
-        borderWidth: 2,
-        borderColor: '#3D9BFF',
-        textAlign: 'center',
-        imageFilter: 'none',
-        rotation: 15,
-        padding: 12,
-        backgroundColor: '#F8FAFC',
-        shadow: 'soft',
-        fontFamily: 'serif',
-        fontSize: 28,
-        fontWeight: 800,
-        fontStyle: 'italic',
-        textDecoration: 'underline',
-        letterSpacing: 2,
-        lineHeight: 1.6,
-        paragraphIndent: 24,
-        verticalAlign: 'middle',
-        textTransform: 'uppercase',
-        flipX: false,
-        flipY: false,
-        brightness: 1,
-        contrast: 1,
-        saturation: 1,
-        resourceId: 'flow',
-        animation: 'drift',
+        content: '/uploads/publication/standard.png',
+        altText: 'Standart ilan tasarımı',
+        color: '#FFFFFF',
+        borderRadius: 0,
+        objectFit: 'contain' as const,
         archived: false,
-      }],
+      };
+    const externalButton = {
+      id: uid('publication-block', 'external-button'),
+      role: 'cta' as const,
+      type: 'shape' as const,
+      x: 3,
+      y: 8,
+      width: 5,
+      height: 1,
+      content: 'Siteye git',
+      linkUrl: 'https://example.com',
+      altText: '',
+      color: '#FFFFFF',
+      backgroundColor: '#2563EB',
+      borderRadius: 999,
+      objectFit: 'contain' as const,
+      buttonVariant: 'gradient' as const,
+      animation: 'shine' as const,
+      archived: false,
+    };
+    const rejected = store.savePublicationDraft(ownerA, started.draft.id, {
+      blocks: [creative, externalButton],
       anonymous: false,
       revision: started.draft.revision,
     }, NOW);
+    expect(rejected.ok).toBe(false);
 
+    const subscriberDraft = store.startPublicationDraft(ownerB, { issueDate, page: 5, rect }, NOW);
+    if (!subscriberDraft.ok) return;
+    const saved = store.savePublicationDraft(ownerB, subscriberDraft.draft.id, {
+      blocks: [{ ...creative, id: uid('publication-block', 'creative-subscriber') }, externalButton],
+      anonymous: false,
+      revision: subscriberDraft.draft.revision,
+      submit: true,
+    }, NOW);
     expect(saved.ok).toBe(true);
-    if (!saved.ok) return;
-    expect(saved.draft.blocks[0]).toMatchObject({
-      rotation: 15,
-      padding: 12,
-      shadow: 'soft',
-      fontFamily: 'serif',
-      fontSize: 28,
-      fontWeight: 800,
-      fontStyle: 'italic',
-      textDecoration: 'underline',
-      letterSpacing: 2,
-      lineHeight: 1.6,
-      paragraphIndent: 24,
-      verticalAlign: 'middle',
-      textTransform: 'uppercase',
-      resourceId: 'flow',
-      animation: 'drift',
-    });
+    if (saved.ok) expect(saved.draft.blocks[1]).toMatchObject({ linkUrl: 'https://example.com', buttonVariant: 'gradient', animation: 'shine' });
   });
 });
 

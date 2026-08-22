@@ -51,6 +51,7 @@ export default async function PublishPage() {
           initialDrafts={drafts}
           owners={owners}
           anonymousByDefault={viewer.publicationAnonymousByDefault ?? false}
+          initialSubscriber={viewer.publicationSubscriber === true}
         />
       </main>
     </div>

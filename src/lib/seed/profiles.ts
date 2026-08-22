@@ -29,6 +29,7 @@ interface SeedProfileInput {
   goals?: Profile['goalKeys'];
   followerCount: number;
   daysAgo: number;
+  publicationSubscriber?: boolean;
 }
 
 function build(input: SeedProfileInput, now: Date): Profile {
@@ -68,6 +69,7 @@ function build(input: SeedProfileInput, now: Date): Profile {
     imageDescriptionReminder: true,
     mutedWords: [],
     connectedAccounts: [],
+    publicationSubscriber: input.publicationSubscriber ?? false,
   };
 }
 
@@ -97,6 +99,7 @@ const PEOPLE: SeedProfileInput[] = [
   },
   {
     username: 'baran.demo',
+    publicationSubscriber: true,
     goals: ['share_projects', 'find_collaborators', 'follow_creation_stories'],
     displayName: 'Baran Koç',
     bio: 'Rüzgâr ölçer yapıyorum, bozuyorum, tekrar yapıyorum. Bitmemiş proje paylaşmayı seviyorum.',

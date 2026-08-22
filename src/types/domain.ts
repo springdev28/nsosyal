@@ -165,6 +165,8 @@ export interface Profile {
   publicationMessages?: 'everyone' | 'connections' | 'none';
   /** Yeni gazete taslaklarinin varsayilan kimligi. */
   publicationAnonymousByDefault?: boolean;
+  /** Aylik Yayin Atolyesi aboneligi. Demo odeme akisinda sunucu tarafinda tutulur. */
+  publicationSubscriber?: boolean;
 }
 
 export interface Topic {
@@ -460,6 +462,8 @@ export interface PublicationRect {
 
 export type PublicationBlockType = 'markdown' | 'image' | 'shape';
 
+export type PublicationButtonVariant = 'pill' | 'rounded' | 'square' | 'outline' | 'gradient';
+
 export interface PublicationBlock extends PublicationRect {
   id: UUID;
   type: PublicationBlockType;
@@ -495,7 +499,13 @@ export interface PublicationBlock extends PublicationRect {
   saturation?: number;
   /** Katalogdan eklenen grafik kaynaginin kimligi ve hareket davranisi. */
   resourceId?: string;
-  animation?: 'none' | 'float' | 'pulse' | 'drift' | 'wave';
+  animation?: 'none' | 'float' | 'pulse' | 'drift' | 'wave' | 'shine';
+  /** Yeni atolyede tek kreatif ile CTA dugmelerini ayirir. */
+  role?: 'creative' | 'cta';
+  linkUrl?: string;
+  buttonVariant?: PublicationButtonVariant;
+  gradientFrom?: string;
+  gradientTo?: string;
   archived: boolean;
 }
 
@@ -508,6 +518,9 @@ export interface PublicationDraft {
   blocks: PublicationBlock[];
   archivedBlocks: PublicationBlock[];
   status: 'editing' | 'submitted' | 'paid';
+  /** Odeme sonrasi gorsel ve baglantilar yayindan once incelenir. */
+  moderationStatus?: 'not_submitted' | ModerationStatus;
+  subscriber: boolean;
   anonymous: boolean;
   revision: number;
   createdAt: Timestamp;
@@ -569,10 +582,11 @@ export interface Notification {
     | 'comment'
     | 'moderation'
     | 'newspaper'
-    | 'ad_request';
+    | 'ad_request'
+    | 'publication';
   title: string;
   body: string;
-  entityType: EntityType | 'event' | 'community_application' | 'ad_request' | null;
+  entityType: EntityType | 'event' | 'community_application' | 'ad_request' | 'publication_draft' | null;
   entityId: UUID | null;
   href: string | null;
   createdAt: Timestamp;

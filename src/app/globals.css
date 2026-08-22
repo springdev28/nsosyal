@@ -707,6 +707,119 @@
   background-size: calc(100% / 30) calc(100% / 40);
 }
 
+.studio-shell {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  min-height: calc(100dvh - 4rem);
+  transition: grid-template-columns 180ms ease;
+}
+
+.studio-shell[data-collapsed='true'] {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+
+.studio-sidebar {
+  position: sticky;
+  top: 4rem;
+  height: calc(100dvh - 4rem);
+  overflow-y: auto;
+}
+
+.studio-upload-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 290px) minmax(420px, 1fr) minmax(240px, 300px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.studio-resize-handle {
+  position: absolute;
+  z-index: 50;
+  width: 24px;
+  height: 24px;
+  border: 7px solid transparent;
+  border-radius: 999px;
+  background: var(--accent);
+  background-clip: padding-box;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.studio-resize-handle--nw { top: -12px; left: -12px; cursor: nwse-resize; }
+.studio-resize-handle--ne { top: -12px; right: -12px; cursor: nesw-resize; }
+.studio-resize-handle--sw { bottom: -12px; left: -12px; cursor: nesw-resize; }
+.studio-resize-handle--se { right: -12px; bottom: -12px; cursor: nwse-resize; }
+
+.publication-subscriber-card,
+.publication-subscriber-glow {
+  box-shadow: 0 0 0 1px rgb(61 155 255 / 0.65), 0 0 34px rgb(53 201 232 / 0.22);
+}
+
+.publication-cta--pulse { animation: publication-cta-pulse 2.8s ease-in-out infinite; }
+.publication-cta--shine { position: relative; overflow: hidden; }
+.publication-cta--shine::after {
+  position: absolute;
+  inset: -30% auto -30% -35%;
+  width: 24%;
+  transform: skewX(-18deg);
+  background: rgb(255 255 255 / 0.65);
+  content: '';
+  animation: publication-cta-shine 3.6s ease-in-out infinite;
+}
+.publication-cta--float { animation: publication-cta-float 3.2s ease-in-out infinite; }
+
+@keyframes publication-cta-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.025); filter: brightness(1.12); }
+}
+
+@keyframes publication-cta-shine {
+  0%, 38% { left: -35%; opacity: 0; }
+  48% { opacity: 1; }
+  68%, 100% { left: 118%; opacity: 0; }
+}
+
+@keyframes publication-cta-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@media (max-width: 1180px) {
+  .studio-upload-layout { grid-template-columns: minmax(230px, 0.75fr) minmax(420px, 1.25fr); }
+  .studio-upload-layout > aside { grid-column: 1 / -1; }
+}
+
+@media (max-width: 767px) {
+  .studio-shell,
+  .studio-shell[data-collapsed='true'] { display: block; }
+  .studio-sidebar {
+    position: sticky;
+    z-index: 40;
+    top: 4rem;
+    display: flex;
+    height: auto;
+    gap: 0.5rem;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+  .studio-sidebar::-webkit-scrollbar { display: none; }
+  .studio-sidebar > button { width: 44px; min-width: 44px; margin-bottom: 0; }
+  .studio-sidebar > button span { display: none; }
+  .studio-sidebar [role='tablist'] { display: flex; gap: 0.5rem; }
+  .studio-sidebar [role='tab'] { width: auto; min-width: 48px; }
+  .studio-sidebar .card { display: none; }
+  .studio-upload-layout { display: flex; flex-direction: column; }
+  .studio-upload-layout > * { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-shell { transition: none; }
+  .publication-cta--pulse,
+  .publication-cta--shine::after,
+  .publication-cta--float { animation: none; }
+}
+
 /* Yayin Atolyesi tek bir uygulama kabugu gibi davranir. Kenarlar disari
    tasan ring yerine kutunun icinde kaldigi icin dar ekranlarda kirpilmaz. */
 .studio-editor-grid {
