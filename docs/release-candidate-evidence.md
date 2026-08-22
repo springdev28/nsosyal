@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `24392a8eba967d9bc33a8cc34d79d1a03ec0824e`
+Doğrulanan kaynak SHA: `7d9cfcb3e9682963c70211175a8959695bf7c599`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -61,13 +61,13 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `24392a8eba967d9bc33a8cc34d79d1a03ec0824e` için:
+Kaynak SHA `7d9cfcb3e9682963c70211175a8959695bf7c599` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| İlgili E2E | nGazete ilk oturum, axe ve klavye/odak senaryoları masaüstü ve mobilde 6/6 geçti. Önceki kaynakta tam paket 143/144 sonuçlanıp gece yarısına taşan tek modal senaryosu temiz sunucuda 1/1 geçmişti; bu SHA o zaman bağımlılığını düzeltiyor. Tam paket bu SHA'da yeniden çalıştırılmadı |
+| `npm run test:e2e` | Geçti: masaüstü ve mobilde 144/144 Playwright senaryosu, 11,0 dakika; başarısız veya atlanan test yok |
 | Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
