@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `9c5a31436b14a6c1c5eb44f2e5360567d9a97f41`
+Doğrulanan kaynak SHA: `24392a8eba967d9bc33a8cc34d79d1a03ec0824e`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -38,7 +38,7 @@ Durum sözlüğü:
 | Topluluğa katılma → kaynak; başvuru → moderatör kararı → denetim kaydı | `/communities/[slug]`, `/communities/apply`, `/admin/moderation`, `/admin` | Server Actions → `DemoStore`; rol denetimi sunucuda | `competition-flows` 4 ve 7; store birim testleri | İlgili kullanıcı yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Neden hikâyesi → bağlı yaşayan proje | `/explore/why`, `/explore/why/[id]`, `/projects/[slug]` | `DemoStore` view modelleri; oluşturma Server Action üzerinden | `competition-flows` 5 iki viewportta geçti | Neden ve proje yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action MIME, byte ve kapsayıcı süresini doğrulayıp yazar; proje bundan sonra oluşturulur | 7 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut/süre yarım veya kopya proje açmaz | Demo doğrulandı |
-| nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking birim testleri | `/newspaper` 1440×1000 ve 390×844 incelendi; koyu kâğıt, kolonlar ve taşma kontrol edildi; axe temiz | Doğrulandı |
+| nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking ve 06.00/gün değişimi store testleri | İlk oturum modalı, odak tuzağı ve axe masaüstü/mobil 6/6; koyu kâğıt, kolonlar ve taşma ayrıca incelendi | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
 
@@ -61,21 +61,23 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `9c5a31436b14a6c1c5eb44f2e5360567d9a97f41` için:
+Kaynak SHA `24392a8eba967d9bc33a8cc34d79d1a03ec0824e` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 128/128 birim testi |
+| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e` | 143/144 geçti. Koşu İstanbul saatinde 22 Ağustos'tan 23 Ağustos'a geçerken, 22 Ağustos seed'iyle başlayan sunucuda günün sayısını arayan tek mobil modal testi başarısız oldu; aynı test yeni gün seed'iyle temiz sunucuda `--last-failed` ile 1/1 geçti. Ürün hatası veya atlanan test yok |
+| İlgili E2E | nGazete ilk oturum, axe ve klavye/odak senaryoları masaüstü ve mobilde 6/6 geçti. Önceki kaynakta tam paket 143/144 sonuçlanıp gece yarısına taşan tek modal senaryosu temiz sunucuda 1/1 geçmişti; bu SHA o zaman bağımlılığını düzeltiyor. Tam paket bu SHA'da yeniden çalıştırılmadı |
 | Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
 oranı korunarak gösterilir. CTA renkleri, biçimi ve izin verilen hareketi onay
 anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.00
-öncesinde kapalıdır. Nihai canlı SHA, push sonrası iki ortamın `/api/health`
-yanıtıyla ayrıca doğrulanır.
+öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
+ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
+yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
+Nihai canlı SHA, push sonrası iki ortamın `/api/health` yanıtıyla ayrıca doğrulanır.
 
 ## Açık riskler ve yayın kararı
 
