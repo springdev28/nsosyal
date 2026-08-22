@@ -1,40 +1,40 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { SectionHeader } from '@/components/ui';
+import { Icon, SectionHeader, type IconName } from '@/components/ui';
 
 export const metadata: Metadata = { title: 'Oluştur' };
 
-const OPTIONS = [
+const OPTIONS: Array<{ href: string; icon: IconName; title: string; description: string }> = [
   {
     href: '/feed',
-    icon: '💬',
+    icon: 'message',
     title: 'Gönderi paylaş',
-    description: 'Metin, soru, mizah veya gündelik bir not. Ana akıştaki oluşturucudan paylaş.',
+    description: 'Metin, görsel, video veya soru paylaş.',
   },
   {
     href: '/create/project',
-    icon: '🧪',
+    icon: 'beaker',
     title: 'Proje oluştur',
-    description: 'Fikir, prototip veya yayında bir üretim. 90 saniyeye kadar pitch videosu ekleyebilirsin.',
+    description: 'Fikrini, prototipini veya yayındaki projeni ekle.',
   },
   {
     href: '/create/why',
-    icon: '💭',
+    icon: 'spark',
     title: 'Neden hikâyesi yaz',
     description: 'Seni bu alana, projeye veya başarıya götüren deneyimi anlat.',
   },
   {
     href: '/communities/apply',
-    icon: '👥',
+    icon: 'users',
     title: 'Topluluk öner',
-    description: 'Yerel veya niş bir topluluk başlat. Moderatör onayından sonra açılır.',
+    description: 'Yeni bir yerel veya ilgi topluluğu öner.',
   },
   {
     href: '/publish',
-    icon: '📰',
+    icon: 'newspaper',
     title: 'Yayın Atölyesi’ni aç',
-    description: 'nGazete’de alan seç, tasarımını kaydet ve yayın hakkını kesinleştir.',
+    description: 'nGazete için alan seç ve tasarımını hazırla.',
   },
 ];
 
@@ -58,8 +58,8 @@ export default function CreatePage() {
               prefetch
               className="card block h-full p-4 transition-colors hover:border-accent"
             >
-              <span aria-hidden="true" className="text-2xl">
-                {option.icon}
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <Icon name={option.icon} size={21} />
               </span>
               <span className="mt-2 block font-semibold">{option.title}</span>
               <span className="mt-1 block text-sm text-fg-muted">{option.description}</span>

@@ -56,7 +56,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run start -- --port 3000',
+    // Test URL'siyle ayni IPv4 hostuna baglanmak baslangici deterministik tutar.
+    command: 'npm run build && npm run start -- --hostname 127.0.0.1 --port 3000',
     url: 'http://127.0.0.1:3000/api/health',
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,

@@ -34,7 +34,7 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-4">
       <p className="text-sm">
-        <Link href="/explore/why" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Neden panosu
+        <Link href="/explore/why" className="inline-flex items-center gap-1.5 text-fg-muted transition-colors hover:text-fg"><Icon name="arrowLeft" size={15} />Neden
         </Link>
       </p>
 
@@ -88,7 +88,6 @@ export default async function WhyStoryPage({ params }: { params: Promise<{ id: s
         <section aria-labelledby="linked-project">
           <SectionHeader
             title={<span id="linked-project">Bu hikâyenin bağlı olduğu proje</span>}
-            description="Hikâyeyi okuduktan sonra üretimin kendisine geçebilirsin."
           />
           <Card className="p-4">
             <div className="flex items-start gap-3">

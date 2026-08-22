@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Avatar, Badge, Card, ChipRow, EmptyState, FilterChip, InfoNote, SectionHeader, Icon } from '@/components/ui';
+import { Avatar, Badge, Card, ChipRow, EmptyState, FilterChip, SectionHeader, Icon } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatRelative } from '@/lib/time';
 
-export const metadata: Metadata = { title: 'Neden panosu · Keşfet' };
+export const metadata: Metadata = { title: 'Neden · Keşfet' };
 
 const VIEWS = [
   { key: 'hepsi', label: 'Tümü' },
@@ -18,9 +18,8 @@ const VIEWS = [
 /**
  * Neden panosu (PROJECT_SPEC 7.6 / 17.9).
  *
- * DIKKAT: Bu bir motivasyon sozu duvari degildir. Sorulan soru:
- * "Seni bu ise, projeye, alana veya basariya ne goturdu?"
- * Bos durum metni bu kavrami dogru anlatmak zorundadir.
+ * Urun kurali kod ve veri modelindedir; arayuz bunu uzun aciklamalarla tekrar
+ * etmek yerine dogru hikayeleri ve kisa eylemleri gosterir.
  */
 export default async function WhyBoardPage({
   searchParams,
@@ -59,8 +58,8 @@ export default async function WhyBoardPage({
     <div className="space-y-4">
       <SectionHeader
         as="h1"
-        title="Neden panosu"
-        description="Bir kişiyi o alana, projeye veya başarıya götüren deneyim, merak, problem ya da dönüm noktası."
+        title="Neden"
+        description="Bir merakın, alanın veya projenin başlangıç hikâyeleri."
         action={
           <Link
             href="/create/why"
@@ -70,11 +69,6 @@ export default async function WhyBoardPage({
           </Link>
         }
       />
-
-      <InfoNote icon="spark">
-        Burası motivasyon sözü duvarı değil. İyi bir Neden hikâyesi somut bir an anlatır: neyi çözemedin, ne
-        kaybettin, ne fark ettin?
-      </InfoNote>
 
       <div className="space-y-2">
         <ChipRow label="Görünüm">
@@ -101,7 +95,7 @@ export default async function WhyBoardPage({
         <EmptyState
           icon="spark"
           title="Bu filtrede hikâye yok"
-          description="Neden panosunda insanlar bir alana ya da projeye nasıl yöneldiklerini anlatır. İlk hikâyeyi sen yazabilirsin."
+          description="İlk hikâyeyi sen yazabilirsin."
           action={
             <Link href="/create/why" className="text-sm font-semibold text-accent underline">
               Kendi hikâyeni yaz
@@ -157,7 +151,7 @@ export default async function WhyBoardPage({
                   ) : null}
 
                   <p className="mt-2 flex items-center gap-2 text-xs text-fg-subtle">
-                    {entry.media ? <span>🎬 Video anlatım</span> : null}
+                    {entry.media ? <span className="inline-flex items-center gap-1"><Icon name="video" size={13} /> Video</span> : null}
                     {entry.topics[0] ? <span>{entry.topics[0].name}</span> : null}
                   </p>
                 </div>

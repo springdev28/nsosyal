@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 
 import { createWhyStory, type WhyFormState } from '@/actions/projects';
-import { Button, Card, ErrorNote, InfoNote } from '@/components/ui';
+import { Button, Card, ErrorNote } from '@/components/ui';
 import type { Topic } from '@/types/domain';
 import type { ProjectSummary } from '@/types/view';
 
@@ -25,11 +25,6 @@ export function WhyForm({
   return (
     <form action={formAction} className="space-y-4">
       {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
-
-      <InfoNote icon="spark">
-        Neden panosu bir motivasyon sözü duvarı değil. En iyi hikâyeler somut bir anı anlatır: hangi soruya
-        cevap veremedin, ne kaybettin, neyi fark ettin?
-      </InfoNote>
 
       <Card className="space-y-4 p-4">
         <div>
@@ -82,9 +77,6 @@ export function WhyForm({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-fg-subtle">
-            Bağlarsan okuyucular hikâyeden doğrudan projeye geçebilir.
-          </p>
         </div>
 
         <fieldset>

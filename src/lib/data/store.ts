@@ -1503,6 +1503,7 @@ export class DemoStore {
     authorId: UUID;
     type: Post['type'];
     body: string;
+    visibility?: Post['visibility'];
     communityId?: UUID | null;
     topicIds?: UUID[];
     provinceCode?: string | null;
@@ -1518,7 +1519,7 @@ export class DemoStore {
       authorId: input.authorId,
       type: input.type,
       body: input.body,
-      visibility: 'public',
+      visibility: input.visibility ?? 'public',
       communityId: input.communityId ?? null,
       topicIds: input.topicIds ?? [],
       provinceCode: input.provinceCode ?? null,

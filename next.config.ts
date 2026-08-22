@@ -38,6 +38,11 @@ function resolveCommit(): string {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '60mb',
+    },
+  },
   env: {
     NSOSYAL_COMMIT_SHA: resolveCommit(),
   },

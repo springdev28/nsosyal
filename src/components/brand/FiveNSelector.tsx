@@ -34,18 +34,17 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 interface Dimension {
   id: string;
   label: string;
-  hint: string;
   icon: IconName;
   href: string;
 }
 
 /** Spec 4.4/3'teki sira: Ne, Nerede, Ne zaman, Nasil, Neden. */
 const DIMENSIONS: Dimension[] = [
-  { id: 'ne', label: 'Ne', hint: 'Konular', icon: 'search', href: '/explore' },
-  { id: 'nerede', label: 'Nerede', hint: 'Harita', icon: 'mapPin', href: '/explore/map' },
-  { id: 'nezaman', label: 'Ne zaman', hint: 'Zaman', icon: 'calendar', href: '/explore/time' },
-  { id: 'nasil', label: 'Nasıl', hint: 'Kaynaklar', icon: 'book', href: '/explore/how' },
-  { id: 'neden', label: 'Neden', hint: 'Motivasyon', icon: 'spark', href: '/explore/why' },
+  { id: 'ne', label: 'Ne', icon: 'search', href: '/explore' },
+  { id: 'nerede', label: 'Nerede', icon: 'mapPin', href: '/explore/map' },
+  { id: 'nezaman', label: 'Ne zaman', icon: 'calendar', href: '/explore/time' },
+  { id: 'nasil', label: 'Nasıl', icon: 'book', href: '/explore/how' },
+  { id: 'neden', label: 'Neden', icon: 'spark', href: '/explore/why' },
 ];
 
 /** Panelin yaricapi: yarim disk sol kenara yaslanir. */
@@ -264,10 +263,14 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
 
   function onPointerMove(e: React.PointerEvent) {
     const d = dragRef.current;
-    if (d && d.id === e.pointerId && Math.abs(e.clientY - d.y) > 6) draggedRef.current = true;
     if (!d || d.id !== e.pointerId) return;
+    const deltaY = e.clientY - d.y;
+    // Masaustu fareleri tiklama sirasinda birkac piksel oynayabiliyor. Bu
+    // hareketi surukleme saymak, gorunen secenege tiklamayi sessizce iptal eder.
+    if (Math.abs(deltaY) < 18) return;
+    draggedRef.current = true;
     // Dikey surukleme yayi cevirir: ~64px bir oge. Sinir yok, yay sarar.
-    const steps = Math.round((e.clientY - d.y) / 64);
+    const steps = Math.round(deltaY / 64);
     const n = DIMENSIONS.length;
     setActiveIndex((((d.from + steps) % n) + n) % n);
   }
@@ -428,7 +431,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                         type="button"
                         role="menuitem"
                         tabIndex={isActive ? 0 : -1}
-                        aria-label={`${dimension.label} — ${dimension.hint}`}
+                        aria-label={dimension.label}
                         onClick={() => {
                           // Cevirme jestinin kuyrugundaki tiklama secim degildir.
                           if (draggedRef.current) {
@@ -483,7 +486,6 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   style={{ left: ORBIT_R + ITEM_D / 2 + 20, top: CY }}
                 >
                   <span className="text-sm font-bold text-accent">{active.label}</span>
-                  <span className="ml-1.5 text-xs text-fg-subtle">{active.hint}</span>
                 </span>
 
                 {/*

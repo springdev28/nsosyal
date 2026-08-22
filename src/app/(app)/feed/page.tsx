@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Composer } from '@/components/feed/Composer';
 import { PostCard } from '@/components/feed/PostCard';
 import { StoryRail } from '@/components/feed/StoryRail';
-import { ChipRow, EmptyState, FilterChip, Icon, InfoNote, TopTabs } from '@/components/ui';
+import { ChipRow, EmptyState, FilterChip, Icon, TopTabs } from '@/components/ui';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { locationLabel } from '@/lib/geo';
@@ -14,13 +14,6 @@ import type { IntentMode } from '@/types/domain';
 export const metadata: Metadata = { title: 'Ana Sayfa' };
 
 const INTENT_MODES: IntentMode[] = ['sosyallesme', 'kesfet', 'ogren', 'uret'];
-
-const INTENT_HINT: Record<IntentMode, string> = {
-  sosyallesme: 'Takip ettiklerin, topluluk sohbetleri ve gündelik paylaşımlar öne çıkıyor.',
-  kesfet: 'Yeni hesaplar, kısa videolar ve yerel içerik çeşitliliği artırıldı.',
-  ogren: 'Kaynaklar, açıklayıcı içerikler ve sorular öne çıkıyor.',
-  uret: 'Projeler, ilerleme günlükleri ve etkinlikler öne çıkıyor.',
-};
 
 /**
  * Ana akis (PROJECT_SPEC 7.1 / 17.5).
@@ -49,7 +42,7 @@ export default async function FeedPage({
   const newVoicesOnly = params.filtre === 'yeni-sesler';
 
   const posts = store.getFeed({ viewerId: viewer.id, intentMode, newVoicesOnly, limit: 40 });
-  const stories = store.listWhyStories({ viewerId: viewer.id }).slice(0, 12);
+  const stories = posts.filter((view) => view.media.length > 0).slice(0, 12);
 
   const memberCommunities = store
     .getMemberCommunityIds(viewer.id)
@@ -110,9 +103,6 @@ export default async function FeedPage({
             <Icon name="seedling" size={14} /> Yeni sesler
           </FilterChip>
         </ChipRow>
-        <p className="mt-2 text-sm text-fg-muted">
-          {intentMode ? INTENT_HINT[intentMode] : 'Ayarlarındaki platform amaçlarına göre sıralanıyor.'}
-        </p>
       </section>
 
       <Composer
@@ -132,15 +122,6 @@ export default async function FeedPage({
         hasLocation={Boolean(viewer.provinceCode)}
         locationLabel={locationLabel(viewer.provinceCode, viewer.districtCode)}
       />
-
-      {newVoicesOnly ? (
-        <div className="my-3 px-1 sm:px-3">
-          <InfoNote icon="seedling">
-            Yeni sesler filtresi, takipçi sayısı düşük hesapların içeriklerini gösterir. Bu bir kalite garantisi
-            değildir; içerik yine konu ve topluluk uygunluğunu karşılamalıdır.
-          </InfoNote>
-        </div>
-      ) : null}
 
       {posts.length === 0 ? (
         <div className="mt-4">
@@ -164,15 +145,6 @@ export default async function FeedPage({
           ))}
         </ol>
       )}
-
-      <div className="mt-4 rounded-2xl bg-bg-sunken p-4 text-sm text-fg-muted ring-1 ring-[var(--border)]">
-        <strong className="font-semibold text-fg">Sıralama nasıl çalışıyor?</strong> Akış; konu uyumu, takip
-        ettiklerin, topluluk üyeliğin, niyet modun, tazelik, isteğe bağlı konumun ve yeni sesler bonusundan
-        oluşan açıklanabilir bir skorla sıralanır. Ücretli hiçbir alan bu sıralamaya giremez.{' '}
-        <Link href="/about#siralama" className="font-semibold text-accent underline">
-          Ayrıntılar
-        </Link>
-      </div>
     </div>
   );
 }

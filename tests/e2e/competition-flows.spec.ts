@@ -24,21 +24,49 @@ test.describe('1 · Demo girişi ve ana akış', () => {
     // Niyet modu secici calisir ve URL'e yansir (paylasilabilir durum).
     await page.getByRole('link', { name: 'Öğren', exact: true }).click();
     await expect(page).toHaveURL(/mod=ogren/);
-    await expect(page.getByText(/Nasıl kaynakları|açıklayıcı içerikler/)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Öğren', exact: true })).toHaveAttribute('aria-current', 'true');
   });
 
-  test('önerilen kartlarda "Neden gösteriliyor?" açıklaması bulunur', async ({ page }) => {
+  test('öneri nedeni kısa gösterilir, ürün açıklaması tekrarlanmaz', async ({ page }) => {
     await loginAs(page, 'user');
-    await expect(page.getByText('Neden gösteriliyor?').first()).toBeVisible();
+    const reason = page.locator('svg[data-icon="sparkles"]').first().locator('..');
+    await expect(reason).toBeVisible();
+    await expect(reason).not.toContainText('Neden gösteriliyor?');
   });
 
-  test('Neden hikâyeleri hızlı hikâye şeridinde görünür', async ({ page }) => {
+  test('medya hikâyeleri tam ekran izleyicide açılır', async ({ page }) => {
     await loginAs(page, 'user');
-    const stories = page.getByRole('region', { name: 'Günün hikâyeleri' });
+    const stories = page.getByRole('region', { name: 'Hikâyeler' });
     await expect(stories).toBeVisible();
-    // "Hikâye ekle" disinda en az bir profil halkasi olmali. Halka adinda
-    // yazar ve baslik vardir; urun etiketini tekrar etmek zorunda degildir.
-    expect(await stories.getByRole('link').count()).toBeGreaterThan(1);
+    expect(await stories.getByRole('button').count()).toBeGreaterThan(1);
+
+    await stories.getByRole('button').first().click();
+    const dialog = page.getByRole('dialog', { name: /hikâyesi/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('img, video').first()).toBeVisible();
+    await expect(page).not.toHaveURL(/\/explore\/why/);
+    await dialog.getByRole('button', { name: 'Hikâyeyi kapat' }).click();
+    await expect(dialog).toBeHidden();
+  });
+
+  test('gönderi oluşturucu medya, konu ve hedef denetimlerini açar', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.getByLabel('Gönderi metni').fill('Yeni sensör kartının ilk denemesi.');
+
+    await expect(page.getByRole('toolbar', { name: 'Gönderi araçları' })).toBeVisible();
+    await page.getByRole('button', { name: 'Konu', exact: true }).click();
+    await expect(page.getByRole('group', { name: 'Konular' })).toBeVisible();
+
+    await page.locator('#composer-media').setInputFiles({
+      name: 'sensor.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4WQAAAAASUVORK5CYII=', 'base64'),
+    });
+    await expect(page.getByText('1 medya')).toBeVisible();
+    await expect(page.getByLabel('Medya açıklaması')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Hedef' }).click();
+    await expect(page.getByRole('group', { name: 'Kim görebilir?' })).toBeVisible();
   });
 });
 
@@ -56,7 +84,7 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     // "Haritadan kesfet" diye sabit bir kart duruyordu; spec 4.4 bu bes sabit
     // kart/buton bicimini yasakladigi icin kaldirildi ve yerini yay aldi.
     await page.getByRole('button', { name: '5N boyut seçici' }).first().click();
-    await page.getByRole('menuitem', { name: /^Nerede —/ }).click();
+    await page.getByRole('menuitem', { name: 'Nerede', exact: true }).click();
     await expect(page).toHaveURL(/\/explore\/map/);
 
     // Haritanin klavyeyle kullanilabilen esdegeri: il listesi.
@@ -146,9 +174,8 @@ test.describe('5 · Neden hikâyesinden projeye geçiş', () => {
     await loginAs(page, 'user');
     await page.goto('/explore/why');
 
-    await expect(page.getByRole('heading', { name: 'Neden panosu', level: 1 })).toBeVisible();
-    // Konsepti dogru anlatan aciklama gorunur olmali: motivasyon sozu duvari degil.
-    await expect(page.getByText(/motivasyon sözü duvarı değil/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Neden', level: 1 })).toBeVisible();
+    await expect(page.getByText(/motivasyon sözü duvarı değil/)).toHaveCount(0);
 
     await page.getByRole('link', { name: /cevaplayamadığımız bir soru/i }).click();
 

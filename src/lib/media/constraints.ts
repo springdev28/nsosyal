@@ -12,3 +12,6 @@
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 export const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/webm'] as const;
 export const MAX_VIDEO_SECONDS = 90;
+export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const MAX_POST_MEDIA = 4;

@@ -95,8 +95,7 @@ export default async function TimePage({
       <DiscoveryFilterBar base={base} state={filters} topics={topics} />
 
       <InfoNote icon="clock">
-        Saatler Europe/Istanbul’a göre gösterilir. “Gelecek” görünümü gelecekte paylaşılacak gönderileri tahmin
-        etmez; gerçekleşecek etkinlikleri, son başvuru tarihlerini ve planlanmış demoları gösterir.
+        Saatler İstanbul saat dilimindedir.
       </InfoNote>
 
       <section aria-labelledby="time-events">

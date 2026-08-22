@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { signInAsDemoAccount, startOnboarding } from '@/actions/auth';
 import { FiveNMark } from '@/components/brand/FiveNMark';
-import { Avatar, Badge, Button, Card, ErrorNote, InfoNote, Icon } from '@/components/ui';
+import { Avatar, Badge, Button, Card, ErrorNote, Icon } from '@/components/ui';
 import { DEMO_ACCOUNTS } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 
@@ -37,8 +37,7 @@ export default async function LoginPage({
           nSosyal
         </h1>
         <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-fg-muted lg:mx-0 lg:text-lg">
-          Bilim ve teknolojiyle ilgilenen insanların yalnızca fırsat aramadığı; sohbet ettiği, ürettiği ve ait
-          olduğu bir çevre bulduğu bağlamsal sosyal keşif katmanı.
+          Bilim, teknoloji ve üretim topluluklarını keşfet.
         </p>
         <p className="mt-6 hidden border-t border-line pt-4 text-xs font-semibold uppercase tracking-[0.16em] text-fg-subtle lg:block">
           Ne · Nerede · Ne zaman · Nasıl · Neden
@@ -72,7 +71,6 @@ export default async function LoginPage({
                           <Badge tone="neutral">{roleLabel(account.role)}</Badge>
                         </span>
                         <span className="mt-0.5 block text-sm text-fg-muted">{account.description}</span>
-                        <span className="mt-1 block text-xs text-fg-subtle">Gösterir: {account.showcase}</span>
                       </span>
                       <Icon name="chevronRight" size={16} className="text-fg-subtle" />
                     </button>
@@ -86,8 +84,7 @@ export default async function LoginPage({
         <Card className="p-4 sm:p-5">
           <h2 className="text-lg font-semibold">Yeni kullanıcı deneyimini gör</h2>
           <p className="mt-1 text-sm text-fg-muted">
-            İlgi alanı seçimi, isteğe bağlı konum ve niyet modu adımlarını baştan yaşamak için onboarding
-            turunu başlat.
+            İlgi alanlarını ve tercihlerini baştan seç.
           </p>
           <form action={startOnboarding} className="mt-3">
             <Button type="submit" tone="secondary">
@@ -95,11 +92,6 @@ export default async function LoginPage({
             </Button>
           </form>
         </Card>
-
-        <InfoNote icon="lock">
-          Bu prototipte parola doğrulaması yoktur; oturum yalnızca seçilen demo hesabını tutar. Gerçek kimlik
-          doğrulama Supabase Auth ile yapılacaktır (bkz. <code>docs/architecture.md</code>).
-        </InfoNote>
 
         <p className="text-center text-sm text-fg-subtle">
           <Link href="/about" className="underline">

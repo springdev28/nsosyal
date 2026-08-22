@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ResourceCard } from '@/components/discovery/ResourceCard';
-import { ChipRow, EmptyState, FilterChip, InfoNote, SectionHeader } from '@/components/ui';
+import { ChipRow, EmptyState, FilterChip, SectionHeader } from '@/components/ui';
 import { getStore } from '@/lib/data/store';
 import type { Resource } from '@/types/domain';
 
@@ -63,10 +63,6 @@ export default async function HowPage({
     return value ? `/explore/how?${value}` : '/explore/how';
   };
 
-  const verifiedCount = resources.filter(
-    (entry) => entry.resource.verificationStatus === 'moderator_verified',
-  ).length;
-
   return (
     <div className="space-y-4">
       <SectionHeader
@@ -74,11 +70,6 @@ export default async function HowPage({
         title="Nasıl"
         description="Toplulukların kendi deneyimlerinden ürettiği kısa rehberler, kontrol listeleri ve derlemeler."
       />
-
-      <InfoNote icon="route">
-        Burası bir kurs platformu değil. Kaynaklar topluluk katkısıdır; moderatör doğrulaması yalnızca yetkili
-        bir işlemle verilir ve kartta açıkça görünür. Şu an {verifiedCount} kaynak doğrulanmış.
-      </InfoNote>
 
       <form action="/explore/how" method="get" role="search" className="flex gap-2">
         {level !== 'all' ? <input type="hidden" name="level" value={level} /> : null}

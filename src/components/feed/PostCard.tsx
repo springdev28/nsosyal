@@ -76,12 +76,13 @@ export function PostCard({ view, revalidate = '/feed' }: { view: PostView; reval
           {view.reason ? (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-bg-sunken px-2.5 py-1 text-[0.75rem] text-fg-muted ring-1 ring-[var(--border)]">
               <Icon name="sparkles" size={13} className="text-accent" />
-              <span className="font-medium text-fg">Neden gösteriliyor?</span>
               <span>{view.reason.label}</span>
             </p>
           ) : null}
 
-          <div className="mt-2 whitespace-pre-line text-[0.95rem] leading-[1.55]">{post.body}</div>
+          {post.body ? (
+            <div className="mt-2 whitespace-pre-line text-[0.95rem] leading-[1.55]">{post.body}</div>
+          ) : null}
 
           {video ? (
             <div className="mt-3">

@@ -36,11 +36,11 @@ test.describe('5N secici', () => {
     await expect(page.getByRole('menuitem')).toHaveCount(5);
 
     // Odak yaya gecer; aksi halde ok tuslari sayfayi kaydirirdi.
-    await expect(page.getByRole('menuitem', { name: /^Ne —/ })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'Ne', exact: true })).toBeFocused();
 
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('menuitem', { name: /^Ne zaman —/ })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'Ne zaman', exact: true })).toBeFocused();
 
     // Secim: yay tamamen kaybolur ve o boyutun gercek paneli acilir.
     await page.keyboard.press('Enter');
@@ -82,7 +82,7 @@ test.describe('5N secici', () => {
     if (!viewport) throw new Error('viewport bilinmiyor');
 
     // 1. Aktif oge tam opak ve tam gorunur olmali.
-    const activeItem = page.getByRole('menuitem', { name: /^Ne —/ });
+    const activeItem = page.getByRole('menuitem', { name: 'Ne', exact: true });
     const box = await activeItem.boundingBox();
     if (!box) throw new Error('aktif oge olculemedi');
 
@@ -110,7 +110,7 @@ test.describe('5N secici', () => {
 
     // 5. Yayin uclari gercekten soluyor (spec 4.4/2). Uctaki yuva secim
     //    noktasindan iki adim uzaktadir ve belirgin sekilde saydamdir.
-    const farItem = page.getByRole('menuitem', { name: /^Ne zaman —/ });
+    const farItem = page.getByRole('menuitem', { name: 'Ne zaman', exact: true });
     const farOpacity = Number(await farItem.evaluate((el) => getComputedStyle(el).opacity));
     expect(farOpacity).toBeGreaterThan(0);
     expect(farOpacity).toBeLessThan(0.35);
@@ -124,18 +124,18 @@ test.describe('5N secici', () => {
     // Bes boyut da bir kez gecilir ve basa donulur. Onceki surumde dizi iki
     // ucunda duruyordu: "Ne" secili iken ustunde bos bir yay parcasi kaliyor,
     // "Neden"de ise donus tamamen tikaniyordu.
-    const order = [/^Nerede —/, /^Ne zaman —/, /^Nasıl —/, /^Neden —/, /^Ne —/];
+    const order = ['Nerede', 'Ne zaman', 'Nasıl', 'Neden', 'Ne'];
     for (const name of order) {
       await page.keyboard.press('ArrowDown');
-      await expect(page.getByRole('menuitem', { name })).toBeFocused();
+      await expect(page.getByRole('menuitem', { name, exact: true })).toBeFocused();
     }
 
     // Ters yon de sarar: "Ne"den yukari gitmek son boyuta goturur.
     await page.keyboard.press('ArrowUp');
-    await expect(page.getByRole('menuitem', { name: /^Neden —/ })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'Neden', exact: true })).toBeFocused();
 
     // Yayin ustunde de altinda da yuva vardir; hicbiri bos degil.
-    const above = page.getByRole('menuitem', { name: /^Nasıl —/ });
+    const above = page.getByRole('menuitem', { name: 'Nasıl', exact: true });
     await expect
       .poll(async () => Number(await above.evaluate((el) => getComputedStyle(el).opacity)))
       .toBeGreaterThan(0.5);
@@ -149,7 +149,7 @@ test.describe('5N secici', () => {
     // "Nerede" secim noktasinda DEGIL, yayin bir alt basamagindadir. Onceki
     // davranista ilk dokunus onu yalnizca secim noktasina getiriyordu ve
     // kullanici acisindan hicbir sey olmuyordu. Artik once kayar, sonra secer.
-    await page.getByRole('menuitem', { name: /^Nerede —/ }).click();
+    await page.getByRole('menuitem', { name: 'Nerede', exact: true }).click();
     await expect(page).toHaveURL(/\/explore\/map/);
   });
 

@@ -596,6 +596,11 @@
   .story-strip {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+
+  .story-strip::-webkit-scrollbar {
+    display: none;
   }
 
   .newspaper-sheet {

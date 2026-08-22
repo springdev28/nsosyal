@@ -172,7 +172,7 @@ export default async function ExplorePage({
           title={<span id="why-heading">Öne çıkan Neden hikâyeleri</span>}
           action={
             <Link href="/explore/why" className="text-sm font-semibold text-accent underline">
-              Neden panosu
+              Tümü
             </Link>
           }
         />

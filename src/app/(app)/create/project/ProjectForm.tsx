@@ -169,8 +169,7 @@ export function ProjectForm({
       <Card className="space-y-4 p-4">
         <h2 className="font-semibold">Pitch videosu (isteğe bağlı)</h2>
         <InfoNote icon="video">
-          En fazla {MAX_VIDEO_SECONDS} saniye, 50 MB, MP4 veya WebM. Prototipte videolar dönüştürülmez; küçük
-          bir dosya yükle.
+          En fazla {MAX_VIDEO_SECONDS} saniye ve 50 MB; MP4 veya WebM.
         </InfoNote>
 
         <div>

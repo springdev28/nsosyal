@@ -1,9 +1,20 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { revalidatePath } from 'next/cache';
 
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  ACCEPTED_VIDEO_TYPES,
+  MAX_IMAGE_BYTES,
+  MAX_POST_MEDIA,
+  MAX_VIDEO_BYTES,
+} from '@/lib/media/constraints';
 import type { PostType } from '@/types/domain';
 
 /**
@@ -72,31 +83,90 @@ export interface ComposerState {
   message?: string;
 }
 
+async function storePostMedia(file: File): Promise<{ path: string; mediaType: 'image' | 'video' } | { error: string }> {
+  const isImage = (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type);
+  const isVideo = (ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type);
+  if (!isImage && !isVideo) return { error: 'Yalnızca JPG, PNG, WebP, MP4 veya WebM yükleyebilirsin.' };
+
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  if (file.size > maxBytes) {
+    const limitMb = Math.round(maxBytes / (1024 * 1024));
+    return { error: `${file.name} için sınır ${limitMb} MB.` };
+  }
+
+  const extensionByType: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+  };
+  const directory = join(process.cwd(), 'public', 'uploads');
+  const name = `${randomUUID()}.${extensionByType[file.type]}`;
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, name), Buffer.from(await file.arrayBuffer()));
+  return { path: `/uploads/${name}`, mediaType: isVideo ? 'video' : 'image' };
+}
+
 export async function createPost(_prev: ComposerState, formData: FormData): Promise<ComposerState> {
   const viewer = await getViewer();
   if (!viewer) return { error: 'Paylaşım yapmak için giriş yapmalısın.' };
 
   const body = String(formData.get('body') ?? '').trim();
-  if (body.length < 2) return { error: 'Bir şeyler yazman gerekiyor.' };
+  const mediaFiles = formData
+    .getAll('media')
+    .filter((value): value is File => value instanceof File && value.size > 0);
+  if (body.length < 2 && mediaFiles.length === 0) return { error: 'Metin, görsel veya video ekle.' };
   if (body.length > 2000) return { error: 'Gönderi en fazla 2000 karakter olabilir.' };
+  if (mediaFiles.length > MAX_POST_MEDIA) return { error: `En fazla ${MAX_POST_MEDIA} medya ekleyebilirsin.` };
+
+  const mediaAlt = String(formData.get('mediaAlt') ?? '').trim();
+  if (mediaFiles.length && mediaAlt.length < 3) return { error: 'Medya için kısa bir açıklama ekle.' };
 
   const type = String(formData.get('type') ?? 'text') as PostType;
   const communityId = String(formData.get('communityId') ?? '') || null;
   const topicIds = formData.getAll('topics').map(String);
   const shareLocation = formData.get('shareLocation') === 'on';
+  const visibility = formData.get('visibility') === 'community' ? 'community' : 'public';
+  if (visibility === 'community' && !communityId) return { error: 'Gönderinin görüneceği topluluğu seç.' };
 
-  getStore().createPost({
+  const store = getStore();
+  const mediaIds: string[] = [];
+  for (const [index, file] of mediaFiles.entries()) {
+    const result = await storePostMedia(file);
+    if ('error' in result) return { error: result.error };
+    const media = store.addMedia({
+      postId: null,
+      mediaType: result.mediaType,
+      storagePath: result.path,
+      caption: body.slice(0, 120) || file.name,
+      altText: mediaFiles.length > 1 ? `${mediaAlt} (${index + 1}/${mediaFiles.length})` : mediaAlt,
+      durationSec: null,
+      posterPath: null,
+    });
+    mediaIds.push(media.id);
+  }
+
+  store.createPost({
     authorId: viewer.id,
     type,
     body,
+    visibility,
     communityId,
     topicIds: topicIds.length ? topicIds : viewer.topicIds.slice(0, 1),
     // Konum yalnizca kullanici bu gonderi icin acikca isterse eklenir.
     provinceCode: shareLocation ? viewer.provinceCode : null,
     districtCode: shareLocation ? viewer.districtCode : null,
+    mediaIds,
+    isShortVideo: mediaFiles.some((file) => file.type.startsWith('video/')),
+    videoKind: mediaFiles.some((file) => file.type.startsWith('video/')) ? 'gundelik' : null,
   });
 
-  getStore().track('post_created', { type, hasCommunity: Boolean(communityId), shareLocation }, viewer.id);
+  store.track(
+    'post_created',
+    { type, hasCommunity: Boolean(communityId), shareLocation, mediaCount: mediaIds.length },
+    viewer.id,
+  );
   revalidatePath('/feed');
   if (communityId) revalidatePath('/communities');
 
