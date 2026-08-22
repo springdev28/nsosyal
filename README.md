@@ -154,9 +154,11 @@ akışı 200 TL/ay tutarını gösterir; gerçek tahsilat yapmaz. Ödeme simüla
 sonrasında kreatif, alt metin ve bağlantılar moderasyon kuyruğuna girer. Onaylanan
 taslak, onay anındaki kreatif ve CTA ayarlarıyla değişmez bir okuyucu kaydına
 dönüştürülür. Gelecek tarihli sayı İstanbul saatiyle 06.00'dan önce doğrudan tarih
-bağlantısıyla da açılamaz; eşik sonrasındaki ilk okuma sayıyı yayımlar. Yeni sayı
-oluşturulursa son yayımlanmış sayının yalnızca editoryal içeriği kopyalanır; ücretli
-yerleşim tek başına bir gazete oluşturmaz.
+bağlantısıyla da açılamaz; eşik sonrasındaki ilk okuma sayıyı yayımlar. Uzun süre çalışan demo sunucusu yeni İstanbul gününü ilk okumada oluşturur ve kullanıcı
+mutasyonlarını sıfırlamaz. Yeni sayıya son yayımlanmış sayının yalnızca editoryal
+içeriği kopyalanır; önceki günün ücretli yerleşimleri taşınmaz ve ücretli yerleşim
+tek başına bir gazete oluşturmaz. İlk oturum kapağı 06.00'dan önce son yayımlanmış
+sayıyı, eşikten sonra yeni sayıyı gösterir; görülme kaydı sayı tarihine bağlıdır.
 
 Sponsored placements gazetenin grid'i içinde yer alır ve açık `Sponsorlu` etiketi
 taşır. Reader UI'da ayrı bir `Ücretli alanlar` kart listesi veya gelir modeli
