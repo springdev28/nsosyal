@@ -1,10 +1,6 @@
-<!-- Figma master 82:73 Group 1 geometrisinin kare favicon uyarlamasi. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+<!-- Figma master 82:73 Group 1 geometrisinin seffaf favicon uyarlamasi. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 17 155 149" width="64" height="64" fill="none">
   <defs>
-    <radialGradient id="favicon-bg" cx="0" cy="0" r="1" gradientTransform="translate(20 14) rotate(48) scale(65)">
-      <stop stop-color="#172A43"/>
-      <stop offset="1" stop-color="#0A0F1A"/>
-    </radialGradient>
     <linearGradient id="favicon-line" x1="43.8876" y1="151" x2="157" y2="30" gradientUnits="userSpaceOnUse">
       <stop stop-color="#39C5E6"/>
       <stop offset="0.52" stop-color="#5792FF"/>
@@ -20,11 +16,7 @@
     </linearGradient>
   </defs>
 
-  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#favicon-bg)" stroke="#263A55" stroke-width="2"/>
-
-  <svg x="7" y="7.5" width="50" height="48" viewBox="20 17 155 149" fill="none">
-    <path d="M43.5608 124.714L43.5608 56.6766C43.5608 41.3912 55.952 29 71.2373 29C86.5227 29 98.9139 41.3912 98.9139 56.6766L98.9139 132.464C98.9139 146.961 110.666 158.714 125.164 158.714C139.661 158.714 151.414 146.961 151.414 132.464L151.414 60.2139" stroke="url(#favicon-line)" stroke-width="5"/>
-    <path d="M151.414 22.7138C161.299 22.7138 169.414 30.9394 169.414 41.2138C169.414 51.4882 161.299 59.7138 151.414 59.7138C141.529 59.7138 133.414 51.4882 133.414 41.2138C133.414 30.9394 141.529 22.7138 151.414 22.7138Z" stroke="url(#favicon-upper)" stroke-width="5"/>
-    <path d="M43.8876 123.5C53.7722 123.5 61.8876 131.726 61.8876 142C61.8876 152.274 53.7722 160.5 43.8876 160.5C34.0029 160.5 25.8876 152.274 25.8876 142C25.8876 131.726 34.0029 123.5 43.8876 123.5Z" stroke="url(#favicon-lower)" stroke-width="5"/>
-  </svg>
+  <path d="M43.5608 124.714L43.5608 56.6766C43.5608 41.3912 55.952 29 71.2373 29C86.5227 29 98.9139 41.3912 98.9139 56.6766L98.9139 132.464C98.9139 146.961 110.666 158.714 125.164 158.714C139.661 158.714 151.414 146.961 151.414 132.464L151.414 60.2139" stroke="url(#favicon-line)" stroke-width="5"/>
+  <path d="M151.414 22.7138C161.299 22.7138 169.414 30.9394 169.414 41.2138C169.414 51.4882 161.299 59.7138 151.414 59.7138C141.529 59.7138 133.414 51.4882 133.414 41.2138C133.414 30.9394 141.529 22.7138 151.414 22.7138Z" stroke="url(#favicon-upper)" stroke-width="5"/>
+  <path d="M43.8876 123.5C53.7722 123.5 61.8876 131.726 61.8876 142C61.8876 152.274 53.7722 160.5 43.8876 160.5C34.0029 160.5 25.8876 152.274 25.8876 142C25.8876 131.726 34.0029 123.5 43.8876 123.5Z" stroke="url(#favicon-lower)" stroke-width="5"/>
 </svg>
