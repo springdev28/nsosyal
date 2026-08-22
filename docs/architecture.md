@@ -321,11 +321,15 @@ görüntüsü üretir. `campaignId` aynı taslağın ikinci kez eklenmesini enge
 
 Gelecek tarihli sayı İstanbul saatiyle 06.00'a kadar `draft` kalır. `listIssues`,
 `getLatestIssue`, `getIssueByDate` ve `hasIssueForToday` okuma anında zaman eşiğini
-uygular; doğrudan tarih parametresi taslak sayıyı erken açamaz. Seçilen tarih için
-sayı yoksa son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal öğeleri
-kopyalanır. Böylece ücretli yerleşim tek başına gazete oluşturmaz. Reader,
-onaylanan kreatifi düzenleme çerçevesi olmadan oranını koruyarak ve CTA anlık
-görüntüsünü iç/dış bağlantı güvenlik kurallarıyla render eder.
+uygular; doğrudan tarih parametresi taslak sayıyı erken açamaz. Uzun süre çalışan
+`DemoStore`, yeni İstanbul günü eksikse sayıyı ilk okumada oluşturur; diğer kullanıcı
+mutasyonlarını sıfırlamaz. Son yayımlanmış sayının yalnızca sponsorlu olmayan
+editoryal öğeleri yeni güne kopyalanır ve önceki günün sponsorlu yerleşimleri
+taşınmaz. Böylece ücretli yerleşim tek başına gazete oluşturmaz. İlk oturum kapağı
+06.00'dan önce son yayımlanmış sayıyı, eşikten sonra yeni sayıyı gösterir; görülme
+çerezi takvim gününe değil sunulan sayı tarihine bağlıdır. Reader, onaylanan kreatifi
+düzenleme çerçevesi olmadan oranını koruyarak ve CTA anlık görüntüsünü iç/dış
+bağlantı güvenlik kurallarıyla render eder.
 
 Production yolunda dosya kalıcılığı,
 abonelik/ödeme ve aynı yetki kurallarının Supabase Storage ile RLS üzerinde
