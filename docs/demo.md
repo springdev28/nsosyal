@@ -65,6 +65,19 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
    geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
 5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği belirtilir.
 
+## Proje pitch demo akışı
+
+1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı MP4/WebM pitch seçilir.
+2. Form dosya adını gösterirken tarayıcı metadata'sından süreyi denetler; 90
+   saniyeyi aşan veya süresi okunamayan seçim alanı temizlenir ve ilişkili hata
+   metni gösterilir.
+3. Geçerli dosya gönderildiğinde Server Action MIME, gerçek byte sayısı ve
+   kapsayıcı süresini dosya yazılmadan önce yeniden doğrular. Başarıda ölçülen
+   süre medya kaydına yazılır ve proje bundan sonra oluşturulur.
+4. Geçersiz tür, boyut, süre veya MIME/kapsayıcı uyuşmazlığında proje açılmadığı
+   gösterilir. Production Storage, codec/transcode ve kötü amaçlı dosya taraması
+   bu demo akışının dışında ve planlanandır.
+
 ## 5N demo akışı
 
 ### 1. Kapalı state
