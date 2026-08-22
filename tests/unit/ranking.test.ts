@@ -1,3 +1,7 @@
+/**
+ * Akis skorunun aciklanabilir ve sponsor bilgisinden bagimsiz kalmasini korur.
+ * Bu test, gelir modelinin kisisel feed'e sizmasini mimari seviyede engeller.
+ */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 

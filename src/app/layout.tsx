@@ -1,3 +1,7 @@
+/**
+ * Tum rotalara metadata, viewport ve global tasarim sistemini uygular. Oturumlu
+ * uygulama kabugu burada degil `(app)/layout.tsx` icinde kurulur.
+ */
 import type { Metadata, Viewport } from 'next';
 
 import './globals.css';

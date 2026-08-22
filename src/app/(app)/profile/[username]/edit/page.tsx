@@ -1,3 +1,4 @@
+/** Profil duzenlemeyi yalnizca hesap sahibine acar ve mevcut form degerlerini yukler. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

@@ -1,3 +1,4 @@
+/** Next.js ve TypeScript kurallarini generated dosyalari dislayarak uygular. */
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FlatCompat } from '@eslint/eslintrc';

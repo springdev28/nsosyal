@@ -1,3 +1,4 @@
+/** Profilin takip ettigi hesaplari ortak baglanti listesiyle sunar. */
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 

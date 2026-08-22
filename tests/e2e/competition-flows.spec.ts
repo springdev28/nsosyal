@@ -288,6 +288,13 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await unfinished.getByRole('button').first().click();
     await expect(page.getByRole('button', { name: 'Yüklenen tasarım' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'CTA butonu: Projeyi gör' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Önizle' }).click();
+    const preview = page.locator('[data-preview-canvas="true"]');
+    await expect(preview).toBeVisible();
+    // Duzenleme izgarasi ve alan cercevesi gazete ciktisina sizmamali.
+    await expect(preview).toHaveCSS('background-image', 'none');
+    await expect(preview.locator('[class~="bg-accent/5"]')).toHaveCount(0);
   });
 
   test('marka hareketi başlangıç, parçacık, bitiş ve bekleme sırasını taşır', async ({ page }) => {

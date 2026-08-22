@@ -1,3 +1,4 @@
+/** Birim testlerini jsdom ortaminda ve uygulamanin @/ yol eslemesiyle calistirir. */
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';

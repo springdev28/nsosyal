@@ -1,3 +1,7 @@
+/**
+ * Kimlik dogrulamasi gerektiren rotalari AppShell ile sarar ve ortak sag panel
+ * verisini bir kez yukler. `/publish` bilerek bu route grubunun disindadir.
+ */
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 

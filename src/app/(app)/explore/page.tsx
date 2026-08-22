@@ -1,3 +1,7 @@
+/**
+ * Kesfet girisini ortak filtrelerle sunar; asil 5N gecisi marka isaretinden
+ * acilan selector ile olur, sabit bes karttan olusmaz.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

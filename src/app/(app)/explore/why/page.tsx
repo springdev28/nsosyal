@@ -1,3 +1,7 @@
+/**
+ * Neden hikayelerini gercek kisi/proje deneyimine bagli tutan kesif yuzeyidir;
+ * motivasyon sozu gibi baglamsiz icerikleri bu modelden ayri tutar.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

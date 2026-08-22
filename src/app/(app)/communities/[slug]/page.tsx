@@ -1,3 +1,7 @@
+/**
+ * Tek toplulugun akis, kaynak, etkinlik ve uye sekmelerini ortak baglamda kurar.
+ * Katilma eylemi ve gorunurluk kararlari Server Action/Store sinirinda kalir.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

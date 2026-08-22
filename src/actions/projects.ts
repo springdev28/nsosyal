@@ -1,3 +1,7 @@
+/**
+ * Proje ve Neden hikayesi olusturma akislarinin sunucu dogrulama siniridir.
+ * Medya limitleri UI metnine birakilmaz; kayit olusmadan once yeniden denetlenir.
+ */
 'use server';
 
 import { randomUUID } from 'node:crypto';

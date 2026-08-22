@@ -1,3 +1,4 @@
+/** Moderator ve yonetici icin kuyruk ozetlerini ve son denetim kayitlarini sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

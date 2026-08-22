@@ -1,3 +1,7 @@
+/**
+ * Gonderi, yorum, takip, begeni, kaydetme ve hatirlatma mutasyonlarini toplar.
+ * Kullanici girdisi burada dogrulanir ve her yazma DemoStore uzerinden gider.
+ */
 'use server';
 
 import { randomUUID } from 'node:crypto';

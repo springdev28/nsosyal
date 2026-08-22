@@ -1,3 +1,7 @@
+/**
+ * Kalici kisisellestirme ve mahremiyet tercihlerini sunucuda yukler. Gecici
+ * Sosyalles/Kesfet/Ogren/Uret modu bu ekranda profil amaci gibi saklanmaz.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

@@ -1,3 +1,7 @@
+/**
+ * Etkinlik ViewModel'ini zaman, konum ve hatirlatma eylemiyle sunar. Hatirlatma
+ * durumu kart icinde tutulmaz; Server Action sonrasi sunucu verisi yenilenir.
+ */
 import Link from 'next/link';
 
 import { cancelReminder, createReminder } from '@/actions/social';

@@ -1,3 +1,4 @@
+/** Takipci/takip listelerinde ortak profil kartini ve takip eylemini tekrar kullanir. */
 import Link from 'next/link';
 
 import { toggleFollow } from '@/actions/social';

@@ -1,3 +1,4 @@
+/** Ne zaman boyutunda gecmis icerik ile gelecek etkinlikleri ayni tarih sozlesmesiyle sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

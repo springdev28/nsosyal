@@ -1,3 +1,4 @@
+/** Bildirimleri ve yaklasan hatirlatmalari yukler, okundu yazisini action'a birakir. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

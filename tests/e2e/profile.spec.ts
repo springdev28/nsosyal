@@ -1,3 +1,4 @@
+/** Profil goruntuleme, duzenleme ve baglanti listelerinin birlikte calistigini sinar. */
 import { expect, test } from '@playwright/test';
 
 import { loginAs } from './helpers';

@@ -1,3 +1,7 @@
+/**
+ * Secili nGazete sayisini gercek gazete hiyerarsisi ve sayfa kompozisyonuyla
+ * sunar. Sponsorlu envanter okuyucuya acik etiketle, feed'den tamamen ayri gelir.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

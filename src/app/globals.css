@@ -714,6 +714,12 @@
   background-size: calc(100% / 30) calc(100% / 40);
 }
 
+/* Onizleme, secim izgara ve cercevelerini degil okuyucuya gidecek temiz ciktiyi gosterir. */
+.publication-preview {
+  background-color: #fff;
+  background-image: none;
+}
+
 .studio-shell {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);

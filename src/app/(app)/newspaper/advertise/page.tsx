@@ -1,3 +1,7 @@
+/**
+ * Kurum hesabina ilan envanteri ve fiyat onizlemesini sunar. Rol denetimi
+ * sunucuda yapilir; bireysel hesap formu hic render etmez.
+ */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

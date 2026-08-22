@@ -1,3 +1,4 @@
+/** Profilin takipcilerini gorunurluk ve oturum baglamiyla yukler. */
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 

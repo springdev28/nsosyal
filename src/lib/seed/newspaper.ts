@@ -1,3 +1,8 @@
+/**
+ * nGazete'nin sentetik sayilarini, editoryal hiyerarsisini ve mekansal sponsor
+ * envanterini uretir. Feed seed'inden ayri tutulmasi ucretli gorunurlugun akis
+ * siralamasina karismamasini gorunur kilar.
+ */
 import type { AdRequest, NewspaperIssue, NewspaperItem } from '@/types/domain';
 import {
   placementByCode,

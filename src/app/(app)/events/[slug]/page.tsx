@@ -1,3 +1,4 @@
+/** Etkinlik ayrintisini, bagli toplulugu ve hatirlatma eylemini tek rotada sunar. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

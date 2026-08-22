@@ -1,3 +1,8 @@
+/**
+ * DemoStore, demo modundaki tek veri erisim ve mutasyon siniridir. Sayfalar,
+ * Server Action'lar ve testler ayni sozlesmeyi kullandigi icin seed verisi UI'a
+ * dogrudan sizmaz; gelecekteki Supabase adaptoru da bu kontrati korumalidir.
+ */
 import type {
   AdRequest,
   AnalyticsEvent,
