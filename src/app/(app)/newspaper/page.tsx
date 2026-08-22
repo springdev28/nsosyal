@@ -1,8 +1,9 @@
 /**
  * Secili nGazete sayisini gercek gazete hiyerarsisi ve sayfa kompozisyonuyla
- * sunar. Sponsorlu envanter okuyucuya acik etiketle, feed'den tamamen ayri gelir.
+ * sunar. Ucretli envanter ayni kompozisyona girer, feed'den tamamen ayri kalir.
  */
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { IssueCalendar } from '@/components/newspaper/IssueCalendar';
@@ -309,6 +310,15 @@ function PageLink({
 function LeadCell({ entry, highlighted }: { entry: NewspaperItemView; highlighted: boolean }) {
   const { item } = entry;
 
+  if (item.imageUrl) {
+    return (
+      <article aria-label={item.title} className="p-4 sm:p-6">
+        <PublicationArtwork entry={entry} height={360} />
+        <PublicationButtons entry={entry} />
+      </article>
+    );
+  }
+
   const body = (
     <>
       {item.imageSeed && item.imageGlyph ? (
@@ -357,6 +367,15 @@ function LeadCell({ entry, highlighted }: { entry: NewspaperItemView; highlighte
  */
 function ColumnCell({ entry, highlighted }: { entry: NewspaperItemView; highlighted: boolean }) {
   const { item } = entry;
+
+  if (item.imageUrl) {
+    return (
+      <article aria-label={item.title} className="rounded-xl border border-line bg-bg-raised p-3">
+        <PublicationArtwork entry={entry} height={280} />
+        <PublicationButtons entry={entry} />
+      </article>
+    );
+  }
   const isFeature = item.layoutVariant === 'feature';
   const isBrief = item.layoutVariant === 'brief';
 
@@ -406,6 +425,66 @@ function ColumnCell({ entry, highlighted }: { entry: NewspaperItemView; highligh
     );
   }
   return <div className={className}>{body}</div>;
+}
+
+/** Onayli kreatifi duzenleme cercevesi olmadan, dosyanin oranini koruyarak gosterir. */
+function PublicationArtwork({ entry, height }: { entry: NewspaperItemView; height: number }) {
+  const { item } = entry;
+  if (!item.imageUrl) return null;
+  return (
+    <div className="relative overflow-hidden rounded-xl bg-bg-sunken" style={{ height }}>
+      <Image
+        src={item.imageUrl}
+        alt={item.imageAlt ?? ''}
+        fill
+        unoptimized
+        sizes="(max-width: 768px) 92vw, 720px"
+        className="object-contain"
+      />
+    </div>
+  );
+}
+
+/**
+ * Butonlar onay anindaki renk ve hareket ayarlariyla yayinlanir. Harici
+ * hedefler yeni sekmede acilir; gazete oturumu kullanicinin elinden alinmaz.
+ */
+function PublicationButtons({ entry }: { entry: NewspaperItemView }) {
+  const buttons = entry.item.ctaButtons ?? [];
+  if (buttons.length === 0) return null;
+
+  return (
+    <nav aria-label={`${entry.item.title} bağlantıları`} className="mt-3 flex flex-wrap gap-2">
+      {buttons.map((button, index) => {
+        const isExternal = /^https:\/\//i.test(button.url);
+        const isOutline = button.variant === 'outline';
+        const style: React.CSSProperties = {
+          color: button.color,
+          borderColor: button.backgroundColor,
+          borderRadius:
+            button.variant === 'pill' ? 999 : button.variant === 'square' ? 4 : 12,
+          background: isOutline
+            ? 'transparent'
+            : button.variant === 'gradient'
+              ? `linear-gradient(120deg, ${button.gradientFrom}, ${button.gradientTo})`
+              : button.backgroundColor,
+        };
+        return (
+          <Link
+            key={`${button.url}-${index}`}
+            href={button.url}
+            target={isExternal ? '_blank' : undefined}
+            rel={isExternal ? 'noopener noreferrer' : undefined}
+            style={style}
+            className={`publication-cta--${button.animation} inline-flex min-h-10 items-center justify-center border px-4 py-2 text-sm font-bold transition-opacity hover:opacity-90`}
+          >
+            {button.label}
+            {isExternal ? <span className="sr-only"> yeni sekmede açılır</span> : null}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 }
 
 /**

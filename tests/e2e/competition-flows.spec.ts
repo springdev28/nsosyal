@@ -264,7 +264,7 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await expect(page.getByText('3 CTA ve %5 indirim')).toBeVisible();
   });
 
-  test('Yayın Atölyesi hazır tasarım yükler, boyutlandırır ve CTA ekler', async ({ page }) => {
+  test('Yayın Atölyesi kreatifi ödeme ve moderasyon kuyruğundan geçirir', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/publish');
 
@@ -308,6 +308,25 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await expect(preview).toHaveCSS('background-image', 'none');
     await expect(preview).toHaveCSS('background-color', 'rgb(17, 26, 42)');
     await expect(preview.locator('[class~="bg-accent/5"]')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Çakışmayı denetle ve ödemeye gönder' }).click();
+    await expect(page.getByText('Alan kesinleşti. Görsel ve bağlantılar moderasyon kuyruğuna gönderildi.')).toBeVisible();
+
+    // Ayni ilan gercek yetki sinirindan gecmeli; kullanici oturumunda bir
+    // "onaylandi" etiketi gostermek moderasyon zincirini kanitlamaz.
+    await page.context().clearCookies();
+    await loginAs(page, 'moderator');
+    await page.goto('/admin/newspaper');
+    const reviewCard = page.getByRole('img', { name: 'Bilim topluluğu ilan tasarımı' }).locator('xpath=ancestor::li');
+    await expect(reviewCard).toBeVisible();
+    await reviewCard.getByRole('button', { name: 'Onayla' }).click();
+    await expect(page.getByRole('img', { name: 'Bilim topluluğu ilan tasarımı' })).toHaveCount(0);
+    await expect(page.getByText('İncelenecek atölye ilanı yok')).toBeVisible();
+
+    await page.context().clearCookies();
+    await loginAs(page, 'user');
+    await page.goto('/notifications');
+    await expect(page.getByText('Gazete ilanın onaylandı')).toBeVisible();
   });
 
   test('marka hareketi başlangıç, parçacık, bitiş ve bekleme sırasını taşır', async ({ page }) => {

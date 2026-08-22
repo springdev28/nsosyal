@@ -466,6 +466,50 @@ describe('Yayın Atölyesi alan hakkı', () => {
     expect(saved.ok).toBe(true);
     if (saved.ok) expect(saved.draft.blocks[1]).toMatchObject({ linkUrl: 'https://example.com', buttonVariant: 'gradient', animation: 'shine' });
   });
+
+  it('onaylı kreatifi yayın saatine kadar gizler, sonra görseli ve CTA ile sayıya ekler', () => {
+    const moderator = profileId('moderator.demo');
+    const issueDate = store.listPublicationWindows(NOW)[0].issueDate;
+    const started = store.startPublicationDraft(ownerA, { issueDate, page: 1, rect }, NOW);
+    if (!started.ok) return;
+
+    const saved = store.savePublicationDraft(ownerA, started.draft.id, {
+      blocks: [
+        {
+          id: uid('publication-block', 'reader-creative'), role: 'creative', type: 'image',
+          x: 2, y: 3, width: 8, height: 5,
+          content: '/uploads/publication/reader-creative.png', altText: 'Bilim topluluğu gazete ilanı',
+          color: '#FFFFFF', borderRadius: 0, objectFit: 'contain', archived: false,
+        },
+        {
+          id: uid('publication-block', 'reader-cta'), role: 'cta', type: 'shape',
+          x: 2, y: 8, width: 8, height: 1,
+          content: 'Projeyi gör', linkUrl: '/projects', altText: '',
+          color: '#E9EFF7', backgroundColor: '#3156F5', borderRadius: 12,
+          objectFit: 'contain', buttonVariant: 'rounded', animation: 'none', archived: false,
+        },
+      ],
+      anonymous: false,
+      revision: started.draft.revision,
+      submit: true,
+    }, NOW);
+    if (!saved.ok) return;
+    const paid = store.purchasePublicationArea(ownerA, started.draft.id, saved.draft.revision, NOW);
+    if (!paid.ok) return;
+
+    expect(store.reviewPublicationDraft(paid.draft.id, moderator, 'approved', '', NOW)?.moderationStatus).toBe('approved');
+    expect(store.getIssueByDate(issueDate, new Date(`${issueDate}T02:59:59.000Z`))).toBeNull();
+
+    const published = store.getIssueByDate(issueDate, new Date(`${issueDate}T03:00:01.000Z`));
+    const placement = published?.items.find((entry) => entry.item.campaignId === paid.draft.id)?.item;
+    expect(published?.items.filter((entry) => !entry.item.sponsored).length).toBeGreaterThan(0);
+    expect(placement).toMatchObject({
+      imageUrl: '/uploads/publication/reader-creative.png',
+      imageAlt: 'Bilim topluluğu gazete ilanı',
+      sponsored: true,
+      ctaButtons: [{ label: 'Projeyi gör', url: '/projects', variant: 'rounded' }],
+    });
+  });
 });
 
 describe('beğeni ve kaydetme', () => {
