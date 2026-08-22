@@ -293,7 +293,10 @@ Karar kaydı:
 kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` önce 30×40 grid
 üzerinden sayı, sayfa ve alan seçtirir. Sonraki aşamada kullanıcı tek bir
 PNG/JPG/WebP kreatif yükler, alt metni girer ve kreatif ile CTA butonlarını seçili
-alan içinde sürükleyip yeniden boyutlandırır. Önizleme aşamasında tuval
+alan içinde sürükleyip yeniden boyutlandırır. `.newspaper-sheet`,
+`.publication-grid` ve `.publication-preview` aynı yerel koyu gazete kâğıdı
+değişkenlerini kullanır; bu nedenle okuyucu, arşiv sayıları, alan seçici ve ilan
+tuvali açık görünümde de ayrı beyaz kartlara dönüşmez. Önizleme aşamasında tuval
 `publication-preview` sınıfına geçer; düzenleme ızgarası ile seçili alan çerçevesi
 render edilmez. Rezervasyon ve demo ödeme aynı state machine'in sonraki
 aşamalarıdır.

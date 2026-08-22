@@ -136,8 +136,10 @@ Mevcut prototipte yayın üretimi `/publish` adresindeki bağımsız Yayın Atö
 çalışır. Bu rota ana uygulama kabuğunun dışında, yeni sekmede açılır. Kullanıcı
 30×40 grid üzerinde alan seçer, Canva veya başka bir araçtan dışa aktardığı tek
 PNG/JPG/WebP kreatifi yükler, zorunlu alt metni girer ve CTA butonlarını seçili
-alan içinde sürükleyip yeniden boyutlandırır. Önizleme düzenleme ızgarasını ve
-alan seçim çerçevesini gizleyerek okuyucuya gidecek temiz yüzeyi gösterir.
+alan içinde sürükleyip yeniden boyutlandırır. Alan seçici, düzenleme tuvali,
+önizleme ve nGazete okuyucusu aynı koyu gazete kâğıdı yüzeyini kullanır. Önizleme
+düzenleme ızgarasını ve alan seçim çerçevesini gizleyerek okuyucuya gidecek temiz
+yüzeyi gösterir.
 Standart hesap bir CTA ve yalnızca nSosyal içi bağlantı kullanabilir. Demo
 Yayınevi aboneliği üç CTA, dış `https`
 bağlantısı, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi sağlar. Abonelik

@@ -131,7 +131,8 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
 2. Sayı ve sayfa seçilir; 30×40 grid üzerinde satın alınacak alan çizilir ve
-   gerekirse yeniden boyutlandırılır.
+   gerekirse yeniden boyutlandırılır. Alan seçici yüzeyinin nGazete okuyucusundaki
+   koyu gazete kâğıdıyla aynı olduğu doğrulanır.
 3. Canva veya başka bir araçtan dışa aktarılan PNG/JPG/WebP kreatif yüklenir ve
    görsel açıklaması girilir.
 4. Standart hesapla bir nSosyal içi CTA eklenir; buton seçili alan içinde
@@ -140,7 +141,8 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
    yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
    değildir.
 6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
-   görünmediği doğrulanır. Ardından taslak rezerve edilir ve demo ödeme tamamlanır.
+   görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
+   taslak rezerve edilir ve demo ödeme tamamlanır.
    Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
    düştüğü gösterilir.
 7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı

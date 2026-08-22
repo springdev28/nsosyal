@@ -224,7 +224,8 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 `/publish` ana uygulama kabuğundan ayrılmış, yeni sekmede açılan bağımsız yayın
 çalışma alanıdır. Uygulanan kapsam:
 
-- 30×40 grid üzerinde sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
+- nGazete okuyucusu ve Yayın Atölyesi boyunca korunan ortak koyu gazete kâğıdı
+  yüzeyinde 30×40 sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
   yeniden boyutlandırma;
 - tek PNG/JPG/WebP kreatif yükleme, 8 MB sunucu sınırı ve zorunlu alt metin;
 - kreatif ile seçili alan içinde CTA butonları; düzenleme ızgarası ve alan seçim
