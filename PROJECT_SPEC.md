@@ -246,9 +246,14 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 - onay anındaki kreatif, alt metin ve CTA görünümünün değişmez okuyucu kaydına
   alınması; gelecek tarihli sayının İstanbul saatiyle 06.00'dan önce doğrudan
   tarih bağlantısıyla da açılmaması ve eşik sonrasındaki ilk okumada yayımlanması;
-- yeni sayı yoksa son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal
-  omurgasının kopyalanması; böylece ücretli yerleşimin tek başına gazete
-  oluşturmaması.
+- uzun süre çalışan demo sunucusunda yeni İstanbul gününün ilk okumada, mevcut
+  kullanıcı mutasyonları sıfırlanmadan oluşturulması;
+- yeni sayıya son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal
+  omurgasının kopyalanması; önceki günün sponsorlu yerleşimlerinin taşınmaması ve
+  ücretli yerleşimin tek başına gazete oluşturmaması;
+- ilk oturum kapağının 06.00'dan önce son yayımlanmış sayıyı, eşikten sonra yeni
+  sayıyı göstermesi ve görülme kaydının takvim günü yerine sunulan sayı tarihine
+  bağlanması.
 
 Gerçek ödeme, faturalandırma ve Supabase Storage/RLS kalıcılığı uygulanmış değildir.
 Abonelik etkinleştirme ve ödeme yalnızca yarışma prototipi akışını gösterir.
