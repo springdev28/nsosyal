@@ -18,6 +18,7 @@ import {
   MAX_IMAGE_BYTES,
   MAX_POST_MEDIA,
   MAX_VIDEO_BYTES,
+  inspectVideoUpload,
 } from '@/lib/media/constraints';
 import type { PostType } from '@/types/domain';
 
@@ -87,7 +88,12 @@ export interface ComposerState {
   message?: string;
 }
 
-async function storePostMedia(file: File): Promise<{ path: string; mediaType: 'image' | 'video' } | { error: string }> {
+async function storePostMedia(
+  file: File,
+): Promise<
+  { path: string; mediaType: 'image' | 'video'; durationSec: number | null }
+  | { error: string }
+> {
   const isImage = (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type);
   const isVideo = (ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type);
   if (!isImage && !isVideo) return { error: 'Yalnızca JPG, PNG, WebP, MP4 veya WebM yükleyebilirsin.' };
@@ -107,9 +113,20 @@ async function storePostMedia(file: File): Promise<{ path: string; mediaType: 'i
   };
   const directory = join(process.cwd(), 'public', 'uploads');
   const name = `${randomUUID()}.${extensionByType[file.type]}`;
+  // Video byte'lari sure denetimi sirasinda zaten okunur; ayni dosyayi ikinci
+  // kez bellege almak yerine dogrulanan dizi dogrudan diske yazilir.
+  const inspection = isVideo ? await inspectVideoUpload(file) : null;
+  if (inspection && !inspection.ok) return { error: inspection.error };
+  const bytes = inspection?.ok
+    ? inspection.bytes
+    : new Uint8Array(await file.arrayBuffer());
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, name), Buffer.from(await file.arrayBuffer()));
-  return { path: `/uploads/${name}`, mediaType: isVideo ? 'video' : 'image' };
+  await writeFile(join(directory, name), bytes);
+  return {
+    path: `/uploads/${name}`,
+    mediaType: isVideo ? 'video' : 'image',
+    durationSec: inspection?.ok ? inspection.durationSec : null,
+  };
 }
 
 export async function createPost(_prev: ComposerState, formData: FormData): Promise<ComposerState> {
@@ -145,7 +162,7 @@ export async function createPost(_prev: ComposerState, formData: FormData): Prom
       storagePath: result.path,
       caption: body.slice(0, 120) || file.name,
       altText: mediaFiles.length > 1 ? `${mediaAlt} (${index + 1}/${mediaFiles.length})` : mediaAlt,
-      durationSec: null,
+      durationSec: result.durationSec,
       posterPath: null,
     });
     mediaIds.push(media.id);

@@ -213,8 +213,10 @@ kararı [0009](decisions/0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md).
 Demo videoları repoda yerel/sentetik dosyalardır. `VideoPlayer` reduced-motion
 durumunu gözetmeli ve videonun metin/caption eşdeğerini sağlamalıdır.
 
-Proje pitch'i 90 saniye/50 MB gibi bir ürün limiti taşıyorsa limit yalnızca UI
-metni olmamalıdır. Client ve server tarafında doğrulanmalıdır.
+Proje pitch'i 90 saniye ve 50 MB ile sınırlıdır. İstemci hızlı metadata geri
+bildirimi verir; sunucu dosya yazılmadan önce MIME, byte sayısı ve MP4/WebM
+kapsayıcı süresini yeniden doğrular. Süresi okunamayan veya MIME ile kapsayıcısı
+uyuşmayan dosya güvenli tarafta kalmak için reddedilir.
 
 Project create + upload akışında validation başarısızlığı yarım project kaydı
 bırakmamalı ve retry duplicate project üretmemelidir. Bu davranış transaction,
@@ -419,8 +421,9 @@ Bu bölüm ürün kapsamı değil, **gap listesi**dir.
   + transient intent ayrımıdır.
 - Current nGazete schema/layout product target'ın image/grid/size/pricing alanlarını
   eksik taşır.
-- Current project upload flow duration, atomic create/upload ve retry-idempotency
-  açısından ek doğrulama gerektirir.
+- Current project upload flow kayıt öncesinde süre/boyut doğrular ve bozuk dosyada
+  proje açmaz; production codec/transcode, Storage ve retry-idempotency hattı
+  henüz yoktur.
 - Supabase store implementation tamamlanmamıştır.
 - Search basit text match'tir.
 - Notifications real-time değildir.

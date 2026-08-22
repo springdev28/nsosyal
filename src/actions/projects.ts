@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
-import { validateVideoUpload } from '@/lib/media/constraints';
+import { inspectVideoUpload } from '@/lib/media/constraints';
 import type { Project, WhyStory } from '@/types/domain';
 
 /**
@@ -30,18 +30,20 @@ export interface ProjectFormState {
   message?: string;
 }
 
-async function storeUploadedVideo(file: File): Promise<{ path: string } | { error: string }> {
-  const validationError = validateVideoUpload(file);
-  if (validationError) return { error: validationError };
+async function storeUploadedVideo(
+  file: File,
+): Promise<{ path: string; durationSec: number } | { error: string }> {
+  const inspection = await inspectVideoUpload(file);
+  if (!inspection.ok) return { error: inspection.error };
 
   const extension = file.type === 'video/webm' ? 'webm' : 'mp4';
   const name = `${randomUUID()}.${extension}`;
   const directory = join(process.cwd(), 'public', 'uploads');
 
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, name), Buffer.from(await file.arrayBuffer()));
+  await writeFile(join(directory, name), inspection.bytes);
 
-  return { path: `/uploads/${name}` };
+  return { path: `/uploads/${name}`, durationSec: inspection.durationSec };
 }
 
 export async function createProject(_prev: ProjectFormState, formData: FormData): Promise<ProjectFormState> {
@@ -70,10 +72,12 @@ export async function createProject(_prev: ProjectFormState, formData: FormData)
   // uretmez. Demo deposundaki create islemi bundan sonra hatasiz ve senkrondur.
   const file = formData.get('pitch');
   let uploadedVideoPath: string | null = null;
+  let uploadedVideoDuration: number | null = null;
   if (file instanceof File && file.size > 0) {
     const result = await storeUploadedVideo(file);
     if ('error' in result) return { error: result.error };
     uploadedVideoPath = result.path;
+    uploadedVideoDuration = result.durationSec;
   }
 
   const project = store.createProject({
@@ -98,7 +102,7 @@ export async function createProject(_prev: ProjectFormState, formData: FormData)
       storagePath: uploadedVideoPath,
       caption: `${title} · pitch`,
       altText: String(formData.get('pitchTranscript') ?? '').slice(0, 1000),
-      durationSec: null,
+      durationSec: uploadedVideoDuration,
       posterPath: null,
     });
     store.attachPitch(project.id, media.id);
