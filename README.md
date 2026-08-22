@@ -92,6 +92,13 @@ basar.
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
 | Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan/yerleşim ve Yayın Atölyesi kreatif incelemesi |
 
+Demo yükleme yolunda MP4/WebM videolar dosya yazılmadan önce sunucuda MIME,
+50 MB boyut ve kapsayıcıdan okunan 90 saniye sınırıyla doğrulanır. Tarayıcıdaki
+metadata kontrolü yalnızca hızlı geri bildirim içindir. Süresi okunamayan veya
+MIME ile kapsayıcısı uyuşmayan video reddedilir. Dosyalar hâlâ yerel
+`public/uploads` dizinine yazılır; kalıcı Storage, codec/transcode ve kötü amaçlı
+dosya taraması production kapsamındadır.
+
 ## Kişiselleştirme
 
 Kişiselleştirme iki ayrı katmandır.
