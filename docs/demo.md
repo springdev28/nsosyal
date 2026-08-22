@@ -53,6 +53,18 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | 0:40 | Admin approval | community/ad moderation ve audit mantığını göster |
 | 0:30 | Settings | long-term goals, privacy ve transient intent ayrımını göster |
 
+## Ana akış ve hikâye demo akışı
+
+1. Oluşturucu açılır; metin taslağının sayfa yenilemesinden sonra korunduğu
+   gösterilir.
+2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
+   topluluk seçiminin zorunlu olduğu gösterilir.
+3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
+   alanı gösterilir. İstenirse konum yalnızca bu gönderi için açılır.
+4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
+   geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
+5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği belirtilir.
+
 ## 5N demo akışı
 
 ### 1. Kapalı state
@@ -118,13 +130,19 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
-2. Bir blok 30×40 grid üzerinde sürüklenir, ardından ok tuşlarıyla hassas biçimde
-   hareket ettirilir.
-3. İçerik, düzen ve stil sekmelerinden Markdown, tipografi, hizalama, kenarlık,
-   gölge ve görsel ayarlarından birkaçının değiştiği gösterilir.
-4. Tasarım rehberi ve tekrar kullanılabilir doku/kaynaklar açılır; bir blok
-   kopyalanır veya silinir.
-5. Taslak kaydedilip yeniden açıldığında ayarların korunduğu doğrulanır.
+2. Sayı ve sayfa seçilir; 30×40 grid üzerinde satın alınacak alan çizilir ve
+   gerekirse yeniden boyutlandırılır.
+3. Canva veya başka bir araçtan dışa aktarılan PNG/JPG/WebP kreatif yüklenir ve
+   görsel açıklaması girilir.
+4. Standart hesapla bir nSosyal içi CTA eklenir; buton seçili alan içinde
+   sürüklenir ve yeniden boyutlandırılır.
+5. Demo Yayınevi aboneliği açılarak üç CTA, dış `https` linki, gradyan/hareket ve
+   yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
+   değildir.
+6. Taslak önizlenir, rezerve edilir ve demo ödeme tamamlanır. Kreatif, alt metin
+   ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna düştüğü gösterilir.
+7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
+   bildirimi oluşturduğu doğrulanır.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.

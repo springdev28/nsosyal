@@ -96,6 +96,21 @@ Karar kayıtları:
 [0002](decisions/0002-aciklanabilir-siralama.md) ve
 [0004](decisions/0004-ucretli-gorunurluk-yalnizca-ngazetede.md).
 
+### 4.1 Mevcut gönderi ve hikâye yolu
+
+`src/components/feed/Composer.tsx` istemci önizlemesini, metin taslağını,
+gönderi türü/konu/hedef/konum kontrollerini ve en fazla dört medya seçimini
+yönetir. `src/actions/social.ts` oturumu yeniden doğrular; JPG/PNG/WebP için
+12 MB, MP4/WebM için 50 MB sınırını ve zorunlu medya açıklamasını sunucuda da
+uygular. Demo modunda dosyalar `public/uploads` altına yazılır ve kayıt
+`DemoStore` üzerinden oluşturulur.
+
+`src/app/(app)/feed/page.tsx`, akıştaki medyalı gönderilerin ilk 12'sini
+`StoryRail` bileşenine verir. Bileşen aynı post ve medya view modelini ikinci bir
+story veri modeli kurmadan tam ekran dialog içinde gösterir. Görsel zamanlayıcısı,
+video olayları, duraklatma, klavye gezinmesi, odak geri dönüşü ve reduced-motion
+tercihi istemci tarafında yönetilir.
+
 ## 5. Marka işareti ve 5N selector mimarisi
 
 ### 5.1 Marka kaynağı
@@ -275,18 +290,25 @@ Karar kaydı:
 ### Mevcut Publication Studio uygulaması
 
 `/publish` rotası ana `(app)` layout grubunun dışında çalışır ve ana `AppShell`
-kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` istemci editörü,
-30×40 A4 grid üzerinde pointer sürükleme ve klavye oklarıyla blok yerleşimi sağlar.
-Üç denetçi sekmesi içerik, düzen ve stili ayırır. Markdown renderer başlık,
-paragraf, kalın/italik metin, inline code, bağlantı, alıntı, madde/numara listesi
-ve temel tabloyu destekler. Tekrar kullanılabilir doku/kaynaklar ile blok
-kopyalama ve silme editör içinde bulunur.
+kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` önce 30×40 grid
+üzerinden sayı, sayfa ve alan seçtirir. Sonraki aşamada kullanıcı tek bir
+PNG/JPG/WebP kreatif yükler, alt metni girer ve kreatif ile CTA butonlarını seçili
+alan içinde sürükleyip yeniden boyutlandırır. Önizleme, rezervasyon ve demo ödeme
+aynı state machine'in sonraki aşamalarıdır.
 
-`PublicationBlock` yeni stil alanlarını eski taslaklarla uyum için opsiyonel taşır.
-`DemoStore` gelen değerleri doğrular, sayısal ayarları izin verilen aralıklara
-sınırlar ve taslağa kaydeder. Bu, mevcut demo-mode uygulamasıdır; production
-yolunda aynı sözleşmenin Supabase kalıcılığı ve RLS politikalarıyla uygulanması
-gerekir.
+Dosya yükleme `src/actions/publication.ts` içinde sunucuda yeniden doğrulanır ve
+demo modunda `public/uploads/publication` altına yazılır. `DemoStore` tek kreatif,
+alan sınırı, CTA sayısı ve link izinlerini tekrar denetler. Standart hesapta bir
+CTA ve yalnızca nSosyal içi link vardır. `publicationSubscriber` işaretli hesapta
+üç CTA, dış `https` linki, gradyan/hareket ve yüzde 5 indirim açılır. 200 TL/ay
+abonelik ve alan ödemesi gerçek tahsilat değil demo akışıdır.
+
+Ödeme simülasyonu taslağı `pending` moderasyon durumuna taşır ve moderator/admin
+profillerine bildirim üretir. `/admin/newspaper` kreatifi, alt metni ve CTA
+linklerini gösterir; onay, ret veya düzenleme isteği hem moderasyon kaydı hem de
+taslak sahibine bildirim oluşturur. Production yolunda dosya kalıcılığı,
+abonelik/ödeme ve aynı yetki kurallarının Supabase Storage ile RLS üzerinde
+uygulanması hâlâ gereklidir.
 
 ### 11.1 Reader model
 

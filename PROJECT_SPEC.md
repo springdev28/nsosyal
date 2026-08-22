@@ -175,6 +175,15 @@ Explainable ranking başlangıç sinyalleri: topic match, followed source, commu
 
 Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ürün gerçeği değildir.
 
+Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi türü, konu,
+herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
+Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir. Görsel
+sınırı 12 MB, video sınırı 50 MB'dir ve medya açıklaması zorunludur. Akıştaki
+medyalı gönderilerin ilk 12'si tam ekran hikâye izleyicisinde açılır. Görsel
+hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dönüşü ve
+`prefers-reduced-motion` davranışı uygulanmıştır. Dosyalar demo modunda yerel
+`public/uploads` dizinine yazılır; kalıcı Supabase Storage yolu hâlâ planlanandır.
+
 > **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 
 ## 8. Topluluklar
@@ -215,16 +224,19 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 `/publish` ana uygulama kabuğundan ayrılmış, yeni sekmede açılan bağımsız yayın
 çalışma alanıdır. Uygulanan kapsam:
 
-- 30×40 A4 grid üzerinde sürükleme ve klavye oklarıyla blok yerleşimi;
-- başlık, paragraf, liste, alıntı, kod, bağlantı ve temel tablo Markdown desteği;
-- içerik, düzen ve stil sekmeleri;
-- tekrar kullanılabilir doku/kaynaklar ve blok kopyalama/silme;
-- tipografi, hizalama, boşluk, kenarlık, gölge, görsel filtreleri ve dönüşümler;
-- blok ayarlarının güvenli sınırlar içinde temizlenmesi ve taslakta saklanması.
+- 30×40 grid üzerinde sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
+  yeniden boyutlandırma;
+- tek PNG/JPG/WebP kreatif yükleme, 8 MB sunucu sınırı ve zorunlu alt metin;
+- kreatif ile seçili alan içinde CTA butonları; taslak kaydetme, önizleme,
+  rezervasyon ve demo ödeme;
+- standart hesapta bir CTA ve yalnızca nSosyal içi bağlantılar;
+- 200 TL/ay olarak gösterilen demo Yayınevi aboneliğinde üç CTA, dış `https`
+  bağlantıları, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi;
+- ödeme simülasyonu sonrası moderasyon kuyruğu; moderator/admin için onay,
+  reddetme veya düzenleme isteme, audit kaydı ve kullanıcı bildirimi.
 
-Yeni blok alanları mevcut taslakların okunabilmesi için opsiyoneldir. Bu bölüm
-uygulanmış prototip davranışını anlatır; Supabase-backed kalıcı üretim yolu hâlâ
-planlanan mimaridir.
+Gerçek ödeme, faturalandırma ve Supabase Storage/RLS kalıcılığı uygulanmış değildir.
+Abonelik etkinleştirme ve ödeme yalnızca yarışma prototipi akışını gösterir.
 
 Sponsorlu alanlar ayrı `Ücretli alanlar` listesinin altında toplanmaz. Gazetenin grid'inde tanımlı spatial inventory satın alır ve açık `Sponsorlu` etiketi taşır.
 
