@@ -10,11 +10,10 @@ import { NewspaperAutoOpen } from '@/components/newspaper/NewspaperAutoOpen';
 import {
   getViewer,
   hasCompletedOnboarding,
-  hasSeenTodaysNewspaper,
+  hasSeenNewspaperIssue,
   prefersReducedMotion,
 } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
-import { toIstanbulDateKey } from '@/lib/time';
 
 /**
  * Oturum acmis kullanicilar icin uygulama kabugu.
@@ -28,9 +27,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (!(await hasCompletedOnboarding())) redirect('/onboarding');
 
   const store = getStore();
-  const todayKey = toIstanbulDateKey(new Date());
-  const issue = store.getIssueByDate(todayKey);
-  const alreadySeen = await hasSeenTodaysNewspaper(todayKey);
+  // Saat 06.00'dan once bugunun taslagi yerine dunun yayimlanmis sayisi acilir.
+  // Gorulme kaydi takvim gunune degil gercekte sunulan sayiya baglanir; boylece
+  // yeni sayi 06.00'da yayina girdiginde ayni oturumda bir kez gosterilebilir.
+  const issue = store.getLatestIssue();
+  const alreadySeen = issue ? await hasSeenNewspaperIssue(issue.issue.issueDate) : false;
   const reducedMotion = await prefersReducedMotion();
 
   // Sag paneldeki "Popüler" listesi: konuya bagli gonderi sayilari.

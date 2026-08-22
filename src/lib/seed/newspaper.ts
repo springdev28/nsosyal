@@ -9,6 +9,7 @@ import {
   priceFor,
   type SubscriptionPlan,
 } from '@/lib/newspaper/inventory';
+import { newspaperIssuePublishAt } from '@/lib/newspaper/schedule';
 import { communityId } from './communities';
 import { eventId } from './events';
 import { uid } from './ids';
@@ -334,36 +335,42 @@ export function buildNewspaper(now: Date): { issues: NewspaperIssue[]; items: Ne
   const today = new Date(now);
   const yesterday = new Date(now.getTime() - 86_400_000);
   const themeDay = new Date(now.getTime() - 6 * 86_400_000);
+  const todayKey = toIsoDate(today);
+  const yesterdayKey = toIsoDate(yesterday);
+  const themeDayKey = toIsoDate(themeDay);
+  const todayPublishAt = newspaperIssuePublishAt(todayKey);
 
   const issues: NewspaperIssue[] = [
     {
-      id: issueId(toIsoDate(today)),
-      issueDate: toIsoDate(today),
+      id: issueId(todayKey),
+      issueDate: todayKey,
       title: 'nGazete · Günün Özeti',
       standfirst: 'Bugün topluluklarda ölçüm, erişilebilirlik ve yerel etkinlikler konuşuldu.',
       coverEmoji: '📰',
       theme: null,
-      publishAt: new Date(today.setHours(7, 0, 0, 0)).toISOString(),
-      status: 'published',
+      publishAt: todayPublishAt.toISOString(),
+      // Sunucu 06.00'dan once acilirsa bugunun sayisi erken sizmaz; ayni
+      // taslak DemoStore okumasi sirasinda saat gelince yayina alinir.
+      status: now.getTime() >= todayPublishAt.getTime() ? 'published' : 'draft',
     },
     {
-      id: issueId(toIsoDate(yesterday)),
-      issueDate: toIsoDate(yesterday),
+      id: issueId(yesterdayKey),
+      issueDate: yesterdayKey,
       title: 'nGazete · Günün Özeti',
       standfirst: 'Bir test uçuşundan çıkan proje ve simülasyonun gerçekle sınavı.',
       coverEmoji: '🗞️',
       theme: null,
-      publishAt: new Date(yesterday.setHours(7, 0, 0, 0)).toISOString(),
+      publishAt: newspaperIssuePublishAt(yesterdayKey).toISOString(),
       status: 'published',
     },
     {
-      id: issueId(toIsoDate(themeDay)),
-      issueDate: toIsoDate(themeDay),
+      id: issueId(themeDayKey),
+      issueDate: themeDayKey,
       title: 'nGazete · Uzay Özel Sayısı',
       standfirst: 'Gökyüzüne bakan topluluklar, projeler ve hikâyeler.',
       coverEmoji: '🌌',
       theme: 'Uzay',
-      publishAt: new Date(themeDay.setHours(7, 0, 0, 0)).toISOString(),
+      publishAt: newspaperIssuePublishAt(themeDayKey).toISOString(),
       status: 'published',
     },
   ];
@@ -525,9 +532,6 @@ function buildArchive(
     const random = seededRandom(`nsosyal-issue-${date}`);
     const pick = <T,>(list: readonly T[]): T => list[Math.floor(random() * list.length)];
 
-    const publishAt = new Date(day);
-    publishAt.setHours(7, 0, 0, 0);
-
     const issue: NewspaperIssue = {
       id: issueId(date),
       issueDate: date,
@@ -535,7 +539,7 @@ function buildArchive(
       standfirst: pick(ARCHIVE_STANDFIRST),
       coverEmoji: '📰',
       theme: null,
-      publishAt: publishAt.toISOString(),
+      publishAt: newspaperIssuePublishAt(date).toISOString(),
       status: 'published',
     };
     issues.push(issue);

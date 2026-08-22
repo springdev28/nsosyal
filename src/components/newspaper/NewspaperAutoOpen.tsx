@@ -65,7 +65,7 @@ export function NewspaperAutoOpen({
 
   function dismiss() {
     if (locked) return;
-    // Bugun icin gorulmus olarak isaretle; ayni gun tekrar acilmasin.
+    // Takvim gununu degil sayiyi isaretle; 06.00'da gelen yeni sayi ayri kalir.
     document.cookie = `nsosyal_newspaper_seen=${issueDate}; path=/; max-age=86400; samesite=lax`;
     setOpen(false);
   }

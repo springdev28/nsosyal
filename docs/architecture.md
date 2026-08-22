@@ -237,7 +237,12 @@ Roller: `user`, `organization`, `moderator`, `admin`.
 ## 9. Zaman
 
 Ürün günü **Europe/Istanbul** bağlamında hesaplanır. Event/deadline/newspaper issue
-tarihleri bu helper katmanını kullanır.
+tarihleri bu helper katmanını kullanır. nGazete sayıları İstanbul saatiyle
+06.00'da açılır. Uzun süre çalışan `DemoStore`, gün değiştiğinde yeni sayıyı ilk
+okumada oluşturur; bunu yaparken kullanıcı mutasyonlarını sıfırlamaz ve önceki
+günün sponsorlu yerleşimlerini yeni güne taşımaz. İlk oturum kapağı 06.00'dan
+önce son yayımlanmış sayıyı, eşikten sonra yeni sayıyı gösterir. Görülme kaydı
+takvim gününe değil sayı tarihine bağlıdır; taslak sayı okura açılmaz.
 
 Karar kaydı: [0007](decisions/0007-zaman-ekseni-europe-istanbul.md).
 

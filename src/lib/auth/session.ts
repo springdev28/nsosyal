@@ -92,10 +92,10 @@ export async function prefersReducedMotion(): Promise<boolean> {
   return store.get(REDUCED_MOTION_COOKIE)?.value === '1';
 }
 
-/** Gazete bu oturumda / bugun zaten acildi mi? */
-export async function hasSeenTodaysNewspaper(todayKey: string): Promise<boolean> {
+/** Son yayimlanan sayi bu oturumda zaten acildi mi? */
+export async function hasSeenNewspaperIssue(issueDate: string): Promise<boolean> {
   const store = await cookies();
-  return store.get(NEWSPAPER_SEEN_COOKIE)?.value === todayKey;
+  return store.get(NEWSPAPER_SEEN_COOKIE)?.value === issueDate;
 }
 
 /** Rol kontrolu - admin ve moderator rotalarinda kullanilir. */
