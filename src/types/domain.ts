@@ -411,6 +411,24 @@ export type NewspaperSection = 'gundem' | 'yerel' | 'proje' | 'topluluk' | 'etki
  */
 export type NewspaperLayout = 'lead' | 'feature' | 'standard' | 'brief' | 'placement';
 
+export type PublicationButtonVariant = 'pill' | 'rounded' | 'square' | 'outline' | 'gradient';
+
+/**
+ * Atolyede hazirlanan CTA'nin okuyucu sayisina tasinan, salt-okunur karsiligi.
+ * Taslak bloklarini dogrudan yayinlamak moderasyon sonrasi degisikliklerin
+ * okuyucuya sizmasina yol acacagi icin onay aninda ayri bir anlik goruntu alinir.
+ */
+export interface NewspaperCta {
+  label: string;
+  url: string;
+  variant: PublicationButtonVariant;
+  color: string;
+  backgroundColor: string;
+  gradientFrom: string;
+  gradientTo: string;
+  animation: 'none' | 'float' | 'pulse' | 'shine';
+}
+
 export interface NewspaperItem {
   id: UUID;
   issueId: UUID;
@@ -427,6 +445,10 @@ export interface NewspaperItem {
   imageSeed: string | null;
   imageGlyph: string | null;
   imageAlt: string | null;
+  /** Moderasyondan gecen kullanici kreatifi; seed kapaklarindan ayridir. */
+  imageUrl?: string | null;
+  /** Onay anindaki CTA anlik goruntusu, sonradan degisen taslaktan etkilenmez. */
+  ctaButtons?: NewspaperCta[];
   sourceOrAuthor: string | null;
   /** Dis baglanti. Ic baglanti linkedEntity uzerinden cozulur. */
   targetUrl: string | null;
@@ -461,8 +483,6 @@ export interface PublicationRect {
 }
 
 export type PublicationBlockType = 'markdown' | 'image' | 'shape';
-
-export type PublicationButtonVariant = 'pill' | 'rounded' | 'square' | 'outline' | 'gradient';
 
 export interface PublicationBlock extends PublicationRect {
   id: UUID;

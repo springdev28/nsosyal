@@ -142,11 +142,17 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
    değildir.
 6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
    görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
-   taslak kaydedilip yeniden açılır, sonra rezerve edilir ve demo ödeme tamamlanır.
+   taslak rezerve edilir ve demo ödeme tamamlanır.
    Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
    düştüğü gösterilir.
 7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
    bildirimi oluşturduğu doğrulanır.
+8. Onaylanan ilan için kullanıcı bildirimleri açılır. Hedef sayı yayın eşiğini
+   geçtiyse nGazete'de yüklenen kreatifin düzenleme ızgarası olmadan, alt metni ve
+   onay anındaki CTA'sıyla göründüğü doğrulanır. Gelecek tarihli sayının İstanbul
+   saatiyle 06.00'dan önce doğrudan tarih bağlantısıyla açılamadığı ayrıca söylenir.
+   Yeni sayı yalnızca ilandan oluşmaz; son sayının sponsorlu olmayan editoryal
+   omurgası korunur.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.

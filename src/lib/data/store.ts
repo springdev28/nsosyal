@@ -12,6 +12,8 @@ import type {
   IntentMode,
   Media,
   ModerationStatus,
+  NewspaperCta,
+  NewspaperIssue,
   NewspaperItem,
   Notification,
   Post,
@@ -126,6 +128,11 @@ const PUBLICATION_COLUMNS = 30;
 const PUBLICATION_ROWS = 40;
 const PUBLICATION_UNIT_PRICE = 10;
 const PUBLICATION_SUBSCRIBER_DISCOUNT = 0.05;
+
+/** Gazete sayisi Istanbul saatiyle 06.00'da okuyucuya acilir (UTC+03.00). */
+function publicationIssuePublishAt(issueDate: string): Date {
+  return new Date(`${issueDate}T03:00:00.000Z`);
+}
 
 function cleanPublicationRect(rect: PublicationRect): PublicationRect | null {
   const clean = {
@@ -993,20 +1000,133 @@ export class DemoStore {
 
   // --- nGazete ------------------------------------------------------------
 
-  listIssues(): NewspaperIssueView[] {
+  /**
+   * DemoStore kalici bir zamanlayici calistirmadigi icin zaman esigini her
+   * okumada uygular. Boylece onayli gelecek sayi erken sizmaz, saat 06.00'dan
+   * sonraki ilk istekte de elle deploy gerektirmeden yayina girer.
+   */
+  private publishScheduledIssues(now: Date): void {
+    for (const issue of this.data.newspaperIssues) {
+      if (issue.status === 'draft' && new Date(issue.publishAt).getTime() <= now.getTime()) {
+        issue.status = 'published';
+      }
+    }
+  }
+
+  listIssues(now: Date = new Date()): NewspaperIssueView[] {
+    this.publishScheduledIssues(now);
     return this.data.newspaperIssues
       .filter((issue) => issue.status === 'published')
       .sort((a, b) => b.issueDate.localeCompare(a.issueDate))
       .map((issue) => this.toIssueView(issue.id));
   }
 
-  getLatestIssue(): NewspaperIssueView | null {
-    return this.listIssues()[0] ?? null;
+  getLatestIssue(now: Date = new Date()): NewspaperIssueView | null {
+    return this.listIssues(now)[0] ?? null;
   }
 
-  getIssueByDate(issueDate: string): NewspaperIssueView | null {
-    const issue = this.data.newspaperIssues.find((entry) => entry.issueDate === issueDate);
+  getIssueByDate(issueDate: string, now: Date = new Date()): NewspaperIssueView | null {
+    this.publishScheduledIssues(now);
+    // Taslak sayinin dogrudan tarih parametresiyle erken acilmasini engeller.
+    const issue = this.data.newspaperIssues.find(
+      (entry) => entry.issueDate === issueDate && entry.status === 'published',
+    );
     return issue ? this.toIssueView(issue.id) : null;
+  }
+
+  /** Moderasyon onayini, secilen sayinin degismez okuyucu kaydina cevirir. */
+  private publishApprovedDraft(draft: PublicationDraft, now: Date): void {
+    if (this.data.newspaperItems.some((item) => item.campaignId === draft.id)) return;
+
+    const publishAt = publicationIssuePublishAt(draft.issueDate);
+    let issue = this.data.newspaperIssues.find((entry) => entry.issueDate === draft.issueDate);
+    if (!issue) {
+      const templateIssue = this.data.newspaperIssues
+        .filter((entry) => entry.status === 'published')
+        .sort((left, right) => right.issueDate.localeCompare(left.issueDate))[0];
+      issue = {
+        id: this.nextId('newspaper-issue'),
+        issueDate: draft.issueDate,
+        title: 'nGazete · Günün Özeti',
+        standfirst: 'Toplulukların seçkileri, projeleri ve ilanları.',
+        coverEmoji: 'nG',
+        theme: null,
+        publishAt: publishAt.toISOString(),
+        status: now.getTime() >= publishAt.getTime() ? 'published' : 'draft',
+      } satisfies NewspaperIssue;
+      this.data.newspaperIssues.push(issue);
+
+      // Prototipte ayri bir editoryal CMS yoktur. Ucretli bir yerlesimin tek
+      // basina "gazete" olusmasini engellemek icin son sayinin editoryal
+      // omurgasi yeni sayiya kopyalanir; sponsorlu eski ilanlar tasinmaz.
+      if (templateIssue) {
+        const editorialTemplate = this.data.newspaperItems
+          .filter((item) => item.issueId === templateIssue.id && !item.sponsored)
+          .sort((left, right) => left.publicationOrder - right.publicationOrder);
+        for (const item of editorialTemplate) {
+          this.data.newspaperItems.push({
+            ...item,
+            id: this.nextId('newspaper-item'),
+            issueId: issue.id,
+            campaignId: null,
+          });
+        }
+      }
+    }
+
+    const creative = draft.blocks.find((block) => block.role === 'creative');
+    if (!creative) return;
+    const owner = this.getProfile(draft.ownerId);
+    const buttons: NewspaperCta[] = draft.blocks
+      .filter((block) => block.role === 'cta')
+      .map((block) => ({
+        label: block.content,
+        url: block.linkUrl ?? '/',
+        variant: block.buttonVariant ?? 'rounded',
+        color: cleanPublicationColor(block.color, '#E9EFF7'),
+        backgroundColor: cleanPublicationColor(block.backgroundColor, '#3156F5'),
+        gradientFrom: cleanPublicationColor(block.gradientFrom, '#35C9E8'),
+        gradientTo: cleanPublicationColor(block.gradientTo, '#3156F5'),
+        animation: ['float', 'pulse', 'shine'].includes(block.animation ?? '')
+          ? (block.animation as 'float' | 'pulse' | 'shine')
+          : 'none',
+      }));
+    const issueItems = this.data.newspaperItems.filter((item) => item.issueId === issue.id);
+    const basePrice = draft.rect.width * draft.rect.height * PUBLICATION_UNIT_PRICE;
+
+    this.data.newspaperItems.push({
+      id: this.nextId('newspaper-item'),
+      issueId: issue.id,
+      itemType: 'org_ad',
+      section: 'topluluk',
+      title: draft.anonymous ? 'Topluluk ilanı' : `${owner?.displayName ?? 'nSosyal üyesi'} ilanı`,
+      standfirst: null,
+      body: '',
+      imageSeed: null,
+      imageGlyph: null,
+      imageAlt: creative.altText,
+      imageUrl: creative.content,
+      ctaButtons: buttons,
+      sourceOrAuthor: draft.anonymous ? null : owner?.displayName ?? null,
+      targetUrl: null,
+      linkedEntityType: null,
+      linkedEntityId: null,
+      layoutVariant: draft.page === 1 ? 'feature' : 'placement',
+      gridColumnSpan: Math.max(1, Math.min(4, Math.ceil(draft.rect.width / 8))),
+      gridRowSpan: Math.max(1, Math.min(4, Math.ceil(draft.rect.height / 10))),
+      priority: 20 + draft.page,
+      publicationOrder: issueItems.length,
+      sponsored: true,
+      sponsorName: draft.anonymous ? 'Anonim ilan' : owner?.displayName ?? 'nSosyal üyesi',
+      placementCode: `studio-${draft.rect.width}x${draft.rect.height}`,
+      widthPx: null,
+      heightPx: null,
+      priceSnapshot: draft.subscriber
+        ? Math.round(basePrice * (1 - PUBLICATION_SUBSCRIBER_DISCOUNT))
+        : basePrice,
+      // Taslak kimligi tekrar onaylarda ayni ilanin iki kez eklenmesini onler.
+      campaignId: draft.id,
+    });
   }
 
   private toIssueView(issueId: UUID): NewspaperIssueView {
@@ -1051,6 +1171,7 @@ export class DemoStore {
 
   /** Bugun yayimlanmis bir sayi var mi? Ilk oturumda otomatik acilma bunu kullanir. */
   hasIssueForToday(now: Date = new Date()): boolean {
+    this.publishScheduledIssues(now);
     const key = toIstanbulDateKey(now);
     return this.data.newspaperIssues.some((issue) => issue.issueDate === key && issue.status === 'published');
   }
@@ -1412,11 +1533,13 @@ export class DemoStore {
     moderatorId: UUID,
     decision: 'approved' | 'rejected' | 'changes_requested',
     note = '',
+    now: Date = new Date(),
   ): PublicationDraft | null {
     const draft = this.data.publicationDrafts.find((entry) => entry.id === draftId && entry.status === 'paid');
     if (!draft) return null;
     draft.moderationStatus = decision;
-    draft.updatedAt = new Date().toISOString();
+    draft.updatedAt = now.toISOString();
+    if (decision === 'approved') this.publishApprovedDraft(draft, now);
     this.data.moderationActions.push({
       id: this.nextId('moderation-action'),
       moderatorId,
@@ -1424,7 +1547,7 @@ export class DemoStore {
       entityType: 'publication_draft',
       entityId: draft.id,
       note: note.slice(0, 500) || (decision === 'approved' ? 'Görsel ve bağlantılar onaylandı.' : 'Yayın öncesi düzeltme gerekli.'),
-      createdAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
     });
     this.pushNotification({
       profileId: draft.ownerId,

@@ -204,11 +204,7 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
-Mevcut prototipte isteğe bağlı pitch yalnızca MP4 veya WebM olabilir ve sunucuda
-50 MB byte sınırıyla doğrulanır. Dosya proje kaydından önce yazılır; geçersiz tür,
-büyük dosya veya yazma hatası `DemoStore` içinde yarım proje bırakmaz ve yeniden
-denemede kopya proje üretmez. 90 saniye sınırı hâlâ tarayıcı metadata'sına dayanır;
-production Storage/worker yolu gerçek içerik ve süreyi yeniden doğrulamalıdır.
+Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
 
 ## 11. nGazete
 
@@ -238,7 +234,13 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 - 200 TL/ay olarak gösterilen demo Yayınevi aboneliğinde üç CTA, dış `https`
   bağlantıları, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi;
 - ödeme simülasyonu sonrası moderasyon kuyruğu; moderator/admin için onay,
-  reddetme veya düzenleme isteme, audit kaydı ve kullanıcı bildirimi.
+  reddetme veya düzenleme isteme, audit kaydı ve kullanıcı bildirimi;
+- onay anındaki kreatif, alt metin ve CTA görünümünün değişmez okuyucu kaydına
+  alınması; gelecek tarihli sayının İstanbul saatiyle 06.00'dan önce doğrudan
+  tarih bağlantısıyla da açılmaması ve eşik sonrasındaki ilk okumada yayımlanması;
+- yeni sayı yoksa son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal
+  omurgasının kopyalanması; böylece ücretli yerleşimin tek başına gazete
+  oluşturmaması.
 
 Gerçek ödeme, faturalandırma ve Supabase Storage/RLS kalıcılığı uygulanmış değildir.
 Abonelik etkinleştirme ve ödeme yalnızca yarışma prototipi akışını gösterir.

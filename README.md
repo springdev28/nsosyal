@@ -144,7 +144,12 @@ Standart hesap bir CTA ve yalnızca nSosyal içi bağlantı kullanabilir. Demo
 Yayınevi aboneliği üç CTA, dış `https`
 bağlantısı, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi sağlar. Abonelik
 akışı 200 TL/ay tutarını gösterir; gerçek tahsilat yapmaz. Ödeme simülasyonu
-sonrasında kreatif, alt metin ve bağlantılar moderasyon kuyruğuna girer.
+sonrasında kreatif, alt metin ve bağlantılar moderasyon kuyruğuna girer. Onaylanan
+taslak, onay anındaki kreatif ve CTA ayarlarıyla değişmez bir okuyucu kaydına
+dönüştürülür. Gelecek tarihli sayı İstanbul saatiyle 06.00'dan önce doğrudan tarih
+bağlantısıyla da açılamaz; eşik sonrasındaki ilk okuma sayıyı yayımlar. Yeni sayı
+oluşturulursa son yayımlanmış sayının yalnızca editoryal içeriği kopyalanır; ücretli
+yerleşim tek başına bir gazete oluşturmaz.
 
 Sponsored placements gazetenin grid'i içinde yer alır ve açık `Sponsorlu` etiketi
 taşır. Reader UI'da ayrı bir `Ücretli alanlar` kart listesi veya gelir modeli

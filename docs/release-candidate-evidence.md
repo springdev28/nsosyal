@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 22 Ağustos 2026  
-Doğrulanan kaynak SHA: `a4b28c08c4736ceed04aacd43dd9ab0bb76d97ad`  
+Doğrulanan kaynak SHA: `9413542e840ffb8e7e74c0f9c866851cc9cafac0`  
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -39,7 +39,7 @@ Durum sözlüğü:
 | Neden hikâyesi → bağlı yaşayan proje | `/explore/why`, `/explore/why/[id]`, `/projects/[slug]` | `DemoStore` view modelleri; oluşturma Server Action üzerinden | `competition-flows` 5 iki viewportta geçti | Neden ve proje yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action dosyayı doğrulayıp yazar; proje bundan sonra oluşturulur | 3 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut artık yarım/kopya proje açmaz | Demo doğrulandı |
 | nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking birim testleri | `/newspaper` 1440×1000 ve 390×844 incelendi; koyu kâğıt, kolonlar ve taşma kontrol edildi; axe temiz | Doğrulandı |
-| Yayın Atölyesi → alan seçimi → kreatif yükleme/boyutlandırma → CTA → temiz önizleme | `/publish` | Server Actions → `DemoStore`; kreatif prototipte yerel `public/uploads` yoluna yazılır | `competition-flows` 6 içinde yükleme, yeniden açma, Delete, CTA ve önizleme senaryosu iki viewportta geçti | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe temiz | Demo doğrulandı |
+| Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
 
 ## Mevcut sistem ile production hedefinin ayrımı
@@ -61,21 +61,21 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `a4b28c08c4736ceed04aacd43dd9ab0bb76d97ad` için:
+Kaynak SHA `9413542e840ffb8e7e74c0f9c866851cc9cafac0` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 123/123 birim testi |
+| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 124/124 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e` | Geçti: desktop Chromium + Pixel 7, 144/144 senaryo, 16,3 dakika; başarısız/atlanan yok |
+| `npm run test:e2e` | İlk tam koşuda 140 geçti; işletim sistemi `ERR_NETWORK_IO_SUSPENDED` nedeniyle zaman aşımına uğrayan 4 senaryo temiz sunucuda `--last-failed` ile 4/4 geçti. Yeni moderasyon senaryosu ayrıca iki viewportta 2/2 geçti. Atlanan yok |
 | Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
-Görsel kontrol sırasında canlı ortam önceki UI SHA'sı
-`2d8716be4bcf116432d735145b8a648098ad9e1b` üzerindeydi. Aday SHA'nın farkı
-yalnızca proje pitch kayıt sırası, ortak dosya doğrulaması, birim testi ve demo
-rehberidir; incelenen UI kaynakları değişmemiştir. Nihai canlı SHA, push sonrası
-iki ortamın `/api/health` yanıtıyla ayrıca doğrulanır.
+Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
+oranı korunarak gösterilir. CTA renkleri, biçimi ve izin verilen hareketi onay
+anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.00
+öncesinde kapalıdır. Nihai canlı SHA, push sonrası iki ortamın `/api/health`
+yanıtıyla ayrıca doğrulanır.
 
 ## Açık riskler ve yayın kararı
 
@@ -104,13 +104,6 @@ olmadan güvenlik sınırı kabul edilmemelidir.
 Axe, klavye senaryoları, focus trap, renk dışı durum, metin eşdeğeri ve iki
 viewport otomatik geçti. Yine de gerçek ekran okuyucu, yüzde 200/400 zoom,
 switch-control ve cihaz üstü reduced-motion turu ayrıca yapılmalıdır.
-
-### Orta: Yayın Atölyesi moderasyon kararı E2E kanıtına bağlı değil
-
-`/admin/newspaper` yüzeyi ve store karar metodu mevcut olsa da bu turdaki 144
-senaryo, yüklenen kreatifin moderatör tarafından onaylanıp okuyucu sayısına
-girmesini uçtan uca kanıtlamıyor. Yarışma demosunda bu adım gösterilecekse karar,
-denetim kaydı ve okuyucu çıktısı tek bir E2E senaryosunda bağlanmalıdır.
 
 ### Karar
 

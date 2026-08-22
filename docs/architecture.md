@@ -231,13 +231,9 @@ durumunu gözetmeli ve videonun metin/caption eşdeğerini sağlamalıdır.
 Proje pitch'i 90 saniye/50 MB gibi bir ürün limiti taşıyorsa limit yalnızca UI
 metni olmamalıdır. Client ve server tarafında doğrulanmalıdır.
 
-Mevcut `createProject` Action'ı isteğe bağlı pitch'i ortak MIME/50 MB kuralıyla
-doğrular ve yerel dosyaya proje kaydından önce yazar. Doğrulama veya yazma hatası
-olursa `DemoStore.createProject` çağrılmaz; böylece yarım proje ve yeniden denemede
-kopya proje oluşmaz. Bu prototip sıralaması dosya sistemi ile veri deposu arasında
-gerçek transaction sağlamaz: dosya yazıldıktan sonraki beklenmeyen bir store hatası
-yetim dosya bırakabilir. Production yolunda kalıcı Storage, gerçek içerik/süre
-doğrulaması ve transaction/outbox ya da orphan temizliği gerekir.
+Project create + upload akışında validation başarısızlığı yarım project kaydı
+bırakmamalı ve retry duplicate project üretmemelidir. Bu davranış transaction,
+pre-validation veya idempotent create yöntemiyle çözülmelidir.
 
 ## 8. Oturum, roller ve güvenlik
 
@@ -315,7 +311,20 @@ abonelik ve alan ödemesi gerçek tahsilat değil demo akışıdır.
 Ödeme simülasyonu taslağı `pending` moderasyon durumuna taşır ve moderator/admin
 profillerine bildirim üretir. `/admin/newspaper` kreatifi, alt metni ve CTA
 linklerini gösterir; onay, ret veya düzenleme isteği hem moderasyon kaydı hem de
-taslak sahibine bildirim oluşturur. Production yolunda dosya kalıcılığı,
+taslak sahibine bildirim oluşturur. Onay, mutasyona açık taslak bloklarını doğrudan
+okuyucuya vermek yerine kreatif URL'si, alt metin, CTA etiket/bağlantıları, renk,
+gradyan ve izin verilen hareket ayarlarından değişmez bir `NewspaperItem` anlık
+görüntüsü üretir. `campaignId` aynı taslağın ikinci kez eklenmesini engeller.
+
+Gelecek tarihli sayı İstanbul saatiyle 06.00'a kadar `draft` kalır. `listIssues`,
+`getLatestIssue`, `getIssueByDate` ve `hasIssueForToday` okuma anında zaman eşiğini
+uygular; doğrudan tarih parametresi taslak sayıyı erken açamaz. Seçilen tarih için
+sayı yoksa son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal öğeleri
+kopyalanır. Böylece ücretli yerleşim tek başına gazete oluşturmaz. Reader,
+onaylanan kreatifi düzenleme çerçevesi olmadan oranını koruyarak ve CTA anlık
+görüntüsünü iç/dış bağlantı güvenlik kurallarıyla render eder.
+
+Production yolunda dosya kalıcılığı,
 abonelik/ödeme ve aynı yetki kurallarının Supabase Storage ile RLS üzerinde
 uygulanması hâlâ gereklidir.
 
