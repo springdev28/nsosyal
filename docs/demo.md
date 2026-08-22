@@ -165,7 +165,10 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
    onay anındaki CTA'sıyla göründüğü doğrulanır. Gelecek tarihli sayının İstanbul
    saatiyle 06.00'dan önce doğrudan tarih bağlantısıyla açılamadığı ayrıca söylenir.
    Yeni sayı yalnızca ilandan oluşmaz; son sayının sponsorlu olmayan editoryal
-   omurgası korunur.
+   omurgası korunur ve önceki günün sponsorlu yerleşimleri taşınmaz. Uzun süre açık
+   kalan demo sunucusunda gün değişimi ilk okumada gerçekleşir, mevcut kullanıcı
+   mutasyonları korunur. İlk oturum kapağı 06.00'dan önce son yayımlanmış sayıyı,
+   eşikten sonra yeni sayıyı gösterir.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.
