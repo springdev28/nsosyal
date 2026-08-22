@@ -78,7 +78,7 @@ basar.
 
 | Alan | Yol | İçerik |
 | --- | --- | --- |
-| Ana akış | `/feed` | Karışık sosyal akış, geçici niyet modları, açıklanabilir öneri |
+| Ana akış | `/feed` | Karışık sosyal akış, çoklu medya oluşturucu, tam ekran hikâyeler, geçici niyet modları ve açıklanabilir öneri |
 | Kısa video | `/video` | Kısa video, metin karşılığı, proje/topluluk bağları |
 | Keşfet | `/explore` | N bağlantı işaretinden açılan yarım 5N selector |
 | Nerede | `/explore/map` | Türkiye il yoğunluk haritası, filtreler, bölge detayı, liste eşdeğeri |
@@ -88,9 +88,9 @@ basar.
 | Topluluklar | `/communities` | Kök/dal topluluklar, üyelik ve moderator onaylı başvuru |
 | Projeler | `/projects` | Yaşayan proje sayfaları, ilerleme, ekip, pitch videosu |
 | nGazete | `/newspaper` | Gerçek digital newspaper layout, editorial ve spatial sponsored inventory |
-| Yayın Atölyesi | `/publish` | Bağımsız, Canva tipi 30×40 A4 grid editörü; zengin Markdown, kaynaklar ve blok stil kontrolleri |
+| Yayın Atölyesi | `/publish` | Bağımsız 30×40 alan seçimi, tek kreatif yükleme, CTA yerleşimi, abonelik ve ödeme sonrası moderasyon |
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
-| Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan ve yerleşim yönetimi |
+| Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan/yerleşim ve Yayın Atölyesi kreatif incelemesi |
 
 ## Kişiselleştirme
 
@@ -133,12 +133,23 @@ nGazete generic card grid değildir. Gerçek dijital gazete yapısı hedeflenir:
 - editorial priority ve layout variants.
 
 Mevcut prototipte yayın üretimi `/publish` adresindeki bağımsız Yayın Atölyesi'nde
-çalışır. Bu rota ana uygulama kabuğunun dışında, yeni sekmede açılır. 30×40 A4 grid
-üzerinde sürükleme ve klavye oklarıyla yerleşim; başlık, paragraf, liste, alıntı,
-kod, bağlantı ve temel tablo Markdown'ı; içerik/düzen/stil denetçileri; tekrar
-kullanılabilir doku ve kaynaklar; gelişmiş tipografi ve görsel ayarları uygulanmıştır.
-Blok ayarları taslakta güvenli sınırlar içinde saklanır ve yeni alanlar eski
-taslaklarla uyumluluk için opsiyoneldir.
+çalışır. Bu rota ana uygulama kabuğunun dışında, yeni sekmede açılır. Kullanıcı
+30×40 grid üzerinde alan seçer, Canva veya başka bir araçtan dışa aktardığı tek
+PNG/JPG/WebP kreatifi yükler, zorunlu alt metni girer ve CTA butonlarını seçili
+alan içinde sürükleyip yeniden boyutlandırır. Alan seçici, düzenleme tuvali,
+önizleme ve nGazete okuyucusu aynı koyu gazete kâğıdı yüzeyini kullanır. Önizleme
+düzenleme ızgarasını ve alan seçim çerçevesini gizleyerek okuyucuya gidecek temiz
+yüzeyi gösterir.
+Standart hesap bir CTA ve yalnızca nSosyal içi bağlantı kullanabilir. Demo
+Yayınevi aboneliği üç CTA, dış `https`
+bağlantısı, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi sağlar. Abonelik
+akışı 200 TL/ay tutarını gösterir; gerçek tahsilat yapmaz. Ödeme simülasyonu
+sonrasında kreatif, alt metin ve bağlantılar moderasyon kuyruğuna girer. Onaylanan
+taslak, onay anındaki kreatif ve CTA ayarlarıyla değişmez bir okuyucu kaydına
+dönüştürülür. Gelecek tarihli sayı İstanbul saatiyle 06.00'dan önce doğrudan tarih
+bağlantısıyla da açılamaz; eşik sonrasındaki ilk okuma sayıyı yayımlar. Yeni sayı
+oluşturulursa son yayımlanmış sayının yalnızca editoryal içeriği kopyalanır; ücretli
+yerleşim tek başına bir gazete oluşturmaz.
 
 Sponsored placements gazetenin grid'i içinde yer alır ve açık `Sponsorlu` etiketi
 taşır. Reader UI'da ayrı bir `Ücretli alanlar` kart listesi veya gelir modeli

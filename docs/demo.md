@@ -53,6 +53,18 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | 0:40 | Admin approval | community/ad moderation ve audit mantığını göster |
 | 0:30 | Settings | long-term goals, privacy ve transient intent ayrımını göster |
 
+## Ana akış ve hikâye demo akışı
+
+1. Oluşturucu açılır; metin taslağının sayfa yenilemesinden sonra korunduğu
+   gösterilir.
+2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
+   topluluk seçiminin zorunlu olduğu gösterilir.
+3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
+   alanı gösterilir. İstenirse konum yalnızca bu gönderi için açılır.
+4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
+   geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
+5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği belirtilir.
+
 ## 5N demo akışı
 
 ### 1. Kapalı state
@@ -118,15 +130,29 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
-2. Kullanıcı gelecek yedi sayıdan ve en çok beş sayfadan birini seçer; 30×40
-   koyu gazete kâğıdı üzerinde boş bir dörtgen alan belirler.
-3. Canva veya başka bir tasarım aracından dışa aktarılmış PNG, JPG ya da WebP
-   kreatif yüklenir; alan içinde taşınır ve köşe tutamaçlarıyla boyutlandırılır.
-4. Normal üye için bir iç bağlantılı CTA eklenir. Yayınevi üyeliğinde üç CTA,
-   dış bağlantı, özel stil ve yüzde beş ilan indirimi gösterilebilir.
-5. Önizlemede yalnızca temiz gazete çıktısı görünür; seçim çerçevesi, ızgara ve
-   editör kontrolleri görünmez. Taslak kaydedilip yeniden açıldığında kreatif ve
-   CTA ayarlarının korunduğu doğrulanır.
+2. Sayı ve sayfa seçilir; 30×40 grid üzerinde satın alınacak alan çizilir ve
+   gerekirse yeniden boyutlandırılır. Alan seçici yüzeyinin nGazete okuyucusundaki
+   koyu gazete kâğıdıyla aynı olduğu doğrulanır.
+3. Canva veya başka bir araçtan dışa aktarılan PNG/JPG/WebP kreatif yüklenir ve
+   görsel açıklaması girilir.
+4. Standart hesapla bir nSosyal içi CTA eklenir; buton seçili alan içinde
+   sürüklenir ve yeniden boyutlandırılır.
+5. Demo Yayınevi aboneliği açılarak üç CTA, dış `https` linki, gradyan/hareket ve
+   yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
+   değildir.
+6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
+   görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
+   taslak rezerve edilir ve demo ödeme tamamlanır.
+   Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
+   düştüğü gösterilir.
+7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
+   bildirimi oluşturduğu doğrulanır.
+8. Onaylanan ilan için kullanıcı bildirimleri açılır. Hedef sayı yayın eşiğini
+   geçtiyse nGazete'de yüklenen kreatifin düzenleme ızgarası olmadan, alt metni ve
+   onay anındaki CTA'sıyla göründüğü doğrulanır. Gelecek tarihli sayının İstanbul
+   saatiyle 06.00'dan önce doğrudan tarih bağlantısıyla açılamadığı ayrıca söylenir.
+   Yeni sayı yalnızca ilandan oluşmaz; son sayının sponsorlu olmayan editoryal
+   omurgası korunur.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.
