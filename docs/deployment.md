@@ -12,14 +12,16 @@ seçer, `package.json` `node >=22` ister ve `.npmrc` içindeki
 PostCSS işçisi yerel port açarken `EPERM` aldığı için desteklenen Webpack yolu
 yerel, Hostinger ve Render derlemelerini tekrarlanabilir tutar.
 
-23 Ağustos 2026 tarihli GitHub Actions koşusu 32643450990, doğrulanan baseline
-`a48fc4716fcc68718fd891e77745d210ebbe6466` kaynağında Node.js 22 ile
-131/131 birim testini ve 166/166 Playwright senaryosunu tamamladı. Aynı koşunun
-Confirm live işi Hostinger ve Render `/api/health` yanıtlarında tam `a48fc471...`
+23 Ağustos 2026 tarihli GitHub Actions koşusu 32645269975, doğrulanan baseline
+`39f36934eeeacd5a6fd49d891de035953ef4d525` kaynağında Node.js 22 ile
+131/131 birim testini ve 172/172 Playwright senaryosunu tamamladı. Aynı koşunun
+Confirm live işi Hostinger ve Render `/api/health` yanıtlarında tam `39f3693...`
 commit kimliğini doğruladı. Ana dal daha sonra
-`39f36934eeeacd5a6fd49d891de035953ef4d525` commit'ine ilerledi. Bu commit'in tam
-CI ve canlı ortam kimliği henüz doğrulanmış sayılmamalıdır. Kaynak ağacındaki
-yeni reflow kontrollerini içeren odaklı masaüstü ve mobil koşu 12/12 geçmiştir.
+`8c56a51eeb9ba57607b52634e7292e552734d3b0` commit'ine ilerledi. Güncel kaynakta
+arama mahremiyeti ve filtre anlamı testleriyle 133/133 birim testi, hedefli global
+arama, axe ve reflow paketiyle 8/8 senaryo geçmiştir. Tam E2E envanteri 180
+senaryodur; 8c56a51 kaynağında tek bir tam CI koşusu ve iki canlı ortamda kesin
+SHA eşitliği henüz doğrulanmış sayılmamalıdır.
 Bir canlı adresin yalnızca HTTP 200 döndürmesi dağıtım kanıtı sayılmaz. Yanıttaki
 commit alanı, push edilen tam SHA ile eşleşmelidir.
 

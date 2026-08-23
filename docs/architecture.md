@@ -135,6 +135,30 @@ Karar kayıtları:
 [0002](decisions/0002-aciklanabilir-siralama.md) ve
 [0004](decisions/0004-ucretli-gorunurluk-yalnizca-ngazetede.md).
 
+### 4.2 Global arama
+
+Masaüstü uygulama kabuğundaki arama kutusu ile `/explore` formu sonucu istemcide
+tutmaz. Her ikisi de sorguyu ve etkin filtreleri `/explore?q=...` URL'sine yazar.
+Bu sözleşme yenileme, geri gitme ve paylaşılan bağlantılarda aynı arama durumunu
+korur. `/explore/page.tsx` güvenilmeyen URL değerlerini `parseFilters` ile
+doğrular, oturum sahibini çözer ve tek bir `DemoStore.discover` çağrısıyla kişi,
+kurum, paylaşım, topluluk, proje ve etkinlik sonuçlarını alır.
+
+Sonuçlar yeni ve ayrı veri modellerine çevrilmez. Kişiler ile kurumlar
+`ProfileSummary`, paylaşımlar `PostView`, diğer türler de mevcut ortak view
+modelleri üzerinden gösterilir. Paylaşım sonuçları akıştaki `PostCard` bileşenini
+kullandığı için beğenme, kaydetme ve yorum sözleşmesi aramada da korunur. Arama
+etkinken kök topluluklar, yaklaşan etkinlikler ve öne çıkan Neden hikâyeleri
+gizlenir. Böylece sonuç listesi ile keşif ana sayfasının öneri alanları birbirine
+karışmaz.
+
+Konum paylaşmayan bir kişi, il veya ilçe filtresi yokken adı, kullanıcı adı ya da
+biyografisiyle bulunabilir. İl filtresi yalnız il veya ilçe düzeyinde paylaşımı
+açık profilleri içerir. İlçe filtresi yalnız ilçe düzeyinde paylaşımı açık
+profilleri içerir. UI kesin konum, ham profil kaydı veya canlı koordinat almaz.
+Yalnız zaman ya da katılım biçimi filtresi kişi ve kurum sonucu üretmez, çünkü bu
+iki filtre profil kayıtları için anlamlı değildir.
+
 ## 5. Marka işareti ve 5N selector mimarisi
 
 ### 5.1 Marka kaynağı
@@ -469,6 +493,7 @@ Tam E2E paketi şu kritik senaryoları masaüstü ve mobil projelerde korur:
 - project create + pitch validation + no duplicate/partial record;
 - like/save/comment/follow action chains and the private `/saved` collection;
 - short-video like/save controls using the shared social-action contract;
+- global search across people, organizations, posts, communities, projects, and events;
 - nGazete real layout + spatial sponsored placement;
 - advertiser request + pricing snapshot + admin approval;
 - location/privacy;
@@ -479,6 +504,12 @@ yeniden çizim zinciri boyunca sınar. `tests/e2e/accessibility.spec.ts` içinde
 sayfa envanteri `/saved` ve `/video` rotalarını da kapsar. Bu eklenen senaryoların
 varlığı testlerin bu commit için çalıştırıldığı anlamına gelmez; sonuç yalnızca
 gerçek komut çıktısı varsa başarı olarak kaydedilir.
+
+`tests/e2e/search.spec.ts` arama formundan URL'ye, `DemoStore.discover` sonucundan
+ortak kartlara kadar kişi, kurum ve paylaşım yolculuklarını iki viewportta sınar.
+Store birim testleri genel aramada konumunu gizleyen profilin bulunabildiğini,
+yerel filtrelerde ise paylaşım düzeyine uyulduğunu korur. Erişilebilirlik paketi
+arama sonuç durumunu axe ve 320 CSS piksel reflow denetimine dahil eder.
 
 ## 14. Bilinen production farkları
 

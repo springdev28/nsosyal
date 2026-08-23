@@ -158,12 +158,13 @@ görüntüsünden türetilir.
 - Nasıl resources
 - yaşayan project pages
 - nGazete gerçek editorial layout + ad inventory
-- notifications, search/saved, profile/settings
+- URL tabanlı global arama + private saved collection
+- notifications, profile/settings
 - moderation/admin
 
 ### P1
 
-- gelişmiş arama
+- semantik ve typo-tolerant gelişmiş arama
 - badges/progress
 - gelişmiş analytics
 - richer recommendation tuning
@@ -204,6 +205,26 @@ oturum sahibine ait kişisel koleksiyon olarak listelenir. Koleksiyona masaüst�
 ana gezinmeden, mobilde kullanıcının kendi profilindeki `Kaydedilenler`
 kısayolundan ulaşılır. Kısa video kartları da beğeni, yorum ve kaydetme
 eylemlerini aynı sosyal veri sözleşmesiyle kullanır.
+
+## 7.1.1 Global arama
+
+Mevcut prototipte uygulama kabuğundaki arama kutusu ve `/explore` formu sorguyu
+`/explore?q=...` URL'sine taşır. Kullanıcı kişi, kurum, paylaşım, topluluk, proje
+ve etkinlik arayabilir. Sonuçlar türlerine göre başlıklı bölümlerde gösterilir;
+paylaşımlar ana akıştaki gerçek `PostCard` bileşenini kullanır. Arama etkinleşince
+keşif ana sayfasındaki öneri alanları gizlenir ve sonuç toplamına kişi ile kurumlar
+da dahil edilir. Sonuç yoksa filtre temizleme eylemi olan açık bir boş durum
+gösterilir.
+
+Genel ad, kullanıcı adı veya biyografi araması için konum paylaşımı gerekmez. İl
+filtresinde yalnız il ya da ilçe düzeyinde paylaşımı açık profiller, ilçe
+filtresinde yalnız ilçe düzeyinde paylaşımı açık profiller gösterilir. Kesin veya
+canlı konum UI'a aktarılmaz. Yalnız zaman veya katılım biçimi filtresi, profil
+kayıtlarında karşılığı olmadığı için kişi ya da kurum sonucu üretmez.
+
+Bu kapsam basit alt dize aramasıyla uygulanmıştır. Typo toleransı, eş anlamlılar,
+semantik sorgu çözümleme, ayrı arama indeksi ve production ölçekli sıralama P1/P2
+çalışmasıdır.
 
 > **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 

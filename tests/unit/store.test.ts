@@ -9,11 +9,9 @@ import { uid } from '@/lib/seed/ids';
 import { resolvePreset, toIstanbulDateKey } from '@/lib/time';
 
 /**
- * Veri deposu ve ürün kuralları testleri.
- *
- * Buradaki testlerin çoğu "kod çalışıyor mu"dan çok "ürün kuralı korunuyor mu"
- * sorusunu sorar: topluluk onaysız açılamaz, konum gizli olan kullanıcı yerel
- * sonuçlarda görünmez, onaylanan ilan akışa dokunmaz.
+ * These tests protect product rules at the DemoStore boundary. Pages and Server
+ * Actions depend on this class, so a rule proved here applies to every route
+ * that reads the same view models.
  */
 
 const NOW = new Date('2026-08-18T09:00:00Z');
@@ -213,6 +211,20 @@ describe('etkinlik hatırlatmaları', () => {
 });
 
 describe('konum mahremiyeti', () => {
+  it('konum paylaşmayan kullanıcı genel kullanıcı adı aramasında bulunur', () => {
+    const privateLocation = store.listProfiles().find((profile) => profile.locationVisibility === 'online_only')!;
+    const results = store.discover({ query: privateLocation.username });
+
+    expect(results.profiles.some((entry) => entry.id === privateLocation.id)).toBe(true);
+  });
+
+  it('yalnız zaman filtresi kişi veya kurum sonucu üretmez', () => {
+    const results = store.discover({ range: resolvePreset('today', NOW) });
+
+    expect(results.profiles).toHaveLength(0);
+    expect(results.organizations).toHaveLength(0);
+  });
+
   it('konumu gizli olan kullanıcı yerel kişi sonuçlarında görünmez', () => {
     const hidden = store.listProfiles().find((profile) => profile.locationVisibility === 'online_only')!;
     const results = store.discover({ provinceCode: hidden.provinceCode ?? '35' });

@@ -43,6 +43,7 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | --- | --- | --- |
 | 0:30 | Problem + ürün cümlesi | nSosyal'ın neden bağlamsal keşfe ihtiyaç duyduğunu kur |
 | 0:45 | Feed + casual post + short video | ürünün yalnız kariyer/proje sitesi olmadığını göster |
+| 0:35 | Global arama -> kişi/kurum/paylaşım sonucu | aramanın farklı platform varlıklarını ortak keşif sözleşmesinde birleştirdiğini göster |
 | 1:15 | N mark -> half-fade selector -> Nerede | özgün 5N interaction'ı göster |
 | 1:15 | Türkiye density map -> metric/topic/time filter -> province | "nerede yoğun?" sorusunu gerçek harita ile cevapla |
 | 0:45 | Event detail -> reminder | Nerede + Ne zaman bağını göster |
@@ -67,6 +68,21 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği, marka motion
    katmanının gizlendiği ve nGazete/Yayın Atölyesi sürekli dekoratif
    animasyonlarının tamamen durduğu gösterilir.
+
+## Global arama demo akışı
+
+1. `/explore` üzerindeki arama alanına `ece.uzay` yazılır. URL'de sorgunun
+   oluştuğu ve Kişiler bölümündeki profil kartının doğru profile açıldığı
+   gösterilir.
+2. Aynı profil il filtresiyle aranır. Profil konumunu paylaşmadığı için yerel
+   sonuçta görünmez. Bu davranışın genel aramayı kapatmadığı açıklanır.
+3. `egeteknopark.demo` kullanıcı adıyla Kurumlar sonucu açılır.
+4. Bir gönderide geçen `tek bir kırmızı LED` ifadesi aranır. Paylaşımın ortak
+   `PostCard` bileşeniyle ve gerçek sosyal eylemleriyle gösterildiği doğrulanır.
+5. Arama etkinleştiğinde keşif ana sayfasındaki kök topluluk, yaklaşan etkinlik ve
+   öne çıkan Neden önerilerinin sonuç listesine karışmadığı gösterilir.
+6. 320 CSS piksellik görünümde kişi kartının ve arama eyleminin yatay taşmadığı
+   kontrol edilir.
 
 ## Sosyal eylemler ve Kaydedilenler demo akışı
 

@@ -81,7 +81,7 @@ basar.
 | --- | --- | --- |
 | Ana akış | `/feed` | Karışık sosyal akış, 320 CSS pikselde eylemi kırpılmayan çoklu medya oluşturucu, tam ekran hikâyeler, geçici niyet modları ve açıklanabilir öneri |
 | Kısa video | `/video` | Kısa video, metin karşılığı, proje/topluluk bağları |
-| Keşfet | `/explore` | N bağlantı işaretinden açılan yarım 5N selector |
+| Keşfet | `/explore` | Paylaşılabilir URL üzerinden kişi, kurum, paylaşım, topluluk, proje ve etkinlik araması; N bağlantı işaretinden açılan yarım 5N selector |
 | Nerede | `/explore/map` | Türkiye il yoğunluk haritası, filtreler, bölge detayı, liste eşdeğeri |
 | Ne zaman | `/explore/time` | Geçmiş/bugün/gelecek, etkinlik ve son başvuru, hatırlatma |
 | Neden | `/explore/why` | Gerçek motivasyon ve arka plan hikâyeleri |
