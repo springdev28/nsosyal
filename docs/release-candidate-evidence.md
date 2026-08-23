@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `f354f207301d43ee73147397ef5910f98e0888db`
+Doğrulanan uygulama kaynak SHA'sı: `dbcd4ff30bc585d04130d55802ecd8f38166559b`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -32,6 +32,7 @@ Durum sözlüğü:
 | P0 yolculuk | Rotalar | Veri ve mutasyon yolu | Otomatik kanıt | Görsel/a11y kanıtı | Durum |
 | --- | --- | --- | --- | --- | --- |
 | Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` masaüstü ve 320×800 incelendi; taslak etiketi açıkken Gönder eylemi kırpılmıyor; desktop/mobile axe | Doğrulandı |
+| Beğeni → yorum → kaydet/koleksiyonda bul → takip et/bırak | `/feed`, `/posts/[id]`, `/saved`, `/profile/[username]` | Social Server Actions → `DemoStore`; kaydedilenler yalnız oturum sahibinin view modelidir | `social-actions` içindeki 4 senaryo iki viewportta; store birim testleri | Profil kısayolu ve `/saved` masaüstü/Pixel 7 incelendi; `/saved` ile `/video` axe temiz | Doğrulandı |
 | N işareti → yarım yay → gerçek 5N paneli | `/explore`, `/explore/map`, `/explore/time`, `/explore/how`, `/explore/why` | İstemci seçim durumu; seçim URL rotasına taşınır | `five-n-selector` içindeki 8 senaryo iki viewportta geçti | Açık yay 1440×1000 ve 390×844 incelendi; `Nasıl` araması ile `Neden` kartları 320×800 reflow görünümüne sığıyor; hedefler en az 44×44; axe temiz | Doğrulandı |
 | Türkiye yoğunluk haritası → il → ilçe → sonuç | `/explore/map` | Yerel GeoJSON + `DemoStore` yoğunluk sorgusu; kişisel canlı koordinat yok | `map-density`; `competition-flows` 2 | Desktop/mobile harita, legend ve erişilebilir liste incelendi; axe temiz | Doğrulandı |
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
@@ -61,16 +62,16 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `f354f207301d43ee73147397ef5910f98e0888db` için:
+Kaynak SHA `dbcd4ff30bc585d04130d55802ecd8f38166559b` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm ci` | Geçti: nihai kilit dosyasından 554 paket kuruldu, 555 paket denetlendi; npm 0 açık bildirdi |
 | `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 130/130 birim testi |
-| `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 31 App Router rotasının tamamı üretildi |
+| `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve yeni `/saved` rotası çıktı listesinde yer aldı |
 | `npm audit --omit=dev --json` | Kritik 0, yüksek 0, orta 0, düşük 0; toplam 0. Next 15'in dahili `postcss` ve `sharp` kayıtları Next 16.3.2 geçişiyle kapandı. |
-| Tam `npm run test:e2e` | Tek koşuda 152/152 geçti: 76 masaüstü + 76 Pixel 7, 15,6 dakika. Axe, 320 piksel reflow, klavye, reduced-motion, harita/ilçe, story, gazete ve Yayın Atölyesi akışları dahildir. Atlanan, izole tekrar gerektiren veya zaman aşımına uğrayan senaryo yoktur. |
-| Canlı görsel kontrol | Yerel Next 16 üretim derlemesinde masaüstü ana akış, nGazete ve Yayın Atölyesi; 412×915 Pixel 7 görünümünde ana akış, Yayın Atölyesi, Türkiye haritası ve açık yarım yay 5N seçici incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
+| Tam `npm run test:e2e` | Tek koşuda 164/164 geçti: 82 masaüstü + 82 Pixel 7, 21,8 dakika. Axe, 320 piksel reflow, klavye, reduced-motion, harita/ilçe, story, gazete, Yayın Atölyesi ve beğeni/yorum/kaydet/takip akışları dahildir. Atlanan, izole tekrar gerektiren veya zaman aşımına uğrayan senaryo yoktur. |
+| Yerel görsel kontrol | Next 16 üretim derlemesinde masaüstü ana akış, nGazete, Yayın Atölyesi, profil kısayolu ve Kaydedilenler; 412×915 Pixel 7 görünümünde ana akış, Yayın Atölyesi, Türkiye haritası, açık yarım yay 5N seçici, profil kısayolu ve Kaydedilenler incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 `npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
@@ -85,11 +86,18 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Kod ve ilk kanıt commit'ini içeren `a12e752b013fc2a384f5cbc26295e3a6c6f29e74`
-SHA'sı, 23 Ağustos 2026'da hem Hostinger hem Render `/api/health` yanıtında
-görüldü. İki ortamın `/login` rotası da HTTP 200 döndü ve gerçek `nSosyal` ile
-`Demo hesabıyla gir` metinlerini içerdi. Hostinger dağıtımı
-`01a02d7c-d24c-726f-bfa4-e019900e1dfe` kimliğiyle `completed` durumuna ulaştı.
+Uygulama kaynak commit'i `dbcd4ff30bc585d04130d55802ecd8f38166559b`,
+23 Ağustos 2026'da hem Hostinger hem Render `/api/health` yanıtında birebir
+görüldü. GitHub Actions koşusu `32632751677` içindeki Verify işi de `npm ci`,
+verify ve 164 E2E testini geçti. Aynı koşunun ilk `Confirm live` işi Render SHA'sını
+doğruladı; ancak Hostinger'ın GitHub Azure runner bağlantısını 18 kez yanıtsız
+bırakması nedeniyle yanlış negatif verdi. Yerel doğrudan istek ve cache-busting
+URL kullanan bağımsız gözlemci aynı anda doğru Hostinger SHA'sını döndürdü.
+İki ortamın `/login` rotası da gerçek `nSosyal` ile `Demo hesabıyla gir`
+metinlerini içerdi.
+Workflow bu belgeyle birlikte, doğrudan kanal boşsa aynı public endpoint'i
+bağımsız gözlemci üzerinden okuyacak ve her durumda tam SHA eşitliği arayacak
+şekilde güncellendi; eski veya ayrıştırılamayan yanıt başarılı sayılmaz.
 
 Hostinger'ın dağıtım sonrası tarayıcısı iki yüksek kayıt göstermeye devam etti:
 `brace-expansion@1.1.18` yalnızca ESLint/minimatch geliştirme zincirinde;

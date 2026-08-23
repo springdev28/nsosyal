@@ -37,9 +37,9 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           # Uretim Node 22 kullandigi icin CI daha eski bir runtime'da sahte guven vermemeli.
           node-version: 22
@@ -72,19 +72,25 @@ jobs:
         env:
           SHA: ${{ github.sha }}
           HOSTINGER_URL: https://aliceblue-chimpanzee-816645.hostingersite.com/api/health
+          HOSTINGER_OBSERVER: https://r.jina.ai/https://aliceblue-chimpanzee-816645.hostingersite.com/api/health
           RENDER_URL: https://nsosyal-5n1k.onrender.com/api/health
         run: |
           failed=0
 
           check() {
-            name="$1"; url="$2"
+            name="$1"; url="$2"; observer="${3:-}"
             echo "::group::$name"
             echo "$url"
-            # Render'in ucretsiz katmani uykudan kalkarken 30-60 saniye
-            # alabiliyor; Hostinger ~2 dakikada derliyor. Toplam ~6 dakika
-            # beklenir, sonrasi gercekten takilmis demektir.
-            for attempt in $(seq 1 18); do
-              body=$(curl -fsS --max-time 25 "$url" 2>/dev/null || true)
+            # Hostinger bazen GitHub'in Azure runner IP'lerini yanitsiz birakiyor.
+            # Yedek gozlemci yalniz dogrudan istek bosken ayni public endpoint'i
+            # okur; her iki yolda da cache-busting query ve tam SHA zorunludur.
+            for attempt in $(seq 1 12); do
+              body=$(curl -4 -fsS --connect-timeout 5 --max-time 12 \
+                -A "nSosyal-release-check/$SHA" "$url?verify=$SHA" 2>/dev/null || true)
+              if [ -z "$body" ] && [ -n "$observer" ]; then
+                body=$(curl -4 -fsS --connect-timeout 5 --max-time 20 \
+                  -A "nSosyal-release-check/$SHA" "$observer?verify=$SHA" 2>/dev/null || true)
+              fi
               live=$(printf '%s' "$body" | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p')
 
               if [ "$live" = "$SHA" ]; then
@@ -93,7 +99,7 @@ jobs:
                 return 0
               fi
 
-              echo "deneme $attempt/18: canli '${live:-yanit yok}'"
+              echo "deneme $attempt/12: canli '${live:-yanit yok}'"
               sleep 20
             done
 
@@ -102,6 +108,6 @@ jobs:
             failed=1
           }
 
-          check "Hostinger" "$HOSTINGER_URL"
+          check "Hostinger" "$HOSTINGER_URL" "$HOSTINGER_OBSERVER"
           check "Render" "$RENDER_URL"
           exit "$failed"
