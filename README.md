@@ -95,12 +95,15 @@ basar.
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
 | Yönetim | `/admin` | Moderasyon, raporlar, nGazete ilan/yerleşim ve Yayın Atölyesi kreatif incelemesi |
 
-Demo yükleme yolunda MP4/WebM videolar dosya yazılmadan önce sunucuda MIME,
-50 MB boyut ve kapsayıcıdan okunan 90 saniye sınırıyla doğrulanır. Tarayıcıdaki
-metadata kontrolü yalnızca hızlı geri bildirim içindir. Süresi okunamayan veya
-MIME ile kapsayıcısı uyuşmayan video reddedilir. Dosyalar hâlâ yerel
-`public/uploads` dizinine yazılır; kalıcı Storage, codec/transcode ve kötü amaçlı
-dosya taraması production kapsamındadır.
+Demo yükleme yolunda JPG/PNG/WebP görseller ile MP4/WebM videolar sunucuda
+dosya imzası, bildirilen MIME ve gerçek byte sayısıyla doğrulanır. Görseller 12
+MB, videolar 50 MB ve 90 saniye ile sınırlıdır. Tüm dosyalar önce bellekte
+hazırlanır; grup hâlinde, mevcut dosyanın üzerine yazmayı reddeden `wx` kipiyle
+`public/uploads` dizinine alınır. Sonraki medya veya proje kaydı başarısız olursa
+o isteğin oluşturduğu dosyalar ve kayıtlar geri alınır. `/uploads/[filename]`
+Route Handler'ı yalnızca üretilen güvenli adları ve izinli uzantıları sunar.
+Bu yerel disk yolu prototip içindir. Kalıcı Storage/CDN, codec dönüştürme ve kötü
+amaçlı dosya taraması production kapsamındadır.
 
 ## Kişiselleştirme
 

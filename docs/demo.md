@@ -105,16 +105,21 @@ sunucu yeniden başlatıldığında koleksiyon başlangıç verisine döner.
 
 ## Proje pitch demo akışı
 
-1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı MP4/WebM pitch seçilir.
+1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı gerçek bir MP4/WebM
+   pitch seçilir.
 2. Form dosya adını gösterirken tarayıcı metadata'sından süreyi denetler; 90
    saniyeyi aşan veya süresi okunamayan seçim alanı temizlenir ve ilişkili hata
    metni gösterilir.
-3. Geçerli dosya gönderildiğinde Server Action MIME, gerçek byte sayısı ve
-   kapsayıcı süresini dosya yazılmadan önce yeniden doğrular. Başarıda ölçülen
-   süre medya kaydına yazılır ve proje bundan sonra oluşturulur.
-4. Geçersiz tür, boyut, süre veya MIME/kapsayıcı uyuşmazlığında proje açılmadığı
-   gösterilir. Production Storage, codec/transcode ve kötü amaçlı dosya taraması
-   bu demo akışının dışında ve planlanandır.
+3. Geçerli dosya gönderildiğinde Server Action MIME, gerçek byte sayısı,
+   MP4/WebM kapsayıcısı ve kapsayıcıdan okunan süreyi dosya yazılmadan önce
+   yeniden doğrular.
+4. Hazırlanan pitch dosyası grup yazma yordamıyla `public/uploads` dizinine
+   alınır. Ardından proje, kurucu üyelik ve medya kaydı oluşturulur.
+5. Proje sayfasında pitch oynatılır; ölçülen süre ile erişilebilir metin eşdeğeri
+   gösterilir. Dosya `/uploads/[filename]` Route Handler'ı üzerinden okunur.
+6. Geçersiz dosyada veya sonraki veri adımını taklit eden bir hatada yarım proje,
+   yetim medya kaydı ve o isteğe ait dosya kalmadığı doğrulanır. Production
+   Storage/CDN, codec dönüştürme ve kötü amaçlı dosya taraması planlanandır.
 
 ## 5N demo akışı
 

@@ -1845,6 +1845,14 @@ export class DemoStore {
     return record;
   }
 
+  /** Removes only uncommitted media records after an upload transaction fails. */
+  removeMedia(mediaIds: readonly UUID[]): void {
+    const ids = new Set(mediaIds);
+    for (let index = this.data.media.length - 1; index >= 0; index -= 1) {
+      if (ids.has(this.data.media[index].id)) this.data.media.splice(index, 1);
+    }
+  }
+
   joinCommunity(communityId: UUID, profileId: UUID): boolean {
     if (this.getCommunityRole(communityId, profileId)) return false;
     this.data.communityMembers.push({
@@ -2072,12 +2080,30 @@ export class DemoStore {
       pitchMediaId: null,
     };
     this.data.projects.unshift(project);
-    this.data.projectMembers.push({
-      projectId: project.id,
-      profileId: input.ownerId,
-      roleLabel: 'Kurucu',
-    });
+    try {
+      this.data.projectMembers.push({
+        projectId: project.id,
+        profileId: input.ownerId,
+        roleLabel: 'Kurucu',
+      });
+    } catch (error) {
+      this.data.projects.splice(this.data.projects.indexOf(project), 1);
+      throw error;
+    }
     return project;
+  }
+
+  /** Restores the pre-submit state when a project upload cannot be completed. */
+  rollbackProjectCreation(projectId: UUID, mediaIds: readonly UUID[]): void {
+    const projectIndex = this.data.projects.findIndex((project) => project.id === projectId);
+    if (projectIndex >= 0) this.data.projects.splice(projectIndex, 1);
+
+    for (let index = this.data.projectMembers.length - 1; index >= 0; index -= 1) {
+      if (this.data.projectMembers[index].projectId === projectId) {
+        this.data.projectMembers.splice(index, 1);
+      }
+    }
+    this.removeMedia(mediaIds);
   }
 
   attachPitch(projectId: UUID, mediaId: UUID): boolean {

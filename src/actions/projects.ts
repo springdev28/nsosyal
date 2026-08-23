@@ -1,11 +1,10 @@
 /**
- * Proje ve Neden hikayesi olusturma akislarinin sunucu dogrulama siniridir.
- * Medya limitleri UI metnine birakilmaz; kayit olusmadan once yeniden denetlenir.
+ * Server-side boundary for creating projects and Why stories.
+ * Upload rules are checked here again because browser validation can be bypassed.
  */
 'use server';
 
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { revalidatePath } from 'next/cache';
@@ -14,25 +13,24 @@ import { redirect } from 'next/navigation';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { inspectVideoUpload } from '@/lib/media/constraints';
+import { commitLocalUploadBatch } from '@/lib/media/local-upload';
 import type { Project, WhyStory } from '@/types/domain';
-
-/**
- * Proje ve Neden hikayesi olusturma (PROJECT_SPEC 17.11 / 17.9).
- *
- * Video yukleme notu: prototipte transcode/CDN altyapisi kurulmaz. Dosya
- * dogrulanir ve sunucudaki public/uploads altina yazilir. Bu, hedeflenen
- * Node.js barindirma (Hostinger) icin calisan bir cozumdur; uretimde yerini
- * Supabase Storage alacaktir (bkz. docs/architecture.md).
- */
 
 export interface ProjectFormState {
   error?: string;
   message?: string;
 }
 
-async function storeUploadedVideo(
+interface PreparedProjectVideo {
+  absolutePath: string;
+  publicPath: string;
+  bytes: Uint8Array;
+  durationSec: number;
+}
+
+async function prepareProjectVideo(
   file: File,
-): Promise<{ path: string; durationSec: number } | { error: string }> {
+): Promise<PreparedProjectVideo | { error: string }> {
   const inspection = await inspectVideoUpload(file);
   if (!inspection.ok) return { error: inspection.error };
 
@@ -40,10 +38,12 @@ async function storeUploadedVideo(
   const name = `${randomUUID()}.${extension}`;
   const directory = join(process.cwd(), 'public', 'uploads');
 
-  await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, name), inspection.bytes);
-
-  return { path: `/uploads/${name}`, durationSec: inspection.durationSec };
+  return {
+    absolutePath: join(directory, name),
+    publicPath: `/uploads/${name}`,
+    bytes: inspection.bytes,
+    durationSec: inspection.durationSec,
+  };
 }
 
 export async function createProject(_prev: ProjectFormState, formData: FormData): Promise<ProjectFormState> {
@@ -67,45 +67,56 @@ export async function createProject(_prev: ProjectFormState, formData: FormData)
   const shareLocation = formData.get('shareLocation') === 'on';
   const store = getStore();
 
-  // Dosya once dogrulanip yazilir. Gecersiz/yazilamayan bir video, artik
-  // kullanicinin karsisinda yarim proje birakmaz ve yeniden deneme kopya proje
-  // uretmez. Demo deposundaki create islemi bundan sonra hatasiz ve senkrondur.
   const file = formData.get('pitch');
-  let uploadedVideoPath: string | null = null;
-  let uploadedVideoDuration: number | null = null;
+  let preparedVideo: PreparedProjectVideo | null = null;
   if (file instanceof File && file.size > 0) {
-    const result = await storeUploadedVideo(file);
+    const result = await prepareProjectVideo(file);
     if ('error' in result) return { error: result.error };
-    uploadedVideoPath = result.path;
-    uploadedVideoDuration = result.durationSec;
+    preparedVideo = result;
   }
 
-  const project = store.createProject({
-    ownerId: viewer.id,
-    title,
-    summary,
-    status: (String(formData.get('status') ?? 'fikir') as Project['status']) ?? 'fikir',
-    topicIds,
-    provinceCode: shareLocation ? viewer.provinceCode : null,
-    districtCode: shareLocation ? viewer.districtCode : null,
-    whyText,
-    howText: String(formData.get('howText') ?? '').trim(),
-    needs: String(formData.get('needs') ?? '').trim(),
-    communityIds: formData.getAll('communities').map(String).filter(Boolean),
-  });
+  let uploadCommit;
+  try {
+    uploadCommit = await commitLocalUploadBatch(preparedVideo ? [preparedVideo] : []);
+  } catch {
+    return { error: 'Pitch videosu kaydedilemedi. Dosyayı yeniden seçip tekrar dene.' };
+  }
 
-  // Pitch istege baglidir; basarili dosya yazimi proje kaydina burada baglanir.
-  if (uploadedVideoPath) {
-    const media = store.addMedia({
-      postId: null,
-      mediaType: 'video',
-      storagePath: uploadedVideoPath,
-      caption: `${title} · pitch`,
-      altText: String(formData.get('pitchTranscript') ?? '').slice(0, 1000),
-      durationSec: uploadedVideoDuration,
-      posterPath: null,
+  let project: Project | null = null;
+  const mediaIds: string[] = [];
+  try {
+    project = store.createProject({
+      ownerId: viewer.id,
+      title,
+      summary,
+      status: (String(formData.get('status') ?? 'fikir') as Project['status']) ?? 'fikir',
+      topicIds,
+      provinceCode: shareLocation ? viewer.provinceCode : null,
+      districtCode: shareLocation ? viewer.districtCode : null,
+      whyText,
+      howText: String(formData.get('howText') ?? '').trim(),
+      needs: String(formData.get('needs') ?? '').trim(),
+      communityIds: formData.getAll('communities').map(String).filter(Boolean),
     });
-    store.attachPitch(project.id, media.id);
+
+    if (preparedVideo) {
+      const media = store.addMedia({
+        postId: null,
+        mediaType: 'video',
+        storagePath: preparedVideo.publicPath,
+        caption: `${title} · pitch`,
+        altText: String(formData.get('pitchTranscript') ?? '').slice(0, 1000),
+        durationSec: preparedVideo.durationSec,
+        posterPath: null,
+      });
+      mediaIds.push(media.id);
+      if (!store.attachPitch(project.id, media.id)) throw new Error('Pitch could not be attached.');
+    }
+  } catch {
+    if (project) store.rollbackProjectCreation(project.id, mediaIds);
+    else store.removeMedia(mediaIds);
+    await uploadCommit.rollback();
+    return { error: 'Proje kaydedilemedi. Yarım kayıt tutulmadı; tekrar deneyebilirsin.' };
   }
 
   store.track('project_created', { hasPitch: file instanceof File && file.size > 0 }, viewer.id);
@@ -160,7 +171,7 @@ export async function addProjectUpdate(formData: FormData): Promise<void> {
   const slug = String(formData.get('slug') ?? '');
   if (!projectId || body.length < 4) return;
 
-  // Yalnizca proje sahibi ve ekip uyeleri guncelleme ekleyebilir.
+  // This owner check is the prototype's authorization boundary for updates.
   const project = getStore().getProject(projectId);
   if (!project || project.ownerId !== viewer.id) return;
 

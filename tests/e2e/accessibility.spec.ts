@@ -144,6 +144,15 @@ test.describe('axe taraması', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
   });
 
+  test('Proje oluşturma formu 320 piksel reflow görünümünde yatay taşmaz', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'creator');
+    await page.goto('/create/project');
+
+    await expect(page.getByRole('heading', { name: 'Proje oluştur' })).toBeVisible();
+    await expectNoHorizontalPageOverflow(page);
+  });
+
   for (const entry of [
     { path: '/newspaper', name: 'nGazete' },
     { path: '/publish', name: 'Yayın Atölyesi' },

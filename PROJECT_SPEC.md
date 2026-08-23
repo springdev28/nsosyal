@@ -189,15 +189,19 @@ Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi t�
 herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
 Sayaç, taslak etiketi ve Gönder eylemi dar reflow görünümünde birlikte satır
 atlayabildiği için 320 CSS pikselde eylem kırpılmaz ve yatay taşma oluşmaz.
-Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir. Görsel
-sınırı 12 MB'dir; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu, video
-dosyasını yazmadan önce MIME, byte sayısı ve MP4/WebM kapsayıcı süresini doğrular;
-süre okunamazsa veya MIME ile kapsayıcı uyuşmazsa yüklemeyi reddeder. Medya
-açıklaması zorunludur. Akıştaki
+Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir.
+Görseller 12 MB; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu görsellerde
+dosya imzasını, bildirilen MIME değerini ve gerçek byte sayısını; videolarda
+bunlara ek olarak MP4/WebM kapsayıcısını ve kapsayıcıdan okunan süreyi doğrular.
+Tüm medya dosyaları yazma başlamadan hazırlanır ve tek bir grup olarak
+`public/uploads` dizinine alınır. Dosya yazma veya sonraki veri mutasyonu
+başarısız olursa o isteğin oluşturduğu dosyalar ile medya kayıtları geri alınır.
+`/uploads/[filename]` Route Handler'ı güvenli üretilmiş adları doğru içerik türü
+ve değişmez önbellek başlığıyla sunar. Medya açıklaması zorunludur. Akıştaki
 medyalı gönderilerin ilk 12'si tam ekran hikâye izleyicisinde açılır. Görsel
 hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dönüşü ve
-`prefers-reduced-motion` davranışı uygulanmıştır. Dosyalar demo modunda yerel
-`public/uploads` dizinine yazılır; kalıcı Supabase Storage yolu hâlâ planlanandır.
+`prefers-reduced-motion` davranışı uygulanmıştır. Yerel disk yolu prototip
+kapsamındadır; kalıcı Supabase Storage/CDN yolu planlanandır.
 
 Beğeni, kaydetme, yorum ve takip eylemleri mevcut prototipte gerçek Server Action
 ve `DemoStore` mutasyonlarıdır. Kaydedilen gönderiler `/saved` rotasında yalnızca
@@ -247,10 +251,12 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
 Mevcut demo yolunda pitch video en fazla 90 saniye ve 50 MB olabilir. İstemci
-metadata ile hızlı geri bildirim verir; sunucu MIME, byte sayısı ve MP4/WebM
-kapsayıcı süresini proje kaydı açılmadan ve dosya yazılmadan önce yeniden
-doğrular. Doğrulama başarısızsa yarım proje kaydı oluşmaz. Production Storage,
-codec/transcode, kötü amaçlı dosya taraması ve retry-idempotency hattı hâlâ
+metadata ile hızlı geri bildirim verir; sunucu MIME, gerçek byte sayısı ve
+MP4/WebM kapsayıcı süresini dosya yazılmadan önce yeniden doğrular. Geçerli dosya
+çakışmaya kapalı biçimde yazılır, ardından proje ve medya kaydı oluşturulur.
+Sonraki adımlardan biri başarısız olursa oluşturulan proje, kurucu ilişkisi, medya
+kaydı ve dosya geri alınır. Tekrar deneme yarım veya yinelenen proje bırakmaz.
+Production Storage/CDN, codec dönüştürme ve kötü amaçlı dosya taraması
 planlanandır.
 
 ## 11. nGazete

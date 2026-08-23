@@ -12,16 +12,18 @@ seçer, `package.json` `node >=22` ister ve `.npmrc` içindeki
 PostCSS işçisi yerel port açarken `EPERM` aldığı için desteklenen Webpack yolu
 yerel, Hostinger ve Render derlemelerini tekrarlanabilir tutar.
 
-23 Ağustos 2026 tarihli GitHub Actions koşusu 32645269975, doğrulanan baseline
-`39f36934eeeacd5a6fd49d891de035953ef4d525` kaynağında Node.js 22 ile
-131/131 birim testini ve 172/172 Playwright senaryosunu tamamladı. Aynı koşunun
-Confirm live işi Hostinger ve Render `/api/health` yanıtlarında tam `39f3693...`
-commit kimliğini doğruladı. Ana dal daha sonra
-`8c56a51eeb9ba57607b52634e7292e552734d3b0` commit'ine ilerledi. Güncel kaynakta
-arama mahremiyeti ve filtre anlamı testleriyle 133/133 birim testi, hedefli global
-arama, axe ve reflow paketiyle 8/8 senaryo geçmiştir. Tam E2E envanteri 180
-senaryodur; 8c56a51 kaynağında tek bir tam CI koşusu ve iki canlı ortamda kesin
-SHA eşitliği henüz doğrulanmış sayılmamalıdır.
+23 Ağustos 2026 tarihli GitHub Actions koşusu 32653459259, son tam doğrulanan
+baseline olan `8c56a51eeb9ba57607b52634e7292e552734d3b0` kaynağında Node.js
+22 ile kurulum, typecheck, lint, 133/133 birim testi ve 180/180 Playwright
+senaryosunu tek koşuda tamamladı. Hostinger da aynı tam SHA'yı sağlık yanıtında
+bildirdi.
+
+Ana dal daha sonra `08c3db34dee5d0d19946065afcb40adccda36d4d` commit'ine
+ilerledi. Güncel kaynakta 138/138 birim testi, 32 rotalı Webpack production
+derlemesi, gerçek WebM pitch akışı için 2/2 hedefli E2E senaryosu ve proje formu
+axe/reflow paketi için 4/4 senaryo geçmiştir. Güncel tam E2E envanteri 184
+senaryodur. Bu SHA için tek parça tam E2E koşusu, GitHub commit durumu ve iki canlı
+ortamda kesin SHA eşitliği henüz doğrulanmamıştır.
 Bir canlı adresin yalnızca HTTP 200 döndürmesi dağıtım kanıtı sayılmaz. Yanıttaki
 commit alanı, push edilen tam SHA ile eşleşmelidir.
 
@@ -61,8 +63,16 @@ yeterli.
 nSosyal bir **sunucu uygulamasıdır**. `npm run build` çıktısında her rota `ƒ`
 (sunucuda render edilir) olarak işaretlenir ve tüm yazma yolları Server
 Action'lardan geçer. Bu yüzden paylaşımlı/PHP planlar bu uygulamayı çalıştıramaz
-ve statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar
-ve sunucu tarafındaki demo deposu statik çıktıda yaşayamaz.
+ve statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar,
+sunucu tarafındaki demo deposu ve `/uploads/[filename]` Route Handler'ı statik
+çıktıda yaşayamaz.
+
+Demo yüklemeleri Node.js sürecinin yazabildiği `public/uploads` dizinine alınır.
+Rastgele dosya adları ve üzerine yazmayı reddeden yazma kipi, bir yıllık
+`immutable` önbellek başlığını güvenli kılar. Dağıtım ortamı demo boyunca çalışma
+zamanı yazmalarını korumalıdır. Yerel disk yeniden dağıtımda silinebilir ve birden
+fazla uygulama örneği arasında paylaşılmaz; production için kalıcı nesne depolama
+ve CDN gerekir.
 
 ## CI ne yapıyor
 

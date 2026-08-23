@@ -286,17 +286,34 @@ kararı [0009](decisions/0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md).
 
 ## 7. Medya ve proje pitch'i
 
-Demo videoları repoda yerel/sentetik dosyalardır. `VideoPlayer` reduced-motion
-durumunu gözetmeli ve videonun metin/caption eşdeğerini sağlamalıdır.
+Demo medyası yerel veya sentetik dosyalarla çalışır. `VideoPlayer`
+`prefers-reduced-motion` tercihini gözetir ve videonun metin/caption eşdeğerini
+sunar.
 
-Proje pitch'i 90 saniye ve 50 MB ile sınırlıdır. İstemci hızlı metadata geri
-bildirimi verir; sunucu dosya yazılmadan önce MIME, byte sayısı ve MP4/WebM
-kapsayıcı süresini yeniden doğrular. Süresi okunamayan veya MIME ile kapsayıcısı
-uyuşmayan dosya güvenli tarafta kalmak için reddedilir.
+Sunucu, JPG/PNG/WebP görsellerde dosya imzasını, bildirilen MIME değerini ve gerçek
+byte sayısını doğrular. MP4/WebM videolarda aynı kontrollere kapsayıcı biçimi ile
+kapsayıcıdan okunan süre eklenir. Görseller 12 MB, videolar 50 MB ve 90 saniye ile
+sınırlıdır. Okunamayan, sahte tür bildiren veya sınırı aşan dosya yazma başlamadan
+reddedilir.
 
-Project create + upload akışında validation başarısızlığı yarım project kaydı
-bırakmamalı ve retry duplicate project üretmemelidir. Bu davranış transaction,
-pre-validation veya idempotent create yöntemiyle çözülmelidir.
+Yükleme akışı dört aşamalıdır:
+
+1. Bütün dosyalar doğrulanır ve güvenli rastgele adlarla bellekte hazırlanır.
+2. `commitLocalUploadBatch`, dosyaları `wx` kipiyle grup olarak yazar; var olan
+   bir dosyanın üzerine yazmaz.
+3. `DemoStore` medya, gönderi veya proje kayıtlarını oluşturur.
+4. `/uploads/[filename]` Route Handler'ı yalnızca izinli ad ve uzantıları doğru
+   içerik türüyle sunar.
+
+Dosya veya veri adımlarından biri başarısız olursa telafi akışı yalnızca o isteğin
+oluşturduğu dosyaları ve kayıtları geri alır. Proje oluşturma geri alımı proje,
+kurucu üyelik ve pitch medya kaydını birlikte temizler. Bu sıra, yarım proje,
+yetim medya ve yinelenen tekrar denemeleri engeller. Route Handler'ın katı dosya
+adı kontrolü dizin geçişi denemelerini reddeder.
+
+Yerel `public/uploads` diski prototip kolaylığıdır. Yeniden dağıtım, birden fazla
+örnek ve kalıcı saklama için production ortamında Supabase Storage veya eşdeğer
+nesne depolama, CDN, codec dönüştürme ve kötü amaçlı dosya taraması gerekir.
 
 ## 8. Oturum, roller ve güvenlik
 
