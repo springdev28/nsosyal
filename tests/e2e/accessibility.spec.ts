@@ -83,6 +83,33 @@ test.describe('axe taraması', () => {
       .toBeLessThanOrEqual(viewportWidth);
   });
 
+  test('Nasıl araması ve Neden kartları 320 piksel reflow görünümüne sığar', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+
+    await page.goto('/explore/how');
+    const howButton = page.getByRole('search').getByRole('button', { name: 'Ara' });
+    const howButtonBox = await howButton.boundingBox();
+    const howViewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // Hem eylemin gorunurlugunu hem de belge genisligini olcmek, uzun arama
+    // ipucunun dugmeyi crop etmesiyle gizli sayfa tasmasini ayri ayri yakalar.
+    expect(howButtonBox).not.toBeNull();
+    expect(howButtonBox!.x + howButtonBox!.width).toBeLessThanOrEqual(howViewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(howViewportWidth);
+
+    await page.goto('/explore/why');
+    const firstStory = page.getByRole('article').first();
+    const storyBox = await firstStory.boundingBox();
+    const whyViewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // Neden karti 5N isaretinin yanindaki dar reflow kolonunda kalmali;
+    // grid min-content genisligi belgeyi yatay kaydirmamalidir.
+    expect(storyBox).not.toBeNull();
+    expect(storyBox!.x + storyBox!.width).toBeLessThanOrEqual(whyViewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(whyViewportWidth);
+  });
+
   test('giriş ekranı erişilebilir', async ({ page }) => {
     await page.goto('/login');
     const results = await scan(page);
