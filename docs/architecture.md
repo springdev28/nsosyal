@@ -208,27 +208,37 @@ ilçe düzeyinde **density/choropleth** üretir.
 Sayfa sorgusu şu ürün kavramlarını taşır:
 
 ```text
-MapDiscoveryQuery
-  topicIds[]
-  metric: community | event | project | institution | person | post | resource | opportunity
+Map URL state
+  topic?
+  metric: all | communities | events | projects | organizations | people | posts
   timeRange?
   participationMode?
   onlinePolicy?
 ```
+
+`parseFilters` bilinmeyen metrikleri `all` değerine indirger. `buildFilterHref`
+varsayılan `all` değerini URL'ye yazmaz, diğer metrikleri arama ve filtre
+geçişlerinde korur.
 
 Store sonucu şu biçime dönüştürülür:
 
 ```text
 RegionDensity
   provinceCode
-  rawCount
-  normalizedScore
-  breakdown
-  topEntities[]
+  total
+  communities
+  events
+  projects
+  organizations
+  people
+  posts
 ```
 
-Normalization seçili metric ve aktif filtre seti içinde yapılmalıdır. Harita
-**nüfus verisi göstermez** ve kullanıcı density'yi nüfus sanmamalıdır.
+Sunucu sayfasındaki `selectMetric`, Store kırılımını kopyalar ve yalnız `total`
+alanını seçilen varlık sayısıyla değiştirir. Province ve district feature-state
+normalizasyonu bu seçili toplamların kendi maksimumuna göre yapılır. Aynı metrik
+legend metnini, popup sayısını, il ve ilçe listesini, sıralamayı ve sonuç
+kategorilerini değiştirir. Harita **nüfus verisi göstermez**.
 
 Renk scale bir single-hue nSosyal blue/cyan family kullanır. Rainbow red/yellow/
 green heatmap kullanılmaz. Legend düşük-yüksek ilişkisini açıkça gösterir.
@@ -237,6 +247,10 @@ Renk tek başına bilgi taşımaz; hover/click value, legend ve liste sonucu var
 İl seçimi aynı haritada ilçe katmanına iner; ilçe seçimi ilgili sonuçları açar.
 URL parametreleri seçimi korur. Renk tek başına bilgi taşımaz: hover/click değeri,
 legend ve klavyeyle erişilebilen eşdeğer sonuç listesi birlikte sunulur.
+
+MapLibre popup içeriği `setHTML` ile yerleştirildiği için bölge adı ve dinamik
+varlık adı önce HTML olarak kaçırılır. Popup tam tür kırılımını korur, üst toplam
+ise seçili metriğin Türkçe adını kullanır.
 
 Kullanıcının kendi location paylaşımı haritayı kullanmak için zorunlu değildir.
 Personal location yalnızca kişinin yerel kişi sonuçlarında görünürlük ve öneri

@@ -122,8 +122,13 @@ Gereksinimler:
 - yoğunluk tek nSosyal blue/cyan skalasında düşükten yükseğe okunur;
 - legend görünürdür;
 - hover/tıklama bölgesel değeri/sayıyı gösterir;
-- filtreler: topic, entity/metric, time range, participation/online-hybrid gibi gerekli bağlamlar;
-- seçilebilir metrikler en az communities, events, projects, institutions ve uygun olduğunda people/posts/resources/opportunities;
+- çalışan prototipte `metric` URL filtresi `all`, `communities`, `events`,
+  `projects`, `organizations`, `people` ve `posts` değerlerini kabul eder;
+- yenileme, geri gitme, metin araması ve paylaşılan bağlantı seçili metriği korur;
+- bilinmeyen bir `metric` değeri güvenli biçimde `all` görünümüne döner;
+- seçilen metrik harita rengini, legend metnini, il ve ilçe sayılarını, bölge
+  sıralamasını ve gösterilen sonuç kategorilerini birlikte değiştirir;
+- diğer filtreler topic, time range ve participation/online-hybrid bağlamlarını taşır;
 - il seçilince bölge detay paneli açılır;
 - ilçe verisi olan bölgelerde aynı mimari ilçe düzeyine iner;
 - kullanıcı kendi konumunu paylaşmadan haritayı keşfedebilir;
@@ -131,6 +136,10 @@ Gereksinimler:
 - haritadaki sonuçların erişilebilir liste eşdeğeri vardır.
 
 Yoğunluk nüfus değildir. Seçili platform varlıklarının sayısı veya normalize edilmiş skoru üzerinden hesaplanır. Renk tek başına state taşımamalıdır.
+
+MapLibre bilgi kutusuna aktarılan bölge adı ve dinamik varlık adı HTML olarak
+kaçırılır. Harita, açıklama metni ve erişilebilir liste aynı DemoStore anlık
+görüntüsünden türetilir.
 
 ## 6. Ana ürün kapsamı
 

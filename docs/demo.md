@@ -133,12 +133,15 @@ olarak daha anlamlı gösteren province seçilir.
 Örnek:
 
 1. Topic: `Havacılık ve Uzay`.
-2. Metric: `Topluluk` veya `Etkinlik`.
+2. Varlık türü: `Etkinlik` seçilir. URL'de `metric=events` görünür.
 3. Time: `Gelecek 30 gün` gibi ilgili aralık.
-4. Türkiye map üzerinde province density'leri görünür.
-5. Hover ile sayısal value/count gösterilir.
-6. Bir province seçilir ve region detail açılır.
-7. İlgili event açılır, reminder kurulur.
+4. Türkiye haritasındaki province density'leri etkinlik sayısına göre değişir.
+5. Legend ve hover metni açıkça `Etkinlik yoğunluğu` ve etkinlik sayısını söyler.
+6. Bir province seçilir. Sonuç panelinde Etkinlikler görünür, ilgisiz Topluluklar
+   bölümü görünmez.
+7. Varlık türü Topluluk olarak değiştirilir. URL, legend, yoğunluk ve sonuç
+   kategorisinin birlikte değiştiği gösterilir.
+8. Etkinlik filtresine dönülür, ilgili event açılır ve reminder kurulur.
 
 Harita blue/cyan single-hue density scale kullanır. Red/yellow/green rainbow heatmap
 kullanılmaz. Density population değildir. Seçili platform entity'lerinin count veya
@@ -147,6 +150,9 @@ normalized score değeridir.
 Current repo district GeoJSON'u İzmir için mevcut olabilir. Demo isterse bunu
 extra drill-down örneği olarak kullanabilir, fakat sunumda **İzmir product pilot**
 gibi anlatılmaz.
+
+320 CSS piksellik yeniden akış kontrolünde harita, Nasıl, Neden, gönderi
+oluşturucu, nGazete, Yayın Atölyesi ve profil sayfaları yatay taşmamalıdır.
 
 ## nGazete demo akışı
 

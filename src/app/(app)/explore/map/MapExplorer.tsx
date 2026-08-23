@@ -22,12 +22,16 @@ const TurkeyMap = dynamic(() => import('@/components/map/TurkeyMap').then((mod) 
 export function MapExplorer({
   metrics,
   districtMetrics,
+  densityLabel,
+  valueNoun,
   selectedProvince,
   selectedDistrict,
   districtDataProvinces,
 }: {
   metrics: ProvinceMetric[];
   districtMetrics: DistrictMetric[];
+  densityLabel: string;
+  valueNoun: string;
   selectedProvince: string | null;
   selectedDistrict: string | null;
   districtDataProvinces: readonly string[];
@@ -68,6 +72,8 @@ export function MapExplorer({
     <TurkeyMap
       metrics={metrics}
       districtMetrics={districtMetrics}
+      densityLabel={densityLabel}
+      valueNoun={valueNoun}
       selectedProvince={selectedProvince}
       selectedDistrict={selectedDistrict}
       districtDataProvinces={districtDataProvinces}

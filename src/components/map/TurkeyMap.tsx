@@ -1,7 +1,7 @@
 'use client';
 
 import maplibregl, { type MapGeoJSONFeature } from 'maplibre-gl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -75,7 +75,16 @@ const LEGEND_GRADIENT = `linear-gradient(90deg, ${DENSITY_STOPS.map(
   ({ at, color }) => `${color} ${Math.round(at * 100)}%`,
 ).join(', ')})`;
 
-function metricTooltipHtml(metric: ProvinceMetric | DistrictMetric | undefined): string {
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>\"]/g, (ch) =>
+    ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&quot;',
+  );
+}
+
+function metricTooltipHtml(
+  metric: ProvinceMetric | DistrictMetric | undefined,
+  valueNoun: string,
+): string {
   if (!metric) return '';
   const rows: Array<[string, number]> = [
     ['Topluluk', metric.communities],
@@ -86,9 +95,7 @@ function metricTooltipHtml(metric: ProvinceMetric | DistrictMetric | undefined):
     ['Kişi', metric.people],
   ];
   const filled = rows.filter(([, value]) => value > 0);
-  const name = metric.name.replace(/[&<>\"]/g, (ch) =>
-    ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&quot;',
-  );
+  const name = escapeHtml(metric.name);
   const body = filled.length
     ? filled
         .map(
@@ -97,12 +104,14 @@ function metricTooltipHtml(metric: ProvinceMetric | DistrictMetric | undefined):
         )
         .join('')
     : '<span class="ns-map-popup__empty">Bu filtrede sonuç yok</span>';
-  return `<strong class="ns-map-popup__title">${name}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} sonuç</span><span class="ns-map-popup__grid">${body}</span>`;
+  return `<strong class="ns-map-popup__title">${name}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} ${escapeHtml(valueNoun)}</span><span class="ns-map-popup__grid">${body}</span>`;
 }
 
 export function TurkeyMap({
   metrics,
   districtMetrics,
+  densityLabel,
+  valueNoun,
   selectedProvince,
   selectedDistrict,
   districtDataProvinces,
@@ -111,12 +120,15 @@ export function TurkeyMap({
 }: {
   metrics: ProvinceMetric[];
   districtMetrics: DistrictMetric[];
+  densityLabel: string;
+  valueNoun: string;
   selectedProvince: string | null;
   selectedDistrict: string | null;
   districtDataProvinces: readonly string[];
   onSelectProvince: (code: string | null) => void;
   onSelectDistrict: (code: string | null) => void;
 }) {
+  const explanationId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
@@ -133,6 +145,7 @@ export function TurkeyMap({
   // guncel metrikleri bir ref uzerinden gorurler.
   const metricsRef = useRef(metrics);
   const districtMetricsRef = useRef(districtMetrics);
+  const valueNounRef = useRef(valueNoun);
   const selectedProvinceRef = useRef(selectedProvince);
   const popupRef = useRef<maplibregl.Popup | null>(null);
 
@@ -143,8 +156,9 @@ export function TurkeyMap({
     selectDistrictRef.current = onSelectDistrict;
     metricsRef.current = metrics;
     districtMetricsRef.current = districtMetrics;
+    valueNounRef.current = valueNoun;
     selectedProvinceRef.current = selectedProvince;
-  }, [districtMetrics, metrics, onSelectDistrict, onSelectProvince, selectedProvince]);
+  }, [districtMetrics, metrics, onSelectDistrict, onSelectProvince, selectedProvince, valueNoun]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -292,7 +306,7 @@ export function TurkeyMap({
             .join('')
         : '<span class="ns-map-popup__empty">Bu filtrede sonuç yok</span>';
 
-      return `<strong class="ns-map-popup__title">${escape(metric.name)}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} sonuç</span><span class="ns-map-popup__grid">${body}</span>`;
+      return `<strong class="ns-map-popup__title">${escape(metric.name)}</strong><span class="ns-map-popup__total">${metric.total.toLocaleString('tr-TR')} ${escape(valueNounRef.current)}</span><span class="ns-map-popup__grid">${body}</span>`;
     };
 
     const setHover = (code: string | null) => {
@@ -479,7 +493,12 @@ export function TurkeyMap({
           if (code) {
             popupRef.current
               ?.setLngLat(event.lngLat)
-              .setHTML(metricTooltipHtml(districtMetricsRef.current.find((entry) => entry.code === code)))
+              .setHTML(
+                metricTooltipHtml(
+                  districtMetricsRef.current.find((entry) => entry.code === code),
+                  valueNounRef.current,
+                ),
+              )
               .addTo(map);
           }
         };
@@ -544,54 +563,61 @@ export function TurkeyMap({
     : null;
 
   return (
-    <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-line">
-      <div
-        ref={containerRef}
-        className="h-[52dvh] min-h-[320px] w-full bg-ink-950 md:h-[60dvh]"
-        // Harita gorsel bir yardimcidir; ayni sonuclar sayfadaki listede de var.
-        // Rol "img" degil "group": MapLibre kendi tuvalini, yakinlastirma
-        // dugmelerini ve kaynak baglantisini bu kutunun icine ekliyor; bir img
-        // odaklanabilir cocuk barindiramaz (WCAG 4.1.2 / axe nested-interactive).
-        role="group"
-        aria-label={
-          selectedProvince
-            ? `Türkiye haritası, ${metrics.find((m) => m.code === selectedProvince)?.name ?? ''} seçili. Aynı sonuçlar aşağıdaki listede de yer alıyor.`
-            : 'Türkiye il haritası. Bir il seçmek için haritaya tıklayabilir veya aşağıdaki listeyi kullanabilirsin.'
-        }
-      />
+    <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-bg-sunken">
+      <div className="relative">
+        <div
+          ref={containerRef}
+          className="h-[52dvh] min-h-[320px] w-full bg-ink-950 md:h-[60dvh]"
+          // Harita gorsel bir yardimcidir; ayni sonuclar sayfadaki listede de var.
+          // Rol "img" degil "group": MapLibre kendi tuvalini, yakinlastirma
+          // dugmelerini ve kaynak baglantisini bu kutunun icine ekliyor; bir img
+          // odaklanabilir cocuk barindiramaz (WCAG 4.1.2 / axe nested-interactive).
+          role="group"
+          aria-describedby={explanationId}
+          aria-label={
+            selectedProvince
+              ? `Türkiye haritası, ${metrics.find((m) => m.code === selectedProvince)?.name ?? ''} seçili. Aynı sonuçlar aşağıdaki listede de yer alıyor.`
+              : 'Türkiye il haritası. Bir il seçmek için haritaya tıklayabilir veya aşağıdaki listeyi kullanabilirsin.'
+          }
+        />
 
-      {error ? (
-        <p
-          role="alert"
-          className="absolute inset-x-3 top-3 rounded-lg border border-danger/40 bg-bg-raised px-3 py-2 text-sm text-danger"
-        >
-          Harita yüklenemedi ({error}). Aşağıdaki liste görünümünden keşfetmeye devam edebilirsin.
-        </p>
-      ) : null}
-
-      {/* Legend: yogunlugun ne demek oldugunu skalanin kendisiyle soyler. */}
-      <div className="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-ink-950/85 px-2.5 py-2">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-white/70">
-          Seçili filtrede yoğunluk
-        </p>
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-[0.65rem] text-white/70">Düşük</span>
-          <span
-            aria-hidden="true"
-            className="h-2 w-24 rounded-full ring-1 ring-white/25"
-            style={{ background: LEGEND_GRADIENT }}
-          />
-          <span className="text-[0.65rem] text-white/70">Yüksek</span>
-        </div>
-        {readout ? (
-          <p className="mt-1.5 text-xs font-medium text-white">
-            {readout.name} · {readout.total.toLocaleString('tr-TR')} sonuç
+        {error ? (
+          <p
+            role="alert"
+            className="absolute inset-x-3 top-3 rounded-lg border border-danger/40 bg-bg-raised px-3 py-2 text-sm text-danger"
+          >
+            Harita yüklenemedi ({error}). Aşağıdaki liste görünümünden keşfetmeye devam edebilirsin.
           </p>
         ) : null}
-        {districtsLoaded ? (
-          <p className="mt-1 text-[0.65rem] text-white/70">İlçe katmanı açık</p>
-        ) : null}
+
+        {/* MapPage supplies both labels, so this legend always describes the same metric as the map color. */}
+        <div className="pointer-events-none absolute bottom-12 left-2 rounded-lg bg-ink-950/85 px-2.5 py-2 sm:bottom-2">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-white/70">
+            {densityLabel}
+          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="text-[0.65rem] text-white/70">Düşük</span>
+            <span
+              aria-hidden="true"
+              className="h-2 w-24 rounded-full ring-1 ring-white/25"
+              style={{ background: LEGEND_GRADIENT }}
+            />
+            <span className="text-[0.65rem] text-white/70">Yüksek</span>
+          </div>
+          {readout ? (
+            <p className="mt-1.5 text-xs font-medium text-white">
+              {readout.name} · {readout.total.toLocaleString('tr-TR')} {valueNoun}
+            </p>
+          ) : null}
+          {districtsLoaded ? (
+            <p className="mt-1 text-[0.65rem] text-white/70">İlçe katmanı açık</p>
+          ) : null}
+        </div>
       </div>
+
+      <p id={explanationId} className="border-t border-line px-3 py-2 text-xs text-fg-subtle">
+        Renk, bu filtredeki {valueNoun} sayısını gösterir; ölçek en yüksek bölgeye göredir. Nüfus ve canlı konum değildir.
+      </p>
     </div>
   );
 }

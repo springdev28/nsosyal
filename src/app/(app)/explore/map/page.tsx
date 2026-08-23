@@ -5,7 +5,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { DiscoveryFilterBar, buildFilterHref, parseFilters } from '@/components/discovery/DiscoveryFilters';
+import {
+  DiscoveryFilterBar,
+  buildFilterHref,
+  getDiscoveryMetricOption,
+  parseFilters,
+  type DiscoveryMetric,
+} from '@/components/discovery/DiscoveryFilters';
 import { EventCard } from '@/components/discovery/EventCard';
 import { PostCard } from '@/components/feed/PostCard';
 import { Avatar, Badge, Card, EmptyState, InfoNote, SectionHeader } from '@/components/ui';
@@ -19,10 +25,22 @@ import {
   provinceByCode,
 } from '@/lib/geo';
 import { resolvePreset } from '@/lib/time';
+import type { ProvinceSummary } from '@/types/view';
 
 import { MapExplorer } from './MapExplorer';
 
 export const metadata: Metadata = { title: 'Nerede · Keşfet' };
+
+/**
+ * Chooses the number that TurkeyMap will turn into color.
+ * The other Store counts stay on the object so the popup can explain that color.
+ */
+function selectMetric<T extends ProvinceSummary>(summary: T, metric: DiscoveryMetric): T {
+  return {
+    ...summary,
+    total: metric === 'all' ? summary.total : summary[metric],
+  };
+}
 
 /**
  * "Nerede" kesif ekrani (PROJECT_SPEC 7.4 / 17.6).
@@ -73,13 +91,16 @@ export default async function MapPage({
         query: filters.query,
       })
     : [];
+  const metricOption = getDiscoveryMetricOption(filters.metric);
+  const mapSummaries = summaries.map((summary) => selectMetric(summary, filters.metric));
+  const mapDistrictSummaries = districtSummaries.map((summary) => selectMetric(summary, filters.metric));
 
   const results = filters.province ? store.discover(storeFilters) : null;
   const province = provinceByCode(filters.province);
   const district = districtByCode(filters.district);
   const districts = filters.province ? districtsOfProvince(filters.province) : [];
 
-  const withResults = summaries.filter((entry) => entry.total > 0).sort((a, b) => b.total - a.total);
+  const withResults = mapSummaries.filter((entry) => entry.total > 0).sort((a, b) => b.total - a.total);
   const currentPath = '/explore/map';
 
   return (
@@ -90,11 +111,13 @@ export default async function MapPage({
         description="Bir il seç; o bölgeye bağlı topluluk, kurum, etkinlik, proje ve paylaşımları gör."
       />
 
-      <DiscoveryFilterBar base={currentPath} state={filters} topics={topics} />
+      <DiscoveryFilterBar base={currentPath} state={filters} topics={topics} showMetric />
 
       <MapExplorer
-        metrics={summaries}
-        districtMetrics={districtSummaries}
+        metrics={mapSummaries}
+        districtMetrics={mapDistrictSummaries}
+        densityLabel={metricOption.densityLabel}
+        valueNoun={metricOption.noun}
         selectedProvince={filters.province}
         selectedDistrict={filters.district}
         districtDataProvinces={DISTRICT_DATA_PROVINCES}
@@ -137,7 +160,9 @@ export default async function MapPage({
                   }`}
                 >
                   <span className="text-sm">{entry.name}</span>
-                  <span className="text-xs text-fg-subtle">{entry.total} sonuç</span>
+                  <span className="text-xs text-fg-subtle">
+                    {entry.total} {metricOption.noun}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -181,7 +206,7 @@ export default async function MapPage({
                     </Link>
                   </li>
                   {districts.map((entry) => {
-                    const metric = districtSummaries.find((summary) => summary.code === entry.code);
+                    const metric = mapDistrictSummaries.find((summary) => summary.code === entry.code);
                     return (
                     <li key={entry.code}>
                       <Link
@@ -208,7 +233,7 @@ export default async function MapPage({
             )}
           </Card>
 
-          {results ? <ResultPanel results={results} revalidate={currentPath} /> : null}
+          {results ? <ResultPanel results={results} metric={filters.metric} revalidate={currentPath} /> : null}
         </>
       ) : (
         <InfoNote icon="mapPin">
@@ -227,18 +252,24 @@ export default async function MapPage({
 
 function ResultPanel({
   results,
+  metric,
   revalidate,
 }: {
   results: NonNullable<Awaited<ReturnType<ReturnType<typeof getStore>['discover']>>>;
+  metric: DiscoveryMetric;
   revalidate: string;
 }) {
+  const includes = (candidate: Exclude<DiscoveryMetric, 'all'>) => metric === 'all' || metric === candidate;
+  const visibleProfiles = [
+    ...(includes('organizations') ? results.organizations : []),
+    ...(includes('people') ? results.profiles : []),
+  ];
   const total =
-    results.communities.length +
-    results.events.length +
-    results.projects.length +
-    results.posts.length +
-    results.organizations.length +
-    results.profiles.length;
+    (includes('communities') ? results.communities.length : 0) +
+    (includes('events') ? results.events.length : 0) +
+    (includes('projects') ? results.projects.length : 0) +
+    (includes('posts') ? results.posts.length : 0) +
+    visibleProfiles.length;
 
   if (total === 0) {
     return (
@@ -252,7 +283,7 @@ function ResultPanel({
 
   return (
     <div className="space-y-5">
-      {results.events.length > 0 ? (
+      {includes('events') && results.events.length > 0 ? (
         <section aria-labelledby="res-events">
           <SectionHeader title={<span id="res-events">Etkinlikler ({results.events.length})</span>} />
           <ul className="space-y-3">
@@ -265,7 +296,7 @@ function ResultPanel({
         </section>
       ) : null}
 
-      {results.communities.length > 0 ? (
+      {includes('communities') && results.communities.length > 0 ? (
         <section aria-labelledby="res-communities">
           <SectionHeader title={<span id="res-communities">Topluluklar ({results.communities.length})</span>} />
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -288,18 +319,18 @@ function ResultPanel({
         </section>
       ) : null}
 
-      {results.organizations.length > 0 || results.profiles.length > 0 ? (
+      {visibleProfiles.length > 0 ? (
         <section aria-labelledby="res-people">
           <SectionHeader
             title={
               <span id="res-people">
-                Kurumlar ve kişiler ({results.organizations.length + results.profiles.length})
+                {metric === 'organizations' ? 'Kurumlar' : metric === 'people' ? 'Kişiler' : 'Kurumlar ve kişiler'} ({visibleProfiles.length})
               </span>
             }
             description="Yalnızca konumunu paylaşmayı seçen profiller listelenir. Kesin adres veya canlı konum gösterilmez."
           />
           <ul className="grid gap-2 sm:grid-cols-2">
-            {[...results.organizations, ...results.profiles].map((profile) => (
+            {visibleProfiles.map((profile) => (
               <li key={profile.id}>
                 <Link
                   href={`/profile/${profile.username}`}
@@ -318,7 +349,7 @@ function ResultPanel({
         </section>
       ) : null}
 
-      {results.projects.length > 0 ? (
+      {includes('projects') && results.projects.length > 0 ? (
         <section aria-labelledby="res-projects">
           <SectionHeader title={<span id="res-projects">Projeler ({results.projects.length})</span>} />
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -336,7 +367,7 @@ function ResultPanel({
         </section>
       ) : null}
 
-      {results.posts.length > 0 ? (
+      {includes('posts') && results.posts.length > 0 ? (
         <section aria-labelledby="res-posts">
           <SectionHeader title={<span id="res-posts">Paylaşımlar ({results.posts.length})</span>} />
           <ul className="space-y-3">

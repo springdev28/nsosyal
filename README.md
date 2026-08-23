@@ -121,10 +121,12 @@ ilçe GeoJSON'u bulunması yalnızca **mevcut veri envanteridir**. İzmir ürün
 mimarisinde özel pilot şehir değildir.
 
 Nerede ekranı seçili topic, entity/metric ve time bağlamında hangi bölgelerde daha
-fazla aktivite olduğunu göstermelidir. Province-level density/choropleth tek
-nSosyal blue/cyan intensity family ile çizilir. Legend, hover/click value ve region
-detail bulunur. Metrics en az communities, events, projects ve institutions;
-veri varsa people, posts, resources ve opportunities olabilir.
+fazla aktivite olduğunu gösterir. Çalışan `metric` URL filtresi tüm sonuçlar,
+topluluk, etkinlik, proje, kurum, kişi ve paylaşım seçeneklerini taşır. Yenileme,
+geri gitme, arama ve paylaşılan bağlantı seçimi korur; bilinmeyen değer `all`
+görünümüne döner. Province-level density/choropleth tek nSosyal blue/cyan intensity
+family ile çizilir. Legend, hover/click value, il ve ilçe sıralaması ile görünür
+sonuç kategorileri aynı metriği kullanır.
 
 Yoğunluk nüfus değildir. Seçili platform varlıklarının count veya normalized
 score değeridir. Kullanıcı kendi konumunu paylaşmadan haritayı keşfedebilir. Kesin
