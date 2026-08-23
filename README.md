@@ -66,7 +66,8 @@ vector** dosyasıdır. Ekran görüntüsünden veya yaklaşık SVG ile yeniden �
 - dış çap, iç çap ve stroke aynıdır;
 - bağlantı hattı tek ve sabit kalınlıklı monoline'dır;
 - statik logoda glow veya particle zorunlu değildir;
-- particle kullanılırsa ayrı motion katmanıdır.
+- particle kullanılırsa ayrı motion katmanıdır ve reduced-motion tercihinde
+  katmanın tamamı gizlenir.
 
 Keşfet içindeki 5N selector tam çark değildir. N işaretine basıldığında iki ucu
 fade olan **yarım yay** açılır. Ne, Nerede, Ne zaman, Nasıl ve Neden seçenekleri
@@ -78,7 +79,7 @@ basar.
 
 | Alan | Yol | İçerik |
 | --- | --- | --- |
-| Ana akış | `/feed` | Karışık sosyal akış, çoklu medya oluşturucu, tam ekran hikâyeler, geçici niyet modları ve açıklanabilir öneri |
+| Ana akış | `/feed` | Karışık sosyal akış, 320 CSS pikselde eylemi kırpılmayan çoklu medya oluşturucu, tam ekran hikâyeler, geçici niyet modları ve açıklanabilir öneri |
 | Kısa video | `/video` | Kısa video, metin karşılığı, proje/topluluk bağları |
 | Keşfet | `/explore` | N bağlantı işaretinden açılan yarım 5N selector |
 | Nerede | `/explore/map` | Türkiye il yoğunluk haritası, filtreler, bölge detayı, liste eşdeğeri |
@@ -216,7 +217,8 @@ Hedef WCAG 2.2 AA:
 - accessible names;
 - labelled form errors;
 - colour-only olmayan state;
-- reduced motion;
+- reduced-motion tercihinde marka, nGazete ve Yayın Atölyesi sürekli dekoratif
+  hareketlerinin tamamen durması;
 - video text/caption equivalent;
 - map list equivalent;
 - yeterli touch target ve overflow kontrolü.
