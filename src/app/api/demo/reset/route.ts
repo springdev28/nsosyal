@@ -4,14 +4,8 @@ import { getStore } from '@/lib/data/store';
 import { isDemoMode } from '@/lib/supabase/config';
 
 /**
- * Demo verisini yeniden üretir.
- *
- * İki yerde işe yarar:
- *   1. Uçtan uca testler: her senaryo temiz bir durumla başlar.
- *   2. Canlı demo: sunum sırasında yapılan değişiklikler (onaylanan başvuru,
- *      kurulan hatırlatma) tek istekle geri alınabilir.
- *
- * DEMO_MODE kapalıyken çalışmaz: Supabase'e bağlı bir kurulumda veri silmez.
+ * Rebuilds the deterministic DemoStore snapshot for E2E isolation and live-demo
+ * cleanup. It refuses to run outside demo mode so it cannot erase Supabase data.
  */
 export async function POST() {
   if (!isDemoMode()) {

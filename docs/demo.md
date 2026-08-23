@@ -62,7 +62,9 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
    topluluk seçiminin zorunlu olduğu gösterilir.
 3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
-   alanı gösterilir. İstenirse konum yalnızca bu gönderi için açılır.
+   alanı gösterilir. Video seçildiğinde Gündelik, Pitch, Demo, İlerleme, Nasıl,
+   Neden ve Soru türlerinin bulunduğu seçim alanı açılır. `Demo` klavyeyle seçilir.
+   İstenirse konum yalnızca bu gönderi için açılır.
 4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
    geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
 5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği, marka motion
@@ -99,6 +101,8 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
    yönde değiştirilir.
 6. Kısa video sayfasında beğeni, yorum ve kaydetme kontrollerinin ana akışla aynı
    sosyal eylem sözleşmesini kullandığı gösterilir.
+7. `/video?kind=demo` açılır. Yeni videonun Demo etiketiyle listelendiği, 9:16
+   siyah çerçevede tamamının göründüğü ve yatay kadrajın kırpılmadığı gösterilir.
 
 Kaydedilenler yalnızca oturum sahibine aittir. DemoStore bellek içi çalıştığı için
 sunucu yeniden başlatıldığında koleksiyon başlangıç verisine döner.

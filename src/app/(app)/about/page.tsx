@@ -7,10 +7,7 @@ import { BASE_WEIGHTS, INTENT_WEIGHTS } from '@/lib/ranking/rank';
 
 export const metadata: Metadata = { title: 'Hakkında' };
 
-/**
- * Hakkinda: veri kaynaklari, lisans atiflari, siralama seffafligi ve
- * erisilebilirlik notlari (PROJECT_SPEC 9.6, 12.1, 8.3, 17.13).
- */
+/** Collects attribution, ranking transparency, and accessibility notes in one help surface. */
 export default async function AboutPage() {
   const store = getStore();
 
@@ -66,8 +63,7 @@ export default async function AboutPage() {
           amaçlarını silmez. Hiçbir mod seçmezsen akış yalnızca amaçlarına göre sıralanır.
         </p>
 
-        {/* Tablo dar ekranda yatay kayar; kaydirilabilir alan klavyeyle de
-            odaklanabilir olmali (WCAG 2.1.1). */}
+        {/* Keyboard focus makes this horizontally scrollable table reachable on narrow screens. */}
         <div
           className="scroll-x mt-3"
           tabIndex={0}

@@ -8,10 +8,8 @@ import { getStore } from '@/lib/data/store';
 export const metadata: Metadata = { title: 'Yayın Atölyesi' };
 
 /**
- * Yayin Atolyesi ana sosyal uygulama kabugundan bagimsizdir.
- *
- * Bu rota sol ana menuyu ve populer sag seridi bilerek kullanmaz: gazete alani
- * tasarlarken tum ekran tuval, envanter ve denetim araclarina ayrilmalidir.
+ * Loads Publication Studio outside the social AppShell so the full viewport is
+ * available for inventory, placement, and review tools.
  */
 export default async function PublishPage() {
   const viewer = await getViewer();

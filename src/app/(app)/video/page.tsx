@@ -1,4 +1,4 @@
-/** Kisa video akisinda baglam, metin esdegeri ve sosyal eylemleri birlikte sunar. */
+/** Loads short videos and their social context from DemoStore for the vertical feed. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -8,27 +8,18 @@ import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { getViewer } from '@/lib/auth/session';
 import { getStore } from '@/lib/data/store';
 import { formatRelative } from '@/lib/time';
-import type { Post } from '@/types/domain';
+import { VIDEO_KIND_OPTIONS } from '@/lib/video/kinds';
 
 export const metadata: Metadata = { title: 'Kısa videolar' };
 
-const KINDS: Array<{ value: NonNullable<Post['videoKind']> | 'all'; label: string }> = [
+const KINDS = [
   { value: 'all', label: 'Tümü' },
-  { value: 'gundelik', label: 'Gündelik' },
-  { value: 'pitch', label: 'Pitch' },
-  { value: 'demo', label: 'Demo' },
-  { value: 'ilerleme', label: 'İlerleme' },
-  { value: 'nasil', label: 'Nasıl' },
-  { value: 'neden', label: 'Neden' },
-  { value: 'soru', label: 'Soru' },
-];
+  ...VIDEO_KIND_OPTIONS,
+] as const;
 
 /**
- * Kisa video akisi (PROJECT_SPEC 7.2).
- *
- * Dikey format ve baglam kartlari: her videodan projeye, topluluğa veya
- * etkinlige gecilebilir. Otomatik oynatma yoktur; ses ve oynatma kullanicinin
- * kontrolundedir (erisilebilirlik).
+ * Renders the vertical short-video feed with links to related entities. Playback
+ * and sound remain user-controlled, and VideoPlayer provides the text equivalent.
  */
 export default async function VideoFeedPage({
   searchParams,

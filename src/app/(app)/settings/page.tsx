@@ -1,6 +1,6 @@
 /**
- * Kalici kisisellestirme ve mahremiyet tercihlerini sunucuda yukler. Gecici
- * Sosyalles/Kesfet/Ogren/Uret modu bu ekranda profil amaci gibi saklanmaz.
+ * Loads lasting personalization and privacy preferences. Transient feed intent
+ * is deliberately not stored here as a long-term profile goal.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';

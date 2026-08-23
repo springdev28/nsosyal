@@ -1,6 +1,6 @@
 /**
- * Avatar, banner, bio ve dis baglanti girdilerini yonetir. Dosya yukleme ve URL
- * guvenlik karari profile Server Action'inda yeniden dogrulanir.
+ * Client draft for avatar, banner, biography, and profile links. The profile
+ * Server Action repeats file and URL validation before changing DemoStore.
  */
 'use client';
 

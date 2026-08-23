@@ -43,6 +43,7 @@ Durum sözlüğü:
 | nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking ve 06.00/gün değişimi store testleri | İlk oturum modalı, odak tuzağı ve axe masaüstü/mobil; koyu kâğıt, kolonlar ve 320×800 reflow ayrıca incelendi | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe ve 320×800 reflow temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
+| Kısa video yayınlama → tür seçimi → filtrelenmiş akış | `/feed`, `/video?kind=...` | Oluşturucu radyo grubu → `createPost` sunucu doğrulaması → `DemoStore` gönderisi → `/video` yeniden doğrulaması | Yeni `video-kinds` birim testi ve `short-video` E2E senaryosu depoda bulunur; `7eee950` için CI koşusu yoktur | 9:16 siyah sahne ve tam kadraj davranışı testte ölçülür; güncel commit için koşulmuş sonuç henüz kaydedilmemiştir | Kodda uygulandı, güncel CI bekleniyor |
 
 ## Mevcut sistem ile production hedefinin ayrımı
 
@@ -77,6 +78,12 @@ Uygulama baseline SHA `52c4044906836ede953ea9aa2f3a899e2ed51965` için:
 | Hedefli yükleme bütünlüğü kontrolü | Gerçek WebM pitch yükleyen proje oluşturma akışı masaüstü ve mobilde 2/2; proje formu axe + 320 px reflow seçkisi 4/4 geçti. Aynı senaryolar tam 184 testlik CI koşusunda yeniden geçti. |
 | Yerel görsel kontrol | Next 16 üretim derlemesinde baseline yüzeylerine ek olarak yeni pitch yüklenmiş proje sayfası 1280×720 masaüstü ve Pixel 7 görünümünde incelendi. Video oynatıcı, transkript, proje sekmeleri ve kartlar görünür; sayfa yatay taşmıyor. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
+
+Güncel `main` SHA `7eee95012e74adea43963fb9e8b27d191164782d` kısa video
+türlerini, sunucu doğrulamasını ve tam kadraj 9:16 oynatmayı ekler. Hostinger bu
+SHA'yı sağlık yanıtında bildirmiştir. Bu commit için GitHub Actions koşusu veya
+commit durumu bulunmadığından yeni testlerin geçtiği iddia edilmez; 138/138 ve
+184/184 sayıları son tam doğrulanan `52c4044` baseline'ına aittir.
 
 `npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
 ayrıca denendi; ancak Next 16.3.2'nin paketlediği üç ESLint eklentisi henüz 10'u

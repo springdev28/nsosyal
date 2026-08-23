@@ -1,6 +1,6 @@
 /**
- * Topluluk basvurularini benzerlik baglamiyla inceletir. Her karar communities
- * action'i uzerinden moderasyon loguna yazilir.
+ * Shows community applications beside possible duplicates. Decisions go
+ * through `actions/communities`, which writes the community and audit record.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -26,12 +26,6 @@ const STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'dan
   changes_requested: { label: 'Düzenleme istendi', tone: 'warning' },
 };
 
-/**
- * Moderator onay kuyrugu (PROJECT_SPEC 6.1 ekran 12 / 17.8).
- *
- * Onaylandiginda topluluk gercekten olusur ve basvuran community_manager olur.
- * Her karar moderation_actions tablosuna yazilir.
- */
 export default async function ModerationPage() {
   const store = getStore();
   const pending = store.listApplications('pending');

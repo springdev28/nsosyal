@@ -1,6 +1,6 @@
 /**
- * Kurum ilan taleplerini inceler, fiyat snapshot'ini ve gazete grid yerlesimini
- * yetkili kullaniciya gosterir. Bu karar feed ranking'e veri aktarmaz.
+ * Moderation surface for organization ads and Publication Studio submissions.
+ * Decisions call the newspaper/publication actions and never write feed-ranking data.
  */
 import type { Metadata } from 'next';
 import Image from 'next/image';
@@ -29,11 +29,6 @@ const STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'dan
   changes_requested: { label: 'Düzenleme istendi', tone: 'warning' },
 };
 
-/**
- * Gazete yonetimi (PROJECT_SPEC 7.9 / 17.12).
- * Onaylanan ilan yalnizca bir gazete sayisina eklenir; akis siralamasina
- * hicbir etkisi yoktur.
- */
 export default async function AdminNewspaperPage() {
   const viewer = await getViewer();
   if (!canModerate(viewer)) redirect('/admin');

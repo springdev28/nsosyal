@@ -1,6 +1,6 @@
 /**
- * Projeyi bitmis portfolyo karti yerine ilerleme, ekip, Neden, Nasil ve etkinlik
- * baglari olan yasayan bir sosyal nesne olarak sunar.
+ * Presents a project as a living social object with progress, team, Why, How,
+ * and event connections instead of a finished portfolio card.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -42,10 +42,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: project ? project.title : 'Proje' };
 }
 
-/**
- * Yasayan proje sayfasi (PROJECT_SPEC 7.8 / 17.11).
- * Statik portfolyo degil: Neden, Nasil ve tarih sirali ilerleme gunlugu var.
- */
 export default async function ProjectPage({
   params,
   searchParams,

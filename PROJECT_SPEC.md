@@ -203,6 +203,14 @@ hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dön�
 `prefers-reduced-motion` davranışı uygulanmıştır. Yerel disk yolu prototip
 kapsamındadır; kalıcı Supabase Storage/CDN yolu planlanandır.
 
+Video seçildiğinde kullanıcı Gündelik, Pitch, Demo, İlerleme, Nasıl, Neden veya
+Soru türlerinden birini seçer. Bu seçenekler gerçek bir radyo grubu olduğu için
+klavyeyle kullanılabilir. Oluşturucu, Server Action ve `/video` filtreleri tek
+bir ortak tür listesini kullanır. Sunucu eksik veya tanımsız türü kabul etmez.
+Video önizlemesi ve kısa video akışı 9:16 siyah bir çerçeve kullanır. Kaynak
+görüntü çerçevenin içine tamamı görünecek biçimde yerleştirilir; yatay ya da kare
+videolar dikey çerçeveye sığdırılırken kırpılmaz.
+
 Beğeni, kaydetme, yorum ve takip eylemleri mevcut prototipte gerçek Server Action
 ve `DemoStore` mutasyonlarıdır. Kaydedilen gönderiler `/saved` rotasında yalnızca
 oturum sahibine ait kişisel koleksiyon olarak listelenir. Koleksiyona masaüstünde

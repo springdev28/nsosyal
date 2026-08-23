@@ -1,7 +1,7 @@
 /**
- * Ana akistaki hizli gonderi formunu ve gecici medya/5N alanlarini yonetir.
- * Gercek yazma createPost Server Action'inda kalir; bu bilesen yalnizca form
- * deneyimi ve istemci geri bildiriminden sorumludur.
+ * Client-side form for a feed post and its temporary media previews. The form
+ * submits to `actions/social.createPost`, which repeats validation and writes
+ * the post through DemoStore.
  */
 'use client';
 
@@ -9,6 +9,7 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 
 import { createPost, type ComposerState } from '@/actions/social';
 import { Avatar, Icon, type IconName } from '@/components/ui';
+import { VIDEO_KIND_OPTIONS, type VideoKind } from '@/lib/video/kinds';
 import type { PostType, Topic } from '@/types/domain';
 import type { CommunitySummary, ProfileSummary } from '@/types/view';
 
@@ -25,13 +26,6 @@ interface MediaPreview {
   url: string;
 }
 
-/**
- * Hizli gonderi olusturucu.
- *
- * Metin, coklu medya, alternatif metin, konu, topluluk hedefi ve istege
- * bagli konumu tek akista toplar. Medya secimi hikaye seridindeki "Hikaye
- * ekle" denetiminden de acilabilir.
- */
 export function Composer({
   viewer,
   topics,
@@ -55,16 +49,18 @@ export function Composer({
   const [communityId, setCommunityId] = useState('');
   const [topicIds, setTopicIds] = useState<string[]>([]);
   const [shareLocation, setShareLocation] = useState(false);
+  const [videoKind, setVideoKind] = useState<VideoKind>('gundelik');
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   const active = TYPES.find((entry) => entry.value === type) ?? TYPES[0];
   const expanded = open || body.trim().length > 0 || media.length > 0;
   const canSubmit = body.trim().length >= 2 || media.length > 0;
+  const hasVideo = media.some((item) => item.type === 'video');
 
   useEffect(() => {
     const draft = window.localStorage.getItem('nsosyal-composer-draft');
     if (!draft) return;
-    // Taslagi effect govdesinde senkron state zincirine cevirmeden ilk karede geri yukle.
+    // Restore after mount so hydration does not depend on browser-only storage.
     const frame = window.requestAnimationFrame(() => setBody(draft));
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -76,7 +72,7 @@ export function Composer({
 
   useEffect(() => {
     if (!state.message) return;
-    // Server Action sonucu commit edildikten sonraki kare formu tek seferde temizler.
+    // Clear once after the Server Action confirms the post was stored.
     const frame = window.requestAnimationFrame(() => {
       setBody('');
       setOpen(false);
@@ -84,6 +80,7 @@ export function Composer({
       setCommunityId('');
       setTopicIds([]);
       setShareLocation(false);
+      setVideoKind('gundelik');
       setMedia((items) => {
         items.forEach((item) => URL.revokeObjectURL(item.url));
         return [];
@@ -119,6 +116,7 @@ export function Composer({
       items.forEach((item) => URL.revokeObjectURL(item.url));
       return [];
     });
+    setVideoKind('gundelik');
     if (mediaInputRef.current) mediaInputRef.current.value = '';
   }
 
@@ -191,11 +189,19 @@ export function Composer({
                 </div>
                 <ul className={`grid gap-2 ${media.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   {media.map((item) => (
-                    <li key={`${item.name}-${item.url}`} className="relative aspect-video overflow-hidden rounded-xl bg-black">
+                    <li
+                      key={`${item.name}-${item.url}`}
+                      data-composer-video-stage={item.type === 'video' ? 'true' : undefined}
+                      className={`relative overflow-hidden rounded-xl bg-black ${
+                        item.type === 'video'
+                          ? 'mx-auto aspect-[9/16] w-full max-w-[280px]'
+                          : 'aspect-video'
+                      }`}
+                    >
                       {item.type === 'video' ? (
-                        <video src={item.url} muted controls className="h-full w-full object-cover" aria-label={`${item.name} önizlemesi`} />
+                        <video src={item.url} muted controls className="h-full w-full object-contain" aria-label={`${item.name} önizlemesi`} />
                       ) : (
-                        // Tarayicinin yerel onizleme URL'si; gonderilmeden once ag istegi yapmaz.
+                        // Browser preview URL; no upload starts until the form is submitted.
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={item.url} alt={`${item.name} önizlemesi`} className="h-full w-full object-cover" />
                       )}
@@ -211,6 +217,32 @@ export function Composer({
                   placeholder="Görselde veya videoda ne var?"
                   className="mt-1 min-h-10 w-full rounded-xl border border-line bg-bg-raised px-3 text-sm"
                 />
+                {hasVideo ? (
+                  <fieldset className="mt-3" aria-describedby="composer-video-kind-help">
+                    <legend className="text-xs font-medium">Kısa video türü</legend>
+                    <p id="composer-video-kind-help" className="mt-0.5 text-xs text-fg-subtle">
+                      Kısa video akışında bu etiketle bulunur.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {VIDEO_KIND_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className="inline-flex min-h-9 cursor-pointer items-center rounded-full border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:font-semibold has-[:checked]:text-accent"
+                        >
+                          <input
+                            type="radio"
+                            name="videoKind"
+                            value={option.value}
+                            checked={videoKind === option.value}
+                            onChange={() => setVideoKind(option.value)}
+                            className="sr-only"
+                          />
+                          {option.label}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ) : null}
               </div>
             ) : null}
 
@@ -305,8 +337,7 @@ export function Composer({
             {state.error ? <p role="alert" className="mb-2 text-sm text-danger">{state.error}</p> : null}
             {state.message ? <p role="status" className="mb-2 text-sm font-medium text-success">{state.message}</p> : null}
 
-            {/* Sayac ve taslak etiketi, dar reflow kolonunda gonder eylemini
-                disari itmek yerine eylemle birlikte yeni satira gecebilir. */}
+            {/* This row may wrap without pushing the submit button off a narrow screen. */}
             <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2">
               <span id="composer-count" className="text-xs text-fg-subtle">{body.length}/2000</span>
               {body ? <span className="text-xs text-fg-subtle">Taslak kaydedildi</span> : null}

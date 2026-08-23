@@ -1,8 +1,7 @@
 /**
- * Yayin Atolyesi'nin alan secimi, dosya yerlesimi ve odeme onizlemesini tek
- * istemci state machine'i icinde tutar. Sunucuya kalici yazilar yalnizca
- * publication action'lariyla gider; bu dosya tarayici icindeki gecici taslagi
- * ve dogrudan manipulasyon davranislarini yonetir.
+ * Client state machine for Publication Studio selection, creative placement,
+ * and checkout preview. Browser state stays temporary; every persistent change
+ * crosses `actions/publication`, which delegates conflict rules to DemoStore.
  */
 'use client';
 
@@ -327,9 +326,8 @@ function ctaStyle(block: PublicationBlock): React.CSSProperties {
 }
 
 /**
- * Tek bir gazete blogunun gorunumu ref bilmez. Tuval ref'leri yalnizca
- * asagidaki koordinat denetleyicisinde kalir; boylece render ve dogrudan
- * manipulasyon sinirlari birbirine karismaz.
+ * Pure visual for one placed block. Canvas refs stay in the coordinate
+ * controller, keeping rendering separate from pointer manipulation.
  */
 function PlacementBlockView({
   block,
@@ -543,7 +541,7 @@ function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds
         }
       }}
     >
-      {/* Alan cercevesi bir duzenleme yardimcisidir; gazete onizlemesinin parcasi degildir. */}
+      {/* The purchased-area guide is editor chrome and disappears in preview. */}
       {!readonly ? <div className="pointer-events-none absolute z-10 border-2 border-accent bg-accent/5" style={rectStyle(draft.rect)} /> : null}
       {blocks.map((block) => (
         <PlacementBlockView

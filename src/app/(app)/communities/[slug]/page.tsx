@@ -1,6 +1,6 @@
 /**
- * Tek toplulugun akis, kaynak, etkinlik ve uye sekmelerini ortak baglamda kurar.
- * Katilma eylemi ve gorunurluk kararlari Server Action/Store sinirinda kalir.
+ * Builds every tab for one community from DemoStore view models. Membership
+ * changes leave the page through social Server Actions instead of local state.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -33,7 +33,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: community ? community.name : 'Topluluk' };
 }
 
-/** Topluluk sayfasi ve sekmeleri (PROJECT_SPEC 7.3). */
 export default async function CommunityPage({
   params,
   searchParams,

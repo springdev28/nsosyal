@@ -16,7 +16,7 @@ export default async function CreateWhyPage() {
   if (!viewer) return null;
 
   const store = getStore();
-  // Yalnizca kullanicinin kendi projelerine baglanabilir.
+  // A new Why story may link only to a project owned by the signed-in viewer.
   const projects = store.listProjects().filter((project) => {
     const record = store.getProjectBySlug(project.slug);
     return record?.ownerId === viewer.id;

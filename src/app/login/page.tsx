@@ -9,10 +9,7 @@ import { getStore } from '@/lib/data/store';
 
 export const metadata: Metadata = { title: 'Giriş' };
 
-/**
- * Giris ekrani (PROJECT_SPEC 6.1 ekran 01).
- * Juri icin kritik: demo hesaplarina tek tiklamayla girilebilir (15.4).
- */
+/** Provides one-click synthetic accounts and the optional onboarding tour. */
 export default async function LoginPage({
   searchParams,
 }: {
@@ -24,11 +21,7 @@ export default async function LoginPage({
   return (
     <div className="auth-shell mx-auto grid min-h-dvh w-full max-w-5xl items-center gap-8 px-4 py-10 lg:grid-cols-[0.86fr_1.14fr] lg:gap-14 lg:px-8">
       <header className="text-center lg:sticky lg:top-12 lg:text-left">
-        {/*
-          Giris ekrani markanin ilk goruldugu yerdir; burada "nS" yazan bir
-          metin karosu duruyordu. Isaretin kendisi Figma master vector'undan
-          gelir (spec 17.18/2) ve baglanti parcacigiyla birlikte gosterilir.
-        */}
+        {/* The shared Figma-derived mark keeps the first screen aligned with app navigation. */}
         <span aria-hidden="true" className="mx-auto mb-5 flex justify-center lg:mx-0 lg:justify-start">
           <FiveNMark size={92} animated />
         </span>

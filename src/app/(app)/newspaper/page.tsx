@@ -1,6 +1,6 @@
 /**
- * Secili nGazete sayisini gercek gazete hiyerarsisi ve sayfa kompozisyonuyla
- * sunar. Ucretli envanter ayni kompozisyona girer, feed'den tamamen ayri kalir.
+ * Renders one nGazete issue as a paged newspaper composition. Editorial and
+ * sponsored items share the layout, while the entire data path stays outside the feed.
  */
 import type { Metadata } from 'next';
 import Image from 'next/image';
@@ -26,14 +26,7 @@ const SECTION_LABEL: Record<NewspaperSection, string> = {
   kaynak: 'Kaynaklar',
 };
 
-/**
- * Mansetten sonra bir sayfaya kac kart girer.
- *
- * Dort, gazete ritmi icin yeterli: iki kolonda ikiser kart. Daha yuksek bir
- * deger butun sayiyi tek sayfaya sikistirip sayfa gezinmesini gorunmez
- * yapiyordu - yani "sayfalari olsun" istegini kagit uzerinde karsilayip
- * ekranda karsilamiyordu.
- */
+/** Four items preserve visible page navigation without making a page feel empty. */
 const ITEMS_PER_PAGE = 4;
 
 const INTEREST_KEYWORDS: Record<string, string[]> = {
@@ -52,29 +45,6 @@ function normalizeForInterest(value: string): string {
     .replace(/[^a-z0-9\s]/g, ' ');
 }
 
-/**
- * nGazete (PROJECT_SPEC 7.9 / 17.12 / 17.18-8).
- *
- * Gercek bir dijital gazete: masthead, sayi ve tarih, manset hiyerarsisi,
- * gorseller, bolum etiketleri, kolon kompozisyonu ve SAYFALAR.
- *
- * --- Bu surumde korunan temel davranislar ---
- *
- * 1. SAYFA YOKTU. Butun sayi tek bir uzun kaydirma seridiydi. Gazetenin
- *    sayfasi vardir; okuyucu "2. sayfa"ya gecer. Artik mansetten sonraki
- *    kartlar sayfalara boluunur ve altta sayfa gezinmesi durur.
- *
- * 2. Arsiv takvimi varsayilan durumda tek satirlik bir bugun dugmesidir;
- *    istendiginde ay izgarasina acilir. Varsayilan sayi BUGUNUN sayisidir.
- *
- * 3. GRID'DE DELIKLER VARDI. Sabit satir/kolon span'leri kartlarin gercek
- *    yuksekligiyle ortusmuyordu; kisa bir kartin altinda kocaman bos alanlar
- *    kaliyordu. Manset tam genislikte durur, geri kalani CSS kolonlarina
- *    akar - gercek gazete davranisi, hem de bosluk birakmadan.
- *
- * 4. Turuncu vurgu odeme kaynagini degil, okurun kalici ilgi alanlariyla
- *    eslesen haberleri anlatir. Icerigin yonetsel kaynagi kayitta korunur.
- */
 export default async function NewspaperPage({
   searchParams,
 }: {
@@ -87,7 +57,7 @@ export default async function NewspaperPage({
   const issues = store.listIssues();
   const today = toIstanbulDateKey(new Date());
 
-  // Varsayilan BUGUNUN sayisidir; bugun yayimlanmadiysa en yeni sayi.
+  // Prefer today's published issue; before publication, fall back to the latest one.
   const current = date ? store.getIssueByDate(date) : (store.getIssueByDate(today) ?? store.getLatestIssue());
 
   if (!current) {
@@ -107,22 +77,20 @@ export default async function NewspaperPage({
   const months = issues.map((entry) => entry.issue.issueDate.slice(0, 7)).sort();
   const month = ay && /^\d{4}-\d{2}$/.test(ay) ? ay : current.issue.issueDate.slice(0, 7);
 
-  // Sayi numarasi: en eski sayidan bugune artan sira.
+  // Number issues in chronological order from the oldest available issue.
   const issueNumber =
     issues.length - issues.findIndex((entry) => entry.issue.id === current.issue.id);
 
-  // Kompozisyon sirasi: once oncelik, esitlikte yayin sirasi. Sponsorlu
-  // kartlar ayri bir listeye alinmaz; ayni siralamaya girer.
+  // Sponsored and editorial items share one priority/publication-order sequence.
   const composed = [...current.items].sort(
     (a, b) => a.item.priority - b.item.priority || a.item.publicationOrder - b.item.publicationOrder,
   );
 
-  // Manset her sayinin birinci sayfasinda durur; sayfalanan kisim geri kalanidir.
+  // The lead story stays on page one; only the remaining items are paginated.
   const lead = composed[0] ?? null;
   const rest = composed.slice(1);
 
-  // Okuyucu kompozisyonunda sponsor/editor ayrimi yoktur; her iki kaynak da
-  // ayni yayin sirasina girer. Bir sayi en fazla bes sayfadir.
+  // The reader composition is capped at the product limit of five pages.
   const pageCount = Math.min(5, Math.max(1, Math.ceil(rest.length / ITEMS_PER_PAGE)));
   const requested = Number(sayfa);
   const page = Number.isFinite(requested) ? Math.min(Math.max(1, Math.trunc(requested)), pageCount) : 1;
@@ -161,13 +129,7 @@ export default async function NewspaperPage({
         }
       />
 
-      {/*
-        Takvim gazetenin USTUNDE, tam genislikte durur.
-        Yan kolon olarak denendi ve yanlisti: uygulama kabugunda zaten sol
-        gezinme ve sag serit var; ucuncu bir kolon gazeteye ~340px birakiyor,
-        o genislikte uc metin kolonu kelime basina bir satira duserek
-        okunamaz hale geliyordu.
-      */}
+      {/* Full-width placement keeps the newspaper readable inside the two-sidebar app shell. */}
       <IssueCalendar
         month={month}
         issueDates={issueDates}
@@ -217,19 +179,14 @@ export default async function NewspaperPage({
             </p>
           </header>
 
-          {/* Manset yalnizca birinci sayfada, tam genislikte. */}
+          {/* The lead story owns the full width on page one. */}
           {lead && page === 1 ? (
             <div className="border-b border-line">
               <LeadCell entry={lead} highlighted={isForViewer(lead)} />
             </div>
           ) : null}
 
-          {/*
-            Kolon akisi. Sabit grid span'leri, kartlarin gercek yuksekligi
-            farkli oldugu icin altlarinda delikler birakiyordu. `columns`
-            kartlari sirayla doldurur ve bosluk kalmaz; `break-inside: avoid`
-            bir karti iki kolona bolmesini engeller.
-          */}
+          {/* CSS columns fill uneven article heights; break-inside keeps each article intact. */}
           <div className="gap-x-7 px-4 py-4 sm:px-6 md:columns-2 2xl:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
             {pageItems.map((entry) => (
               <ColumnCell key={entry.item.id} entry={entry} highlighted={isForViewer(entry)} />
@@ -359,12 +316,7 @@ function LeadCell({ entry, highlighted }: { entry: NewspaperItemView; highlighte
   return <div>{body}</div>;
 }
 
-/**
- * Kolon icindeki kart.
- *
- * Tum haber kaynaklari AYNI kolon akisina girer; okuyucu kompozisyonu odeme
- * turune gore bolunmez. Yalnizca okurun ilgisi turuncu seritle vurgulanir.
- */
+/** Renders one article in the shared editorial/sponsored column flow. */
 function ColumnCell({ entry, highlighted }: { entry: NewspaperItemView; highlighted: boolean }) {
   const { item } = entry;
 
@@ -427,7 +379,7 @@ function ColumnCell({ entry, highlighted }: { entry: NewspaperItemView; highligh
   return <div className={className}>{body}</div>;
 }
 
-/** Onayli kreatifi duzenleme cercevesi olmadan, dosyanin oranini koruyarak gosterir. */
+/** Shows the approved creative without editor guides and preserves its aspect ratio. */
 function PublicationArtwork({ entry, height }: { entry: NewspaperItemView; height: number }) {
   const { item } = entry;
   if (!item.imageUrl) return null;
@@ -445,10 +397,7 @@ function PublicationArtwork({ entry, height }: { entry: NewspaperItemView; heigh
   );
 }
 
-/**
- * Butonlar onay anindaki renk ve hareket ayarlariyla yayinlanir. Harici
- * hedefler yeni sekmede acilir; gazete oturumu kullanicinin elinden alinmaz.
- */
+/** Publishes approved CTA styling and opens external targets in a new tab. */
 function PublicationButtons({ entry }: { entry: NewspaperItemView }) {
   const buttons = entry.item.ctaButtons ?? [];
   if (buttons.length === 0) return null;
@@ -487,12 +436,7 @@ function PublicationButtons({ entry }: { entry: NewspaperItemView }) {
   );
 }
 
-/**
- * Bolum etiketi.
- *
- * Turuncu vurgu odeme turunu degil, okurun ilgi alanlariyla eslesmeyi anlatir.
- * Editoryal kaynak bilgisi kartin normal yazar/kaynak satirinda korunur.
- */
+/** Uses the orange treatment only for reader-interest matches, never payment status. */
 function SectionTag({ item, highlighted }: { item: NewspaperItemView['item']; highlighted: boolean }) {
   if (highlighted) {
     return (

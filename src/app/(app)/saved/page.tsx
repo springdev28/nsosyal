@@ -1,4 +1,4 @@
-/** Kaydedilen gonderileri kullaniciya ozel bir koleksiyon olarak sunar. */
+/** Shows saved posts as a viewer-specific collection. */
 import type { Metadata } from 'next';
 
 import { PostCard } from '@/components/feed/PostCard';
@@ -8,11 +8,6 @@ import { getStore } from '@/lib/data/store';
 
 export const metadata: Metadata = { title: 'Kaydedilenler' };
 
-/**
- * Kaydetme eylemi ana akista gecici bir ikon durumundan ibaret kalmamali.
- * Bu rota ayni DemoStore gorunumlerini kullanir; boylece kartlar ve gizlilik
- * kurallari ana akisla ayrismaz.
- */
 export default async function SavedPage() {
   const viewer = await getViewer();
   if (!viewer) return null;

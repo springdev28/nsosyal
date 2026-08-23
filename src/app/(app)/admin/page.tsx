@@ -1,4 +1,4 @@
-/** Moderator ve yonetici icin kuyruk ozetlerini ve son denetim kayitlarini sunar. */
+/** Summarizes moderation queues and recent audit records for authorized staff. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

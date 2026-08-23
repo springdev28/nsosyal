@@ -12,18 +12,18 @@ seçer, `package.json` `node >=22` ister ve `.npmrc` içindeki
 PostCSS işçisi yerel port açarken `EPERM` aldığı için desteklenen Webpack yolu
 yerel, Hostinger ve Render derlemelerini tekrarlanabilir tutar.
 
-23 Ağustos 2026 tarihli GitHub Actions koşusu 32653459259, son tam doğrulanan
-baseline olan `8c56a51eeb9ba57607b52634e7292e552734d3b0` kaynağında Node.js
-22 ile kurulum, typecheck, lint, 133/133 birim testi ve 180/180 Playwright
-senaryosunu tek koşuda tamamladı. Hostinger da aynı tam SHA'yı sağlık yanıtında
-bildirdi.
+23 Ağustos 2026 tarihli GitHub Actions koşusu 32664361631, son tam doğrulanan
+baseline olan `52c4044906836ede953ea9aa2f3a899e2ed51965` kaynağında Node.js
+22 ile kurulum, typecheck, lint, 138/138 birim testi ve 184/184 Playwright
+senaryosunu tek koşuda tamamladı. Hostinger ve Render aynı tam SHA'yı sağlık
+yanıtlarında bildirdi.
 
-Ana dal daha sonra `08c3db34dee5d0d19946065afcb40adccda36d4d` commit'ine
-ilerledi. Güncel kaynakta 138/138 birim testi, 32 rotalı Webpack production
-derlemesi, gerçek WebM pitch akışı için 2/2 hedefli E2E senaryosu ve proje formu
-axe/reflow paketi için 4/4 senaryo geçmiştir. Güncel tam E2E envanteri 184
-senaryodur. Bu SHA için tek parça tam E2E koşusu, GitHub commit durumu ve iki canlı
-ortamda kesin SHA eşitliği henüz doğrulanmamıştır.
+Ana dal daha sonra `7eee95012e74adea43963fb9e8b27d191164782d` commit'ine
+ilerledi. Bu sürüm kısa video türlerini ve tam kadraj 9:16 oynatmayı ekler.
+Hostinger sağlık yanıtı bu tam SHA'yı bildirir. Ancak bu commit için GitHub Actions
+koşusu veya commit durumu bulunmadığından typecheck, lint, yeni birim testleri ve
+tam Playwright paketi geçmiş gibi sunulmaz. Render ile tam SHA eşitliği de bu
+kayıtta doğrulanmış değildir.
 Bir canlı adresin yalnızca HTTP 200 döndürmesi dağıtım kanıtı sayılmaz. Yanıttaki
 commit alanı, push edilen tam SHA ile eşleşmelidir.
 

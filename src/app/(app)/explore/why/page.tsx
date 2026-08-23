@@ -1,6 +1,6 @@
 /**
- * Neden hikayelerini gercek kisi/proje deneyimine bagli tutan kesif yuzeyidir;
- * motivasyon sozu gibi baglamsiz icerikleri bu modelden ayri tutar.
+ * Lists Why stories that DemoStore ties to a person, project, or community
+ * experience; unrelated quote-style content never enters this model.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -19,12 +19,6 @@ const VIEWS = [
   { key: 'topluluk', label: 'Topluluklarım' },
 ] as const;
 
-/**
- * Neden panosu (PROJECT_SPEC 7.6 / 17.9).
- *
- * Urun kurali kod ve veri modelindedir; arayuz bunu uzun aciklamalarla tekrar
- * etmek yerine dogru hikayeleri ve kisa eylemleri gosterir.
- */
 export default async function WhyBoardPage({
   searchParams,
 }: {

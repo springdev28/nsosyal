@@ -315,6 +315,21 @@ Yerel `public/uploads` diski prototip kolaylığıdır. Yeniden dağıtım, bird
 örnek ve kalıcı saklama için production ortamında Supabase Storage veya eşdeğer
 nesne depolama, CDN, codec dönüştürme ve kötü amaçlı dosya taraması gerekir.
 
+### 7.1 Kısa video türü ve kadraj sözleşmesi
+
+`src/lib/video/kinds.ts`, gönderi oluşturucu, `createPost` Server Action'ı ve
+`/video` filtresi için tek tür listesini tanımlar. Liste Gündelik, Pitch, Demo,
+İlerleme, Nasıl, Neden ve Soru değerlerini taşır. İstemci radyo grubuyla seçim
+yapar; Server Action değeri yeniden doğrular ve video içeren gönderide geçersiz
+veya eksik türü reddeder. Kaydedilen değer gönderiye yazılır, analiz olayına
+eklenir ve `/video` rotası yeniden doğrulanır.
+
+Oluşturucu önizlemesi ile `VideoPlayer` aynı görsel sözleşmeyi uygular: siyah
+zeminli 9:16 sahne ve kaynağın tamamını gösteren `object-contain`. Bu davranış
+yatay veya kare videonun kenarlarını kesmez. `tests/unit/video-kinds.test.ts`
+listeyi ve sunucu korumasını, `tests/e2e/short-video.spec.ts` ise klavye seçimini,
+yayınlamayı, kategori filtresini ve iki video sahnesinin oranını doğrular.
+
 ## 8. Oturum, roller ve güvenlik
 
 Demo session basit yarışma kolaylığıdır. Production yönünde Supabase Auth vardır.
@@ -510,6 +525,7 @@ Tam E2E paketi şu kritik senaryoları masaüstü ve mobil projelerde korur:
 - project create + pitch validation + no duplicate/partial record;
 - like/save/comment/follow action chains and the private `/saved` collection;
 - short-video like/save controls using the shared social-action contract;
+- short-video category selection, server validation, category filtering and full-frame 9:16 stages;
 - global search across people, organizations, posts, communities, projects, and events;
 - nGazete real layout + spatial sponsored placement;
 - advertiser request + pricing snapshot + admin approval;

@@ -1,7 +1,4 @@
-/**
- * Onboarding icin mevcut kullanici ve katalog verisini sunucuda yukler.
- * Tamamlanmis hesaplarin baslangic formuna geri donmesini engeller.
- */
+/** Loads onboarding catalogs and redirects profiles that already completed it. */
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 

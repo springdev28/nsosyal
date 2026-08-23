@@ -1,4 +1,4 @@
-/** Topluluk basvuru formuna konu, il ve mevcut benzer topluluk baglamini saglar. */
+/** Loads topic, region, and existing-name data for the application form. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

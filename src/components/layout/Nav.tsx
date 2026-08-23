@@ -247,10 +247,8 @@ export function MainNav({
 }
 
 /**
- * Acik/koyu tema anahtari.
- *
- * Tercih localStorage'da tutulur ve <html data-theme> uzerinden uygulanir.
- * Secim yapilmadiginda sistem tercihi gecerlidir.
+ * Switches the site theme and stores the choice for the next page load.
+ * The theme bootstrap script in the root layout reads the same storage key.
  */
 function ThemeToggle() {
   function toggle() {
@@ -263,7 +261,7 @@ function ThemeToggle() {
     try {
       window.localStorage.setItem('nsosyal-theme', next);
     } catch {
-      // Depolama kapaliysa tercih yalnizca bu oturum icin gecerli olur.
+      // The current page can still change theme when browser storage is unavailable.
     }
   }
 
@@ -276,7 +274,7 @@ function ThemeToggle() {
       <Icon name="globe" size={20} />
       <span>Görünüm</span>
       <span className="ml-auto rounded-full bg-bg-sunken px-2 py-1 text-[0.7rem] font-semibold ring-1 ring-[var(--border)]">
-        Aç / Koyu
+        Açık / Koyu
       </span>
     </button>
   );

@@ -19,10 +19,7 @@ export async function generateMetadata({
   return { title: story ? story.story.title : 'Neden hikâyesi' };
 }
 
-/**
- * Neden hikayesi detayi (PROJECT_SPEC 6.4 - Akis C).
- * Demo senaryosunun kritik adimi: hikayeden projeye gecis.
- */
+/** Loads one Why story with its author and linked project navigation. */
 export default async function WhyStoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const store = getStore();

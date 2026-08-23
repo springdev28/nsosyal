@@ -30,7 +30,6 @@ yer alır. Test edilen canlı uygulama için son doğrulanmış dağıtım kayd�
 `52c4044906836ede953ea9aa2f3a899e2ed51965` commit'idir. Bu kayıt, aşağıdaki
 boş tabloların gelecek test ve yeniden test turlarında tekrar kullanılmasına engel
 değildir.
-
 ## Bu çalışma neyi kanıtlar?
 
 Test şu sorulara ölçülebilir yanıt üretir:

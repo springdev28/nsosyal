@@ -1,6 +1,7 @@
 /**
- * Profil bilgisi ve medya yuklemelerini sunucuda dogrular. Dosya ve profil kaydi
- * ayni eylem sinirinda yonetilerek tarayicinin keyfi storage yolu yazmasi onlenir.
+ * Server-side boundary for profile fields and profile image uploads.
+ * The browser submits files, but this action chooses the storage path and writes
+ * the resulting URLs through DemoStore so clients cannot invent file locations.
  */
 'use server';
 

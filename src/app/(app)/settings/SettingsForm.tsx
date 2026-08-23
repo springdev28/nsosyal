@@ -1,6 +1,6 @@
 /**
- * Ayarlarin istemci etkilesimini yonetir; form state'i yalnizca taslaktir.
- * Kalici degerler updateSettings action'inda dogrulanip DemoStore'a yazilir.
+ * Client draft for editable preferences. `updateSettings` validates the form,
+ * writes lasting values to DemoStore, and updates browser-only cookies.
  */
 'use client';
 
@@ -36,7 +36,6 @@ const INTENTS: Array<{ value: IntentMode; label: string }> = [
   { value: 'uret', label: 'Üret' },
 ];
 
-/** Ayarlar (PROJECT_SPEC 6.1 ekran 22): gizlilik, konum, erisilebilirlik, gazete. */
 export function SettingsForm({
   provinces,
   districts,
@@ -105,7 +104,7 @@ export function SettingsForm({
             defaultValue={initial.intentMode ?? ''}
             className="min-h-11 w-full rounded-xl border border-line bg-bg-raised px-3 sm:max-w-xs"
           >
-            {/* Spec 7.10: hicbir mod secmeden de kisisellestirilmis akis kullanilabilir. */}
+            {/* Transient intent remains optional; lasting goals still personalize the feed. */}
             <option value="">Mod seçme, amaçlarıma göre kişiselleştir</option>
             {INTENTS.map((intent) => (
               <option key={intent.value} value={intent.value}>

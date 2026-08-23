@@ -80,7 +80,7 @@ basar.
 | Alan | Yol | İçerik |
 | --- | --- | --- |
 | Ana akış | `/feed` | Karışık sosyal akış, 320 CSS pikselde eylemi kırpılmayan çoklu medya oluşturucu, tam ekran hikâyeler, geçici niyet modları ve açıklanabilir öneri |
-| Kısa video | `/video` | Kısa video, metin karşılığı, proje/topluluk bağları |
+| Kısa video | `/video` | Gündelik, Pitch, Demo, İlerleme, Nasıl, Neden ve Soru türleri; metin karşılığı; proje/topluluk bağları; tam kadraj 9:16 oynatma |
 | Keşfet | `/explore` | Paylaşılabilir URL üzerinden kişi, kurum, paylaşım, topluluk, proje ve etkinlik araması; N bağlantı işaretinden açılan yarım 5N selector |
 | Nerede | `/explore/map` | Türkiye il yoğunluk haritası, filtreler, bölge detayı, liste eşdeğeri |
 | Ne zaman | `/explore/time` | Geçmiş/bugün/gelecek, etkinlik ve son başvuru, hatırlatma |
@@ -104,6 +104,12 @@ o isteğin oluşturduğu dosyalar ve kayıtlar geri alınır. `/uploads/[filenam
 Route Handler'ı yalnızca üretilen güvenli adları ve izinli uzantıları sunar.
 Bu yerel disk yolu prototip içindir. Kalıcı Storage/CDN, codec dönüştürme ve kötü
 amaçlı dosya taraması production kapsamındadır.
+
+Video içeren yeni bir gönderide kısa video türü zorunludur. Oluşturucu ve
+`/video` filtresi aynı yedi tür listesini kullanır: Gündelik, Pitch, Demo,
+İlerleme, Nasıl, Neden ve Soru. Sunucu, değiştirilmiş bir tarayıcıdan gelebilecek
+bilinmeyen türleri reddeder. Yatay ve kare videolar 9:16 siyah çerçeve içinde
+tamamı görünecek biçimde ortalanır; görüntünün kenarları kırpılmaz.
 
 ## Kişiselleştirme
 
@@ -248,5 +254,7 @@ dağıtır. Ayrıntılar: [docs/deployment.md](docs/deployment.md).
 - [docs/architecture.md](docs/architecture.md) - sistem mimarisi ve güncel hedef model
 - [docs/code-reading-guide.md](docs/code-reading-guide.md) - kodu izleme sırası ve uçtan uca veri akışları
 - [docs/demo.md](docs/demo.md) - demo hesapları ve sunum akışı
+- [docs/usability-test-guide.md](docs/usability-test-guide.md) - gerçek katılımcı görevleri, ölçüm ve yeniden test kaydı
+- [docs/release-candidate-evidence.md](docs/release-candidate-evidence.md) - P0 yolculukları, test ve dağıtım kanıtı
 - [docs/decisions/](docs/decisions/) - karar kayıtları
 - [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) - coding agent kuralları

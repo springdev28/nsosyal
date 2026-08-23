@@ -9,27 +9,9 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { useReducedMotion } from '@/lib/browser-preferences';
 
 /**
- * 5N boyut secici (PROJECT_SPEC 4.4 / 17.18-4).
- *
- * Yapisi: sol kenara yaslanmis DOLU bir yarim disk paneli. Boyutlar bu panelin
- * yayi uzerinde yuvarlak dugmeler olarak durur, merkezde animasyonlu N baglanti
- * isareti bulunur. Ayni anda hepsi gorunmez: uclara yaklasan ogeler solar ve
- * panelin disina cikar, kullanici yayi cevirerek digerlerini getirir.
- *
- * Spec 4.4 bunu zaten tarif ediyordu:
- *   2. "tam daire degil, YARIM bir yay acilir; yayin iki ucu giderek
- *       saydamlasir ve viewport icinde kaybolur"
- *   3. "secenekler ikonlarla bu yay uzerinde TASINIR"
- *   4. "kullanici mouse, touch veya trackpad hareketiyle yayi dondurur"
- *   5. "secim noktasina denk geldiginde kisa bir snap/confirm state'i olusur"
- *   6. "secim tamamlandiginda yay ve secenekler TAMAMEN kaybolur"
- *   7. "N isareti panel uzerinde erisilebilir kalir"
- *
- * Bu bilesen UC KEZ yazildi. Onceki iki denemenin neden ekranda coktugu ve
- * bu geometrinin neden secildigi docs/decisions/0012'de duruyor; oraya
- * bakmadan buradaki sabitleri degistirmeyin. Ozeti: panel isaretin yaslandigi
- * DUVARA oturur (viewport kenarina degil), zemin OPAKTIR ve gobek isareti
- * duvara yaslanir - ortalanirsa yarisi ekran disinda kalir.
+ * Interactive half-arc for the five discovery routes. Mouse, touch, trackpad,
+ * and keyboard all update one active index; committing navigates with Next's
+ * router and closes the arc. Geometry rationale lives in decision 0012.
  */
 
 interface Dimension {
@@ -39,7 +21,7 @@ interface Dimension {
   href: string;
 }
 
-/** Spec 4.4/3'teki sira: Ne, Nerede, Ne zaman, Nasil, Neden. */
+/** Product order: What, Where, When, How, Why. */
 const DIMENSIONS: Dimension[] = [
   { id: 'ne', label: 'Ne', icon: 'search', href: '/explore' },
   { id: 'nerede', label: 'Nerede', icon: 'mapPin', href: '/explore/map' },
@@ -48,31 +30,19 @@ const DIMENSIONS: Dimension[] = [
   { id: 'neden', label: 'Neden', icon: 'spark', href: '/explore/why' },
 ];
 
-/** Panelin yaricapi: yarim disk sol kenara yaslanir. */
+/** Radius of the half-disk anchored to the content edge. */
 const PANEL_R = 188;
-/** Ogelerin uzerinde durdugu yorunge. */
+/** Radius followed by dimension buttons. */
 const ORBIT_R = 128;
-/** Oge dugmesinin capi. Dokunma hedefi icin 44px'in uzerinde. */
+/** Button diameter, deliberately above the 44px touch target. */
 const ITEM_D = 56;
-/**
- * Ogeler arasi acisal mesafe.
- *
- * Dizi KAPALIDIR: son ogeden sonra yeniden ilki gelir, yani yayin bir ucu
- * yoktur ve "Ne" secili iken ustunde bosluk kalmaz. Aralik 360/5 = 72
- * olsaydi komsu ogeler solma penceresinin kenarina dusup hayalet gibi
- * gorunurdu; 40 derece hem bes yuvayi da doldurur hem de ortadaki uc ogeyi
- * okunakli birakir.
- */
+/** Closed-loop spacing that keeps the three central choices readable. */
 const STEP = 40;
-/**
- * Gorunur pencere. Bu acinin otesindeki oge tamamen kaybolur; oncesinde
- * kademeli olarak solar - spec'in "uclar saydamlasir" kurali. Pencere
- * +-90 derecedir: yarim daire gorunur, geri kalani yayin arkasindadir.
- */
+/** Fade window: choices disappear at the two ends of the half arc. */
 const FADE_FROM = 34;
 const FADE_TO = 90;
 
-/** Gobek dugmesinin capi. Yayin duz kenarina yaslanir, kirpilmaz. */
+/** Hub diameter; it rests inside the straight edge instead of being clipped. */
 const HUB_D = 72;
 
 const BOX = PANEL_R * 2;
@@ -84,23 +54,16 @@ function polar(angleDeg: number, radius: number) {
   return { x: CX + radius * Math.cos(rad), y: CY + radius * Math.sin(rad) };
 }
 
-/** Gorunur pencerenin iki ucu arasindaki yorunge yayi. */
+/** Visible orbit segment between the two fading ends. */
 const TRACK_PATH = (() => {
   const rad = (deg: number) => (deg * Math.PI) / 180;
   const x = (deg: number) => (CX + ORBIT_R * Math.cos(rad(deg))).toFixed(2);
   const y = (deg: number) => (CY + ORBIT_R * Math.sin(rad(deg))).toFixed(2);
-  const end = FADE_TO - 0.01; // tam 90 derece cizimde dejenere yay uretir
+  const end = FADE_TO - 0.01; // Exactly 90 degrees produces a degenerate SVG arc.
   return `M ${x(-end)} ${y(-end)} A ${ORBIT_R} ${ORBIT_R} 0 0 1 ${x(end)} ${y(end)}`;
 })();
 
-/**
- * Bir ogenin secim noktasina gore ISARETLI dairesel mesafesi.
- *
- * Dizi kapali oldugu icin dogrudan `(index - activeIndex) * STEP` yanlistir:
- * bes ogelik bir halkada 4. oge, 0. ogenin 288 derece ilerisi degil 72
- * derece GERISIDIR. Bu duzeltme olmadan yay bir uca dayaniyor ve aktif oge
- * dizinin basindayken ustunde kocaman bir bosluk kaliyordu.
- */
+/** Returns the shortest signed distance around the closed dimension loop. */
 function offsetAngle(index: number, activeIndex: number): number {
   const n = DIMENSIONS.length;
   let steps = (((index - activeIndex) % n) + n) % n;
@@ -108,7 +71,7 @@ function offsetAngle(index: number, activeIndex: number): number {
   return steps * STEP;
 }
 
-/** Uclara dogru solma. 1 = tam gorunur, 0 = yayin disinda. */
+/** Converts angle to opacity: 1 at the center and 0 outside the arc. */
 function fadeFor(angle: number): number {
   const d = Math.abs(angle);
   if (d <= FADE_FROM) return 1;
@@ -121,7 +84,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
   const menuId = useId();
 
   const [open, setOpen] = useState(false);
-  /** Kac adim dondugumuz. Aktif oge her zaman 0 derecede (secim noktasi). */
+  /** The active item always occupies the zero-degree selection point. */
   const [activeIndex, setActiveIndex] = useState(0);
   const [confirming, setConfirming] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
@@ -130,11 +93,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: number; y: number; from: number } | null>(null);
-  /**
-   * Suruklemeyle biten bir jest, parmagin kalktigi ogenin uzerinde bir `click`
-   * de uretir. Bu bayrak olmadan "yayi cevirdim" hareketi istenmeyen bir
-   * secime, yani sayfa degisikligine donuyordu.
-   */
+  /** Prevents the synthetic click after a drag from committing a route. */
   const draggedRef = useRef(false);
   const wheelRef = useRef(0);
 
@@ -145,13 +104,10 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     const measure = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      // Yarim diskin duz kenari isaretin yaslandigi duvardir: Kesfet
-      // kolonunun sol kenari. Onceki surum paneli viewport'un 0'ina
-      // koyuyordu; panel o zaman isaretten koparak uygulamanin sol gezinme
-      // kolonunun uzerine biniyordu.
+      // Anchor to the Explore content edge rather than the viewport edge, so
+      // the arc stays attached to its trigger and clear of global navigation.
       setAnchor({
-        // Dar bir yerlesimde duvar saga fazla kacarsa panel viewport'u asardi;
-        // duz kenar en fazla panel genisligi kadar iceride durabilir.
+        // Clamp the straight edge so the half-disk cannot leave a narrow viewport.
         x: Math.min(Math.max(0, rect.left), Math.max(0, window.innerWidth - PANEL_R)),
         y: Math.min(
           Math.max(rect.top + rect.height / 2, PANEL_R + 8),
@@ -164,7 +120,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     return () => window.removeEventListener('resize', measure);
   }, [open]);
 
-  // Secici acikken arka plan kaymasin; panel isarete sabitli.
+  // Lock background scrolling while pointer gestures operate the fixed arc.
   useEffect(() => {
     if (!open) return;
     const { overflow } = document.body.style;
@@ -178,7 +134,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     setOpen(false);
     setConfirming(null);
     dragRef.current = null;
-    // Yarim kalmis tekerlek birikimi bir sonraki acilisa tasinmasin.
+    // Discard an unfinished wheel gesture between openings.
     wheelRef.current = 0;
     if (returnFocus) triggerRef.current?.focus();
   }, []);
@@ -193,11 +149,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
   }, []);
 
   const commit = useCallback(
-    /**
-     * @param snapping Oge secim noktasinda DEGILDI: once oraya kayar. Yolu
-     *   gorunsun diye onay bekleme suresi biraz uzar; yoksa panel oge daha
-     *   yerine varmadan kapanir ve hareket "atlamis" gibi gorunur.
-     */
+    /** Gives a non-active choice enough time to snap into place before closing. */
     (dimension: Dimension, snapping = false) => {
       setConfirming(dimension.id);
       window.setTimeout(
@@ -236,7 +188,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, close]);
 
-  /** Sonsuz donus: dizinin sonundan sonra yeniden basi gelir. */
+  /** Wraps in either direction through the closed dimension list. */
   const move = useCallback((steps: number) => {
     setActiveIndex((i) => {
       const n = DIMENSIONS.length;
@@ -246,7 +198,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
 
   function onWheel(e: React.WheelEvent) {
     e.preventDefault();
-    // Trackpad'de tek jest cok sayida olay uretir; esik koyup adim adim ceviriyoruz.
+    // Trackpads emit many small events, so accumulated movement advances one step.
     wheelRef.current += e.deltaY;
     if (Math.abs(wheelRef.current) < 40) return;
     move(wheelRef.current > 0 ? 1 : -1);
@@ -262,11 +214,10 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
     const d = dragRef.current;
     if (!d || d.id !== e.pointerId) return;
     const deltaY = e.clientY - d.y;
-    // Masaustu fareleri tiklama sirasinda birkac piksel oynayabiliyor. Bu
-    // hareketi surukleme saymak, gorunen secenege tiklamayi sessizce iptal eder.
+    // Ignore ordinary mouse jitter so a click is not mistaken for a drag.
     if (Math.abs(deltaY) < 18) return;
     draggedRef.current = true;
-    // Dikey surukleme yayi cevirir: ~64px bir oge. Sinir yok, yay sarar.
+    // About 64px of vertical movement advances one item and wraps at the ends.
     const steps = Math.round(deltaY / 64);
     const n = DIMENSIONS.length;
     setActiveIndex((((d.from + steps) % n) + n) % n);
@@ -319,17 +270,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                 className="fixed inset-0 z-40 bg-ink-950/60 backdrop-blur-[2px]"
               />
 
-              {/*
-                Konumlandirici + jest yuzeyi. `role="menu"` BURADA DEGIL:
-                bir menu yalnizca menuitem tasiyabilir, oysa bu kutuda panel
-                zemini, yorunge izi, okunan etiket ve gobek dugmesi de var.
-                Rolu buraya koymak axe'in `aria-required-children` kuralini
-                kritik seviyede ihlal ediyordu ("Element has children which
-                are not allowed: button[aria-label]") - yani ekran okuyucuda
-                menu yapisi bozuluyordu. Rol asagida yalnizca ogeleri saran
-                kutuya verildi; klavye ve isaretleme olaylari zaten buraya
-                kabarir.
-              */}
+              {/* Gesture surface stays untyped; only the child button container owns menu semantics. */}
               <div
                 onKeyDown={onKeyDownMenu}
                 onWheel={onWheel}
@@ -339,8 +280,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                 onPointerCancel={onPointerUp}
                 className="fixed z-50"
                 style={{
-                  // Duz kenar duvara, yay saga acilir; dikeyde isaretin
-                  // hizasinda kalir.
+                  // The straight edge stays aligned with the trigger while the arc opens right.
                   left: anchor.x,
                   top: anchor.y - PANEL_R,
                   width: PANEL_R,
@@ -348,14 +288,12 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   touchAction: 'none',
                 }}
               >
-                {/* Dolu yarim disk paneli. Ogeler bunun icinde kalir. */}
+                {/* Opaque half-disk that visually contains the rotating choices. */}
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 bg-bg-raised shadow-pop ring-1 ring-[var(--border-strong)]"
                   style={{
-                    // Panel opak. Onceki surum sayfaya karisan bir gradyandi:
-                    // koyu temada disk zeminden ayirt edilemiyordu, dolayisiyla
-                    // "yay" diye bir sey algilanmiyordu.
+                    // An opaque surface keeps the arc distinguishable from the page.
                     boxShadow: 'inset -1px 0 0 0 var(--accent-line)',
                     borderTopRightRadius: PANEL_R,
                     borderBottomRightRadius: PANEL_R,
@@ -366,13 +304,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   }}
                 />
 
-                {/*
-                  Yorunge izi. Kullanicinin "bu sey doner" oldugunu gormesi
-                  icin ray cizilir, ama TAM yarim daire cizilmez: iz de
-                  ogelerle ayni pencerede yasar ve uclarinda saydamlasir
-                  (spec 4.4/2). Sabit bir yarim halka cizmek "uclar kaybolur"
-                  kuralini gorsel olarak yalanlardi.
-                */}
+                {/* The orbit cue fades with the choices instead of drawing a closed semicircle. */}
                 <svg
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0"
@@ -398,7 +330,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   />
                 </svg>
 
-                {/* Secim noktasi isareti: yayin sagindaki kucuk kertik. */}
+                {/* Small notch marking the commit point. */}
                 <span
                   aria-hidden="true"
                   className="absolute h-9 w-1 -translate-y-1/2 rounded-full bg-accent"
@@ -430,16 +362,12 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                         tabIndex={isActive ? 0 : -1}
                         aria-label={dimension.label}
                         onClick={() => {
-                          // Cevirme jestinin kuyrugundaki tiklama secim degildir.
+                          // Ignore the click synthesized after a completed drag.
                           if (draggedRef.current) {
                             draggedRef.current = false;
                             return;
                           }
-                          // Yaydaki HERHANGI bir ogeye dokunmak onu once secim
-                          // noktasina getirir, sonra onaylar. Onceki davranis
-                          // ilk dokunusu yalnizca donduruyordu: kullanici
-                          // gordugu secenege basiyor ve hicbir sey olmuyordu -
-                          // "duzgun secemiyorum" sikayetinin kaynagi buydu.
+                          // A visible choice snaps to the commit point and then navigates.
                           if (!isActive) setActiveIndex(index);
                           commit(dimension, !isActive);
                         }}
@@ -451,11 +379,8 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                           height: ITEM_D,
                           transform: `translate(-50%, -50%) scale(${scale})`,
                           opacity,
-                          // Pencerenin disina cikan oge DOM'da kalir: menu
-                          // semantigi bes boyutu da saymali ve ekran okuyucu
-                          // listenin tamamini gorebilmeli. Yalnizca boyasi ve
-                          // isaretleme hedefi kalkar; boylece girip cikarken
-                          // yumusak solar, aniden belirmez.
+                          // Off-arc items remain in the menu for assistive technology;
+                          // only their paint and pointer target disappear.
                           pointerEvents: opacity <= 0 ? 'none' : undefined,
                           background: isActive ? 'var(--accent)' : 'var(--bg-sunken)',
                           color: isActive ? 'var(--accent-fg)' : 'var(--fg)',
@@ -476,7 +401,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   })}
                 </div>
 
-                {/* Aktif boyutun adi: yayin disinda, panelin sag ustunde. */}
+                {/* Visible label for the choice currently at the commit point. */}
                 <span
                   aria-hidden="true"
                   className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap rounded-full bg-bg-raised px-3.5 py-2 shadow-pop ring-1 ring-[var(--border-strong)]"
@@ -485,13 +410,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
                   <span className="text-sm font-bold text-accent">{active.label}</span>
                 </span>
 
-                {/*
-                  Gobek: animasyonlu N isareti (spec 4.4/7 - isaret panel
-                  uzerinde her zaman erisilebilir kalir). Yayin merkezi duz
-                  kenardadir; isaret oraya ORTALANIRSA yarisi viewport disinda
-                  kalir - onceki surumun hatasi buydu. Bunun yerine dugme
-                  duvara YASLANIR: sol kenari x=0'da, isaret tamamen icerde.
-                */}
+                {/* The persistent N hub rests inside the straight edge so it cannot be clipped. */}
                 <button
                   type="button"
                   onClick={() => close(true)}

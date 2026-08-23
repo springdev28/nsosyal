@@ -9,14 +9,10 @@ import type { AdRequest, ModerationStatus } from '@/types/domain';
 import { placementByCode, priceFor, subscriptionByPlan } from '@/lib/newspaper/inventory';
 
 /**
- * nGazete ilan akisi (PROJECT_SPEC 7.9 / 17.12).
- *
- * DEGISMEZ URUN KURALI: ucretli gorunurluk yalnizca gazete icinde yasar.
- * Bu dosya siralama moduluyle (lib/ranking) hicbir bagimliliga sahip degildir
- * ve olmamalidir. Onaylanan bir ilan yalnizca bir gazete sayisina kart olarak
- * eklenir; hicbir kullanicinin akis skorunu degistirmez.
- *
- * Ayrica gercek odeme entegrasyonu bilerek YOKTUR (7.9).
+ * Server-side boundary for nGazete advertising requests and approval.
+ * Approved placement is written only to newspaper data in DemoStore. This file
+ * deliberately has no dependency on `lib/ranking`, so payment cannot alter the
+ * personal feed. The prototype calculates prices but does not charge money.
  */
 
 export interface AdRequestState {
@@ -42,7 +38,7 @@ export async function submitAdRequest(_prev: AdRequestState, formData: FormData)
     return { error: 'Geçerli bir iletişim e-postası gir.' };
   }
 
-  // Fiyat ILAN TURUNDEN degil, satin alinan ALANDAN turer (PROJECT_SPEC 10.1.1).
+  // Price comes from the requested newspaper area, not an arbitrary ad label.
   const placementCode = String(formData.get('requestedPlacement') ?? '');
   const placement = placementByCode(placementCode);
   if (!placement) return { error: 'Geçerli bir yerleşim alanı seç.' };
@@ -67,7 +63,7 @@ export async function submitAdRequest(_prev: AdRequestState, formData: FormData)
     requestedIssueStart: String(formData.get('requestedIssueStart') ?? '') || null,
     requestedIssueCount: subscription.issueCount,
     subscriptionPlan: subscription.plan,
-    // Katsayilar sonradan degisse de verilen teklif degismesin diye dondurulur.
+    // Store the quote so later pricing changes cannot rewrite this request.
     pricingSnapshot: price?.total ?? null,
     theme: String(formData.get('theme') ?? '') || null,
     title,
@@ -87,7 +83,7 @@ export async function submitAdRequest(_prev: AdRequestState, formData: FormData)
   };
 }
 
-/** Admin karari. Onaylanan ilan yalnizca gazete sayisina eklenir. */
+/** Adds an approved request to a newspaper issue, never to the feed. */
 export async function reviewAdRequest(formData: FormData): Promise<void> {
   const viewer = await getViewer();
   if (!isAdmin(viewer) || !viewer) redirect('/feed');

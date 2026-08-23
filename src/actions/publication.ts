@@ -1,7 +1,7 @@
 /**
- * Yayin Atolyesi'nin taslak, rezervasyon, kreatif, satin alma ve uyelik
- * mutasyonlarini yetkili sunucu yoluna toplar. Son alan cakismasi kontrolu para
- * cekme niyetinden hemen once burada yapilir.
+ * Server-side boundary for Publication Studio drafts, reservations, uploads,
+ * purchases, and membership. PublicationStudio calls these functions; each one
+ * resolves the viewer and delegates persistent state to DemoStore.
  */
 'use server';
 
@@ -119,8 +119,8 @@ export async function purchasePublicationAreaAction(input: {
 }): Promise<PublicationMutationResult> {
   const viewer = await getViewer();
   if (!viewer) return unauthorized();
-  // Gercek odeme yoktur. Alan hakki, para cekme talimatinin hemen onceki
-  // atomik cakismazlik denetimini gosteren demo islemiyle kesinlesir.
+  // The demo grants the area only after DemoStore's final atomic overlap check.
+  // No real payment instruction is sent in this prototype.
   const result = getStore().purchasePublicationArea(viewer.id, input.draftId, input.revision);
   if (result.ok) {
     getStore().track(

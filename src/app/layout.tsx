@@ -1,7 +1,4 @@
-/**
- * Tum rotalara metadata, viewport ve global tasarim sistemini uygular. Oturumlu
- * uygulama kabugu burada degil `(app)/layout.tsx` icinde kurulur.
- */
+/** Applies metadata, viewport rules, and global styles to every route. */
 import type { Metadata, Viewport } from 'next';
 
 import './globals.css';
@@ -26,12 +23,7 @@ export const viewport: Viewport = {
   ],
 };
 
-/**
- * Tema tercihini ilk boyamadan once uygular.
- *
- * Aksi hâlde koyu tema kullanicilarda kisa bir beyaz parlama olurdu. Script
- * kucuk ve senkron; tercih yoksa sisteme birakilir.
- */
+/** Applies the stored theme before first paint to prevent a light-color flash. */
 const THEME_SCRIPT = `
 try {
   var stored = localStorage.getItem('nsosyal-theme');
