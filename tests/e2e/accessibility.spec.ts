@@ -64,6 +64,25 @@ test.describe('axe taraması', () => {
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
 
+  test('harita araması 320 piksel reflow görünümünde kesilmez', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+    await page.goto('/explore/map');
+
+    const searchButton = page.getByRole('search').getByRole('button', { name: 'Ara' });
+    const buttonBox = await searchButton.boundingBox();
+    const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // 320 CSS piksel, 1280 piksel genis bir masaustu sayfasinin yuzde 400
+    // reflow karsiligidir. Dugmenin siniri ve sayfanin toplam genisligi ayri
+    // kontrol edilir; boylece birkac piksellik crop da regresyonu yakalar.
+    expect(buttonBox).not.toBeNull();
+    expect(buttonBox!.x + buttonBox!.width).toBeLessThanOrEqual(viewportWidth);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(viewportWidth);
+  });
+
   test('giriş ekranı erişilebilir', async ({ page }) => {
     await page.goto('/login');
     const results = await scan(page);
