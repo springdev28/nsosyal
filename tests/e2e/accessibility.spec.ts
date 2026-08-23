@@ -32,6 +32,8 @@ const PAGES = [
   { path: '/newspaper', name: 'nGazete' },
   { path: '/publish', name: 'Yayın Atölyesi' },
   { path: '/notifications', name: 'Bildirimler' },
+  { path: '/saved', name: 'Kaydedilenler' },
+  { path: '/video', name: 'Kısa videolar' },
   { path: '/settings', name: 'Ayarlar' },
   { path: '/profile/elif.demo', name: 'Profil' },
   { path: '/profile/elif.demo/edit', name: 'Profil düzenleme' },

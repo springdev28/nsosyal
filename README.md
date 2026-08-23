@@ -87,6 +87,8 @@ basar.
 | Nasıl | `/explore/how` | Topluluk kaynakları ve süreç bilgisi |
 | Topluluklar | `/communities` | Kök/dal topluluklar, üyelik ve moderator onaylı başvuru |
 | Projeler | `/projects` | Yaşayan proje sayfaları, ilerleme, ekip, pitch videosu |
+| Profil | `/profile/[username]` | Kimlik, sosyal bağlar, medya, yanıtlar, projeler ve profil düzenleme |
+| Kaydedilenler | `/saved` | Yalnızca oturum sahibinin görebildiği kişisel gönderi koleksiyonu |
 | nGazete | `/newspaper` | Gerçek digital newspaper layout, editorial ve spatial sponsored inventory |
 | Yayın Atölyesi | `/publish` | Bağımsız, Canva tipi 30×40 A4 grid editörü; zengin Markdown, kaynaklar ve blok stil kontrolleri |
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
