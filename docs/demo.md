@@ -68,6 +68,25 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
    katmanının gizlendiği ve nGazete/Yayın Atölyesi sürekli dekoratif
    animasyonlarının tamamen durduğu gösterilir.
 
+## Sosyal eylemler ve Kaydedilenler demo akışı
+
+1. Elif hesabıyla ana akıştaki ilk gönderi beğenilir ve aynı düğmeyle eski duruma
+   döndürülür. Düğmenin basılı durumu `aria-pressed` ile de değişir.
+2. Aynı gönderi kaydedilir. Kullanıcının kendi profilindeki `Kaydedilenler`
+   bağlantısı `/saved` rotasını açar ve seçilen gönderiyi kişisel koleksiyonda
+   gösterir.
+3. Kaydedilen gönderi bu sayfadan kaldırılır. Demo hesabında başka kayıtlar
+   bulunabileceği için kanıt, seçilen gönderinin koleksiyondan çıkmasıdır.
+4. Bir gönderinin ayrıntısında yorum eklenir. Başarılı Server Action sonrasında
+   yorum görünür olur ve metin alanı temizlenir.
+5. Başka bir kullanıcının profilinde `Takip et` ve `Takiptesin` durumları iki
+   yönde değiştirilir.
+6. Kısa video sayfasında beğeni, yorum ve kaydetme kontrollerinin ana akışla aynı
+   sosyal eylem sözleşmesini kullandığı gösterilir.
+
+Kaydedilenler yalnızca oturum sahibine aittir. DemoStore bellek içi çalıştığı için
+sunucu yeniden başlatıldığında koleksiyon başlangıç verisine döner.
+
 ## Proje pitch demo akışı
 
 1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı MP4/WebM pitch seçilir.
