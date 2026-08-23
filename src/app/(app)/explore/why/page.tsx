@@ -107,10 +107,13 @@ export default async function WhyBoardPage({
           }
         />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+          {/* Grid ogesinin varsayilan min-content genisligi rozet ve proje
+              basliklariyla buyur. Sifir alt sinir, karti 400% reflow kolonuna
+              sigdirirken metni kartin kendi truncate kurallarina birakir. */}
           {stories.map((entry) => (
-            <li key={entry.story.id}>
-              <Card as="article" className="flex h-full flex-col p-4">
+            <li key={entry.story.id} className="min-w-0">
+              <Card as="article" className="flex h-full min-w-0 flex-col p-4">
                 <div className="flex items-center gap-2">
                   <Avatar profile={entry.author} size={36} />
                   <div className="min-w-0">

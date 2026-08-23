@@ -72,6 +72,8 @@ export default async function HowPage({
         description="Toplulukların kendi deneyimlerinden ürettiği kısa rehberler, kontrol listeleri ve derlemeler."
       />
 
+      {/* Uzun placeholder flex satirinin min-content genisligini buyutebilir;
+          inputun kuculmesine izin verip eylemi 400% reflowda gorunur tutariz. */}
       <form action="/explore/how" method="get" role="search" className="flex gap-2">
         {level !== 'all' ? <input type="hidden" name="level" value={level} /> : null}
         {type !== 'all' ? <input type="hidden" name="type" value={type} /> : null}
@@ -85,11 +87,11 @@ export default async function HowPage({
           type="search"
           defaultValue={params.q ?? ''}
           placeholder="Ara: lehim, erişilebilirlik, makale okuma…"
-          className="min-h-11 flex-1 rounded-xl border border-line bg-bg-raised px-3"
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-line bg-bg-raised px-3"
         />
         <button
           type="submit"
-          className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
         >
           Ara
         </button>

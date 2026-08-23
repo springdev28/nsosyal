@@ -68,8 +68,8 @@ export function FiveNMark({
    * `animateMotion` cizginin ta kendisini yol olarak kullanir, yani yol
    * yaklasik degil birebirdir.
    *
-   * Hareketi azaltilmis tercihte parcacik `globals.css` icindeki
-   * `.ns-mark-particle` kurali ile hic boyanmaz.
+   * Hareketi azaltilmis tercihte tum SMIL katmani `globals.css` icindeki
+   * `.ns-mark-motion-layer` kurali ile hic boyanmaz.
    */
   animated?: boolean;
   className?: string;

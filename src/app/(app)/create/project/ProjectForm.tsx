@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 
 import { createProject, type ProjectFormState } from '@/actions/projects';
 import { ACCEPTED_VIDEO_TYPES, MAX_VIDEO_BYTES, MAX_VIDEO_SECONDS } from '@/lib/media/constraints';
@@ -34,8 +34,11 @@ export function ProjectForm({
   const [state, formAction, pending] = useActionState<ProjectFormState, FormData>(createProject, {});
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const fileInspectionId = useRef(0);
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const inspectionId = ++fileInspectionId.current;
+    const input = event.currentTarget;
     const file = event.target.files?.[0];
     setFileError(null);
     setFileName(null);
@@ -52,7 +55,40 @@ export function ProjectForm({
       event.target.value = '';
       return;
     }
-    setFileName(`${file.name} · ${Math.round(file.size / 1024)} KB`);
+
+    setFileName(`${file.name} · süre denetleniyor…`);
+    const objectUrl = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    // Bu kontrol hizli geri bildirimdir; ayni sure sunucuda kapsayicidan tekrar
+    // okunur. Tarayici sonucunun form guvenlik siniri olmasina izin verilmez.
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(objectUrl);
+      // Kullanici hizla yeni dosya secerse eski metadata cevabi yeni secimi
+      // temizlememeli; yalnizca son baslatilan denetim arayuzu gunceller.
+      if (inspectionId !== fileInspectionId.current) return;
+      if (!Number.isFinite(video.duration) || video.duration <= 0) {
+        setFileError('Video süresi okunamadı. Başka bir MP4 veya WebM dosyası seç.');
+        input.value = '';
+        setFileName(null);
+        return;
+      }
+      if (video.duration > MAX_VIDEO_SECONDS) {
+        setFileError(`Video ${MAX_VIDEO_SECONDS} saniyeden uzun olamaz (${Math.ceil(video.duration)} saniye).`);
+        input.value = '';
+        setFileName(null);
+        return;
+      }
+      setFileName(`${file.name} · ${video.duration.toFixed(1)} sn · ${Math.round(file.size / 1024)} KB`);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      if (inspectionId !== fileInspectionId.current) return;
+      setFileError('Video süresi okunamadı. Başka bir MP4 veya WebM dosyası seç.');
+      input.value = '';
+      setFileName(null);
+    };
+    video.src = objectUrl;
   }
 
   return (
@@ -186,14 +222,14 @@ export function ProjectForm({
             type="file"
             accept="video/mp4,video/webm"
             onChange={onFileChange}
-            aria-describedby="pitch-help"
+            aria-describedby={fileError ? 'pitch-help pitch-error' : 'pitch-help'}
             className="w-full rounded-xl border border-line bg-bg-raised p-2 text-sm"
           />
           <p id="pitch-help" className="mt-1 text-xs text-fg-subtle">
             {fileName ?? 'Henüz dosya seçilmedi.'}
           </p>
           {fileError ? (
-            <p role="alert" className="mt-1 text-sm text-danger">
+            <p id="pitch-error" role="alert" className="mt-1 text-sm text-danger">
               {fileError}
             </p>
           ) : null}

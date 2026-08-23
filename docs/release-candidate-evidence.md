@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
-Tarih: 22 Ağustos 2026  
-Doğrulanan kaynak SHA: `9413542e840ffb8e7e74c0f9c866851cc9cafac0`  
+Tarih: 23 Ağustos 2026
+Doğrulanan kaynak SHA: `5169c9ba30d50992c8f924b46fe20f518294f8fd`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -31,14 +31,14 @@ Durum sözlüğü:
 
 | P0 yolculuk | Rotalar | Veri ve mutasyon yolu | Otomatik kanıt | Görsel/a11y kanıtı | Durum |
 | --- | --- | --- | --- | --- | --- |
-| Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` 1440×1000 ve 390×844 incelendi; desktop/mobile axe | Doğrulandı |
-| N işareti → yarım yay → gerçek 5N paneli | `/explore`, `/explore/map`, `/explore/time`, `/explore/how`, `/explore/why` | İstemci seçim durumu; seçim URL rotasına taşınır | `five-n-selector` içindeki 8 senaryo iki viewportta geçti | Açık yay 1440×1000 ve 390×844 incelendi; yatay taşma yok; hedefler en az 44×44; açık durumda axe temiz | Doğrulandı |
+| Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` masaüstü ve 320×800 incelendi; taslak etiketi açıkken Gönder eylemi kırpılmıyor; desktop/mobile axe | Doğrulandı |
+| N işareti → yarım yay → gerçek 5N paneli | `/explore`, `/explore/map`, `/explore/time`, `/explore/how`, `/explore/why` | İstemci seçim durumu; seçim URL rotasına taşınır | `five-n-selector` içindeki 8 senaryo iki viewportta geçti | Açık yay 1440×1000 ve 390×844 incelendi; `Nasıl` araması ile `Neden` kartları 320×800 reflow görünümüne sığıyor; hedefler en az 44×44; axe temiz | Doğrulandı |
 | Türkiye yoğunluk haritası → il → ilçe → sonuç | `/explore/map` | Yerel GeoJSON + `DemoStore` yoğunluk sorgusu; kişisel canlı koordinat yok | `map-density`; `competition-flows` 2 | Desktop/mobile harita, legend ve erişilebilir liste incelendi; axe temiz | Doğrulandı |
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
 | Topluluğa katılma → kaynak; başvuru → moderatör kararı → denetim kaydı | `/communities/[slug]`, `/communities/apply`, `/admin/moderation`, `/admin` | Server Actions → `DemoStore`; rol denetimi sunucuda | `competition-flows` 4 ve 7; store birim testleri | İlgili kullanıcı yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Neden hikâyesi → bağlı yaşayan proje | `/explore/why`, `/explore/why/[id]`, `/projects/[slug]` | `DemoStore` view modelleri; oluşturma Server Action üzerinden | `competition-flows` 5 iki viewportta geçti | Neden ve proje yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
-| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action dosyayı doğrulayıp yazar; proje bundan sonra oluşturulur | 3 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut artık yarım/kopya proje açmaz | Demo doğrulandı |
-| nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking birim testleri | `/newspaper` 1440×1000 ve 390×844 incelendi; koyu kâğıt, kolonlar ve taşma kontrol edildi; axe temiz | Doğrulandı |
+| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action MIME, byte ve kapsayıcı süresini doğrulayıp yazar; proje bundan sonra oluşturulur | 7 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut/süre yarım veya kopya proje açmaz | Demo doğrulandı |
+| nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking ve 06.00/gün değişimi store testleri | İlk oturum modalı, odak tuzağı ve axe masaüstü/mobil 6/6; koyu kâğıt, kolonlar ve taşma ayrıca incelendi | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
 
@@ -49,8 +49,8 @@ Durum sözlüğü:
 | Kimlik doğrulama | Sentetik hesap seçimi ve demo oturum çerezi | Supabase Auth ve gerçek hesap yaşam döngüsü |
 | Uygulama verisi | Süreç belleğindeki deterministik `DemoStore` | Supabase Postgres adapteri; mevcut migration ve RLS sözleşmelerini kullanan runtime yol |
 | Kalıcılık | Aynı çalışan sunucu süreci boyunca; reset veya yeniden dağıtım veriyi sıfırlar | Kalıcı veritabanı, yedekleme ve gözlemlenebilirlik |
-| Medya | Pitch ve gazete kreatifi Node sunucusunun yerel dosya sistemine yazılır | Supabase Storage, MIME içerik doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
-| Video süresi | İstemci 90 saniye uyarısı verir; sunucu MIME ve 50 MB sınırını doğrular | Worker/transcoder tarafında güvenilir süre ölçümü ve yeniden kodlama |
+| Medya | Pitch ve gazete kreatifi Node sunucusunun yerel dosya sistemine yazılır | Supabase Storage, codec doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
+| Video süresi | İstemci metadata ile hızlı geri bildirim verir; sunucu MP4 `mvhd` veya WebM `Info/Duration` alanından süreyi tekrar ölçer ve 90 saniye/50 MB sınırını uygular | Worker/transcoder tarafında codec çözme, yeniden kodlama ve kötü amaçlı dosya taraması |
 | nGazete ödeme | Çakışma denetimi ve fiyat sonucu üreten demo işlemi | Gerçek ödeme sağlayıcısı, idempotency key, webhook ve muhasebe kaydı |
 | Yayın Atölyesi üyeliği | 200₺/ay yetkilerini gösteren demo profil bayrağı | Faturalandırma ile bağlı entitlement ve yenileme/iptal durumu |
 | Dağıtım | `main` push'unu Hostinger ve Render ayrı ayrı çekip derler; `/api/health` SHA bildirir | Aynı yöntem korunur; SHA eşitliği yayın kapısıdır |
@@ -61,21 +61,25 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `9413542e840ffb8e7e74c0f9c866851cc9cafac0` için:
+Kaynak SHA `5169c9ba30d50992c8f924b46fe20f518294f8fd` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 124/124 birim testi |
+| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e` | İlk tam koşuda 140 geçti; işletim sistemi `ERR_NETWORK_IO_SUSPENDED` nedeniyle zaman aşımına uğrayan 4 senaryo temiz sunucuda `--last-failed` ile 4/4 geçti. Yeni moderasyon senaryosu ayrıca iki viewportta 2/2 geçti. Atlanan yok |
-| Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
+| `npx playwright test tests/e2e/accessibility.spec.ts` | Son tam koşuda 70/72 geçti; axe'in yeni sayfa açmasında masaüstü proje rotası ve mobil karanlık topluluk rotası 45 saniyelik altyapı zaman aşımına uğradı. Aynı iki senaryo temiz çalışan üretim sunucusuna karşı izole tekrarlandığında 5,3 ve 6,4 saniyede geçti. Bundan önceki tam koşu 70/70, son değişikliklerin iki regresyon testi de iki viewportta 4/4 geçti; gerçek axe ihlali raporlanmadı. |
+| `npm run test:e2e -- tests/e2e/five-n-selector.spec.ts` | Bu SHA'da yeniden çalıştırılmadı. Bir önceki kaynak `753fe6d6856225d65c291fb87b1ef99a34b37b86` için masaüstü ve mobilde 16/16 geçti. |
+| Tam `npm run test:e2e` | Bu kaynak SHA'da çalıştırılmadı. Önceki temiz kaynak `c398be223a163065dc72f0fa2037a10d947d38a1` için 144/144 geçti. |
+| Canlı görsel kontrol | Yerel üretim derlemesinde masaüstü görünür/belge genişliği 1265/1265 piksel. 320×800 feed görünümünde taslak açıkken önce 305/316 piksel olan görünür/belge genişliği düzeltmeden sonra 305/305 oldu; Gönder düğmesinin sağ kenarı 281 pikselde kaldı. Normal hareket tercihinde marka ve nGazete animasyonları aktif; reduced-motion E2E ölçümünde nGazete hareket adları `none`, SMIL katmanı `display:none`. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
 oranı korunarak gösterilir. CTA renkleri, biçimi ve izin verilen hareketi onay
 anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.00
-öncesinde kapalıdır. Nihai canlı SHA, push sonrası iki ortamın `/api/health`
-yanıtıyla ayrıca doğrulanır.
+öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
+ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
+yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
+Nihai canlı SHA, push sonrası iki ortamın `/api/health` yanıtıyla ayrıca doğrulanır.
 
 ## Açık riskler ve yayın kararı
 
@@ -93,17 +97,19 @@ sentetik E2E bunun yerine geçmez.
 adapteri, Auth ve Storage entegrasyonu tamamlanana kadar aday yalnızca yarışma
 prototipi olarak sunulmalıdır.
 
-### Yüksek: sunucu tarafında gerçek video süresi ölçülmüyor
+### Orta: production video işleme hattı yok
 
-MIME ve byte sınırı artık proje kaydından önce doğrulanıyor. Ancak 90 saniye
-sınırı tarayıcı metadata'sına dayanıyor; production worker/transcoder kanıtı
-olmadan güvenlik sınırı kabul edilmemelidir.
+Sunucu MP4/WebM kapsayıcısından gerçek süreyi okuyup kayıt öncesi sınırı uygular.
+Ancak codec çözme/yeniden kodlama, virüs taraması ve kalıcı Storage worker'ı
+bulunmadığından bu doğrulayıcı production medya hattının yerine geçmez.
 
 ### Yüksek: tam manuel erişilebilirlik turu eksik
 
 Axe, klavye senaryoları, focus trap, renk dışı durum, metin eşdeğeri ve iki
-viewport otomatik geçti. Yine de gerçek ekran okuyucu, yüzde 200/400 zoom,
-switch-control ve cihaz üstü reduced-motion turu ayrıca yapılmalıdır.
+viewport otomatik geçti. Kritik 5N arama/sonuç yüzeylerinin 320 CSS pikseldeki
+yüzde 400 reflow karşılığı elle ve otomatik kontrol edildi. Yine de tüm kritik
+yolculuklarda gerçek ekran okuyucu, yüzde 200/400 zoom, switch-control ve cihaz
+üstü reduced-motion turu ayrıca yapılmalıdır.
 
 ### Karar
 

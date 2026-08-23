@@ -55,6 +55,7 @@ import type {
 
 import { districtName, provinceName, DISTRICTS, PROVINCES } from '@/lib/geo';
 import { placementByCode } from '@/lib/newspaper/inventory';
+import { newspaperIssuePublishAt } from '@/lib/newspaper/schedule';
 import { rankPosts, type RankingViewer } from '@/lib/ranking/rank';
 import { buildDataset, type Dataset } from '@/lib/seed';
 import { uid } from '@/lib/seed/ids';
@@ -128,11 +129,6 @@ const PUBLICATION_COLUMNS = 30;
 const PUBLICATION_ROWS = 40;
 const PUBLICATION_UNIT_PRICE = 10;
 const PUBLICATION_SUBSCRIBER_DISCOUNT = 0.05;
-
-/** Gazete sayisi Istanbul saatiyle 06.00'da okuyucuya acilir (UTC+03.00). */
-function publicationIssuePublishAt(issueDate: string): Date {
-  return new Date(`${issueDate}T03:00:00.000Z`);
-}
 
 function cleanPublicationRect(rect: PublicationRect): PublicationRect | null {
   const clean = {
@@ -1001,11 +997,52 @@ export class DemoStore {
   // --- nGazete ------------------------------------------------------------
 
   /**
+   * Uzun sure calisan demo sureci gece yarisi yeniden baslatilmayabilir.
+   * Bugunun kaydi yoksa son yayimlanmis sayinin yalnizca editoryal omurgasi
+   * kopyalanir; eski sponsorlu ilanlar yeni gune tasinmaz ve diger store
+   * mutasyonlari sifirlanmaz.
+   */
+  private ensureDailyIssue(now: Date): void {
+    const issueDate = toIstanbulDateKey(now);
+    if (this.data.newspaperIssues.some((issue) => issue.issueDate === issueDate)) return;
+
+    const publishAt = newspaperIssuePublishAt(issueDate);
+    const templateIssue = this.data.newspaperIssues
+      .filter((issue) => issue.status === 'published' && issue.issueDate < issueDate)
+      .sort((left, right) => right.issueDate.localeCompare(left.issueDate))[0];
+    const issue: NewspaperIssue = {
+      id: uid('issue', issueDate),
+      issueDate,
+      title: 'nGazete · Günün Özeti',
+      standfirst: 'Toplulukların seçkileri, projeleri ve günün notları.',
+      coverEmoji: 'nG',
+      theme: null,
+      publishAt: publishAt.toISOString(),
+      status: now.getTime() >= publishAt.getTime() ? 'published' : 'draft',
+    };
+    this.data.newspaperIssues.push(issue);
+
+    if (!templateIssue) return;
+    const editorialTemplate = this.data.newspaperItems
+      .filter((item) => item.issueId === templateIssue.id && !item.sponsored)
+      .sort((left, right) => left.publicationOrder - right.publicationOrder);
+    for (const [index, item] of editorialTemplate.entries()) {
+      this.data.newspaperItems.push({
+        ...item,
+        id: uid('newspaper-item', `${issueDate}-daily-${index}`),
+        issueId: issue.id,
+        campaignId: null,
+      });
+    }
+  }
+
+  /**
    * DemoStore kalici bir zamanlayici calistirmadigi icin zaman esigini her
    * okumada uygular. Boylece onayli gelecek sayi erken sizmaz, saat 06.00'dan
    * sonraki ilk istekte de elle deploy gerektirmeden yayina girer.
    */
   private publishScheduledIssues(now: Date): void {
+    this.ensureDailyIssue(now);
     for (const issue of this.data.newspaperIssues) {
       if (issue.status === 'draft' && new Date(issue.publishAt).getTime() <= now.getTime()) {
         issue.status = 'published';
@@ -1038,7 +1075,7 @@ export class DemoStore {
   private publishApprovedDraft(draft: PublicationDraft, now: Date): void {
     if (this.data.newspaperItems.some((item) => item.campaignId === draft.id)) return;
 
-    const publishAt = publicationIssuePublishAt(draft.issueDate);
+    const publishAt = newspaperIssuePublishAt(draft.issueDate);
     let issue = this.data.newspaperIssues.find((entry) => entry.issueDate === draft.issueDate);
     if (!issue) {
       const templateIssue = this.data.newspaperIssues
@@ -1193,7 +1230,7 @@ export class DemoStore {
       return {
         issueDate,
         closesAt: closesAt.toISOString(),
-        publishesAt: new Date(issueStart.getTime() + 6 * 3_600_000).toISOString(),
+        publishesAt: newspaperIssuePublishAt(issueDate).toISOString(),
         open: now.getTime() < closesAt.getTime(),
         slots: this.data.publicationSlots
           .filter((slot) => slot.issueDate === issueDate)

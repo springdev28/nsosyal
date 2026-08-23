@@ -242,14 +242,45 @@ describe('konum mahremiyeti', () => {
 describe('nGazete ve gelir modeli', () => {
   const admin = profileId('admin.demo');
 
-  it('bugünün sayısı Europe/Istanbul gününe göre bulunur', () => {
+  it('yeni İstanbul gününü UTC gününden bağımsız bulur', () => {
     // Sunucu UTC'de calisirken 21:00'den sonra Istanbul ertesi gune gecer.
-    // Sayi tarihi sunucu gunune gore uretilseydi "bugunun sayisi" kaybolurdu.
+    // Kayit yeni gune aittir; urun kurali geregi 06.00'a kadar okuyucuya acilmaz.
     const lateUtc = new Date('2026-08-18T23:30:00Z');
     const lateStore = new DemoStore(lateUtc);
     expect(toIstanbulDateKey(lateUtc)).toBe('2026-08-19');
-    expect(lateStore.hasIssueForToday(lateUtc)).toBe(true);
-    expect(lateStore.getIssueByDate('2026-08-19')).not.toBeNull();
+    expect(lateStore.hasIssueForToday(lateUtc)).toBe(false);
+    expect(lateStore.getIssueByDate('2026-08-19', lateUtc)).toBeNull();
+
+    const afterPublish = new Date('2026-08-19T03:00:01.000Z');
+    expect(lateStore.hasIssueForToday(afterPublish)).toBe(true);
+    expect(lateStore.getIssueByDate('2026-08-19', afterPublish)).not.toBeNull();
+  });
+
+  it('bugünün sayısını İstanbul saatiyle 06.00 sınırında açar', () => {
+    const beforePublish = new Date('2026-08-18T02:59:59.000Z');
+    const earlyStore = new DemoStore(beforePublish);
+
+    expect(earlyStore.getIssueByDate('2026-08-18', beforePublish)).toBeNull();
+    expect(earlyStore.getIssueByDate('2026-08-18', new Date('2026-08-18T03:00:01.000Z'))).not.toBeNull();
+  });
+
+  it('sunucu gece yarısını geçince yeni sayıyı yeniden başlatmadan üretir', () => {
+    const beforeMidnight = new Date('2026-08-18T20:59:59.000Z');
+    const rollingStore = new DemoStore(beforeMidnight);
+    const viewer = profileId('elif.demo');
+    const community = communityId('turkce-nlp');
+    expect(rollingStore.joinCommunity(community, viewer)).toBe(true);
+
+    const beforePublish = new Date('2026-08-19T02:59:59.000Z');
+    expect(rollingStore.getIssueByDate('2026-08-19', beforePublish)).toBeNull();
+
+    const afterPublish = new Date('2026-08-19T03:00:01.000Z');
+    const issue = rollingStore.getIssueByDate('2026-08-19', afterPublish);
+    expect(issue?.items.some((entry) => !entry.item.sponsored)).toBe(true);
+    expect(issue?.items.some((entry) => entry.item.sponsored)).toBe(false);
+    expect(rollingStore.listIssues(afterPublish).filter((entry) => entry.issue.issueDate === '2026-08-19')).toHaveLength(1);
+    // Gunluk sayi eklemek store'u resetlememeli; kullanicinin onceki islemi korunur.
+    expect(rollingStore.getCommunityRole(community, viewer)).toBe('member');
   });
 
   it('sponsorlu kartların hepsinin sponsoru bilinir', () => {

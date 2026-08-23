@@ -64,6 +64,68 @@ test.describe('axe taraması', () => {
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
 
+  test('harita araması 320 piksel reflow görünümünde kesilmez', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+    await page.goto('/explore/map');
+
+    const searchButton = page.getByRole('search').getByRole('button', { name: 'Ara' });
+    const buttonBox = await searchButton.boundingBox();
+    const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // 320 CSS piksel, 1280 piksel genis bir masaustu sayfasinin yuzde 400
+    // reflow karsiligidir. Dugmenin siniri ve sayfanin toplam genisligi ayri
+    // kontrol edilir; boylece birkac piksellik crop da regresyonu yakalar.
+    expect(buttonBox).not.toBeNull();
+    expect(buttonBox!.x + buttonBox!.width).toBeLessThanOrEqual(viewportWidth);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(viewportWidth);
+  });
+
+  test('Nasıl araması ve Neden kartları 320 piksel reflow görünümüne sığar', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+
+    await page.goto('/explore/how');
+    const howButton = page.getByRole('search').getByRole('button', { name: 'Ara' });
+    const howButtonBox = await howButton.boundingBox();
+    const howViewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // Hem eylemin gorunurlugunu hem de belge genisligini olcmek, uzun arama
+    // ipucunun dugmeyi crop etmesiyle gizli sayfa tasmasini ayri ayri yakalar.
+    expect(howButtonBox).not.toBeNull();
+    expect(howButtonBox!.x + howButtonBox!.width).toBeLessThanOrEqual(howViewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(howViewportWidth);
+
+    await page.goto('/explore/why');
+    const firstStory = page.getByRole('article').first();
+    const storyBox = await firstStory.boundingBox();
+    const whyViewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    // Neden karti 5N isaretinin yanindaki dar reflow kolonunda kalmali;
+    // grid min-content genisligi belgeyi yatay kaydirmamalidir.
+    expect(storyBox).not.toBeNull();
+    expect(storyBox!.x + storyBox!.width).toBeLessThanOrEqual(whyViewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(whyViewportWidth);
+  });
+
+  test('gönderi oluşturucu 320 piksel reflow görünümünde eylemi kırpmaz', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+
+    // Taslak etiketi ancak metin varken gorundugu icin regresyonu gercek
+    // sikisik durumla siniyoruz; bos form yanlis bir yesil sonuc verirdi.
+    await page.getByLabel('Gönderi metni').fill('Yeni sensör kartının ilk denemesi.');
+    const submit = page.getByRole('button', { name: 'Gönder', exact: true });
+    const submitBox = await submit.boundingBox();
+    const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    expect(submitBox).not.toBeNull();
+    expect(submitBox!.x + submitBox!.width).toBeLessThanOrEqual(viewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
+  });
+
   test('giriş ekranı erişilebilir', async ({ page }) => {
     await page.goto('/login');
     const results = await scan(page);
@@ -105,6 +167,40 @@ test.describe('karanlık tema', () => {
       expect(summary, `${path} karanlık tema ihlalleri`).toEqual([]);
     });
   }
+});
+
+test.describe('hareketi azaltma', () => {
+  test('marka ve nGazete sürekli hareketlerini tamamen durdurur', async ({ page }) => {
+    // Medya tercihini sayfa uzerinde acikca kurmak, iki proje cihaz profilinde
+    // de ayni sozlesmeyi deterministik olarak sinamamizi saglar.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await loginAs(page, 'user');
+    await page.goto('/feed');
+
+    const motionState = await page.evaluate(() => {
+      const newspaper = document.querySelector<HTMLElement>('.nav-newspaper');
+      const mobileNewspaper = document.querySelector<HTMLElement>('.mobile-newspaper-icon');
+      const markLayer = document.querySelector<SVGElement>('.ns-mark-motion-layer');
+
+      return {
+        preferenceApplied: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        newspaperGlint: newspaper ? getComputedStyle(newspaper, '::before').animationName : null,
+        newspaperAura: newspaper ? getComputedStyle(newspaper, '::after').animationName : null,
+        mobileNewspaper: mobileNewspaper ? getComputedStyle(mobileNewspaper).animationName : null,
+        markLayerDisplay: markLayer ? getComputedStyle(markLayer).display : null,
+      };
+    });
+
+    // Animasyon suresini neredeyse sifira indirmek yeterli degil: son kare
+    // stilinin yuzeyde kalmamasi ve SMIL katmaninin da boyanmamasi gerekir.
+    expect(motionState).toEqual({
+      preferenceApplied: true,
+      newspaperGlint: 'none',
+      newspaperAura: 'none',
+      mobileNewspaper: 'none',
+      markLayerDisplay: 'none',
+    });
+  });
 });
 
 test.describe('klavye ile kullanım', () => {

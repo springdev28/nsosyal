@@ -340,7 +340,7 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await expect(mark.locator('.ns-mark-end-glow')).toHaveCount(1);
   });
 
-  test('gazetenin takvimi ve sayfaları vardır, varsayılan bugündür', async ({ page }) => {
+  test('gazetenin takvimi ve sayfaları vardır, varsayılan son yayımlanan sayıdır', async ({ page }) => {
     await loginAs(page, 'user');
     await page.goto('/newspaper');
 
@@ -349,8 +349,20 @@ test.describe('6 · nGazete, ilgi vurgusu ve yayın alanı', () => {
     await expect(calendar).toBeVisible();
     await calendar.getByText('Takvimi aç').click();
 
-    // Varsayilan sayi bugunun sayisidir.
-    await expect(page.getByText('Bugünün sayısı')).toBeVisible();
+    // Saat 06.00'dan once bugunun taslagi acilmaz; takvimdeki en yeni
+    // yayimlanmis gun varsayilan olur. Esikten sonra bu zaten bugunun gunudur.
+    const activeIssue = calendar.locator('a[aria-current="page"]');
+    await expect(activeIssue).toHaveCount(1);
+    const activeHref = await activeIssue.getAttribute('href');
+    const activeDate = new URL(activeHref!, 'http://nsosyal.test').searchParams.get('date');
+    const publishedDates = await calendar.locator('a[href^="/newspaper?date="]').evaluateAll((links) =>
+      links
+        .map((link) => new URL((link as HTMLAnchorElement).href).searchParams.get('date'))
+        .filter((date): date is string => Boolean(date))
+        .sort(),
+    );
+    expect(activeDate).toBe(publishedDates.at(-1));
+    await expect(page.locator(`time[datetime="${activeDate}"]`)).toBeVisible();
 
     // Gecmis bir gune tiklamak o gunun sayisini acar.
     const pastDay = calendar.getByRole('link', { name: /^12 —/ });

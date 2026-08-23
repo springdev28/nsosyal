@@ -395,7 +395,7 @@
   }
 
   /* nGazete gezinmede editorial bir yuzey gibi parlar; palet marka mavilerinde
-     kalir ve hareket, genel reduced-motion kuraliyla durur. */
+     kalir ve surekli hareket dosyanin sonundaki ortak guvenlik kuralinda durur. */
   .nav-newspaper {
     isolation: isolate;
     overflow: hidden;
@@ -855,9 +855,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .studio-shell { transition: none; }
-  .publication-cta--pulse,
-  .publication-cta--shine::after,
-  .publication-cta--float { animation: none; }
 }
 
 /* Yayin Atolyesi tek bir uygulama kabugu gibi davranir. Kenarlar disari
@@ -1080,16 +1077,29 @@
   }
 }
 
-/* Marka isaretindeki parcacik yalnizca bir hareket katmanidir; geometrinin
-   parcasi degildir (spec 17.18/2). Hareketi azaltilmis tercihte kaldirilir ve
-   isaret sade haliyle kalir.
+/* Surekli dekoratif hareketler ayni erisilebilirlik sozlesmesine baglidir.
+   Marka parcacigi geometrinin parcasi degildir (spec 17.18/2); nGazete ve
+   Yayin Atolyesi yuzeyleri de hareketsiz durumda ayni bilgiyi korur.
 
    Bu kural yukaridaki genel reduced-motion blogunun tekrari DEGILDIR: orasi
-   CSS animasyon ve gecislerini kisaltir, oysa parcacik SMIL ile
-   (`<animateMotion>`) hareket eder ve CSS suresinden etkilenmez. Tek yol
-   katmani hic boyamamak. */
+   gecisleri kisaltir, fakat bir animasyonun son karesini yuzeyde birakabilir.
+   Ayrica marka parcacigi SMIL (`<animateMotion>`) kullandigi icin CSS
+   suresinden etkilenmez ve hareket katmani hic boyanmamalidir. */
 @media (prefers-reduced-motion: reduce) {
   .ns-mark-motion-layer {
     display: none;
+  }
+
+  .nav-newspaper::before,
+  .nav-newspaper::after,
+  .nav-newspaper__pulse,
+  .mobile-newspaper-icon,
+  .publication-cta--pulse,
+  .publication-cta--shine::after,
+  .publication-cta--float,
+  .resource-flow,
+  .resource-signal i,
+  .resource-orbit i {
+    animation: none !important;
   }
 }

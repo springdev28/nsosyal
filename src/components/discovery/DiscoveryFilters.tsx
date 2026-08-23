@@ -89,11 +89,13 @@ export function DiscoveryFilterBar({
           type="search"
           defaultValue={state.query}
           placeholder="Ara: havacılık, erişilebilirlik, roket…"
-          className="min-h-11 flex-1 rounded-xl border border-line bg-bg-raised px-3"
+          /* Flex ogeler varsayilan olarak icerik genisliginin altina inmez. Bu
+             sinir, uzun placeholder'in dar ekranda Ara dugmesini kesmesini onler. */
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-line bg-bg-raised px-3"
         />
         <button
           type="submit"
-          className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg"
         >
           Ara
         </button>
