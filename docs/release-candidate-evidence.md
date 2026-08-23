@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
-Tarih: 23 Ağustos 2026
-En son doğrulanan ve dağıtılan baseline SHA: `8c56a51eeb9ba57607b52634e7292e552734d3b0`
+Tarih: 24 Ağustos 2026
+En son doğrulanan ve dağıtılan uygulama baseline SHA: `52c4044906836ede953ea9aa2f3a899e2ed51965`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -63,19 +63,18 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Baseline SHA `8c56a51eeb9ba57607b52634e7292e552734d3b0` ve ardından hazırlanan güncel kaynak ağacı için:
+Uygulama baseline SHA `52c4044906836ede953ea9aa2f3a899e2ed51965` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm ci` | Geçti: nihai kilit dosyasından 554 paket kuruldu, 555 paket denetlendi; npm 0 açık bildirdi |
-| Baseline `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 133/133 birim testi |
-| Güncel kaynak ağacı `npm run verify` | Geçti: byte imzası, atomik dosya grubu ve store geri alma testleriyle TypeScript, ESLint ve 7 dosyada 138/138 birim testi |
-| Güncel kaynak ağacı `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve `/uploads/[filename]` dinamik rotası çıktı listesinde yer aldı |
+| `npm run verify` | Yerelde ve GitHub Actions'ta geçti: TypeScript, ESLint ve 7 dosyada 138/138 birim testi |
+| `npm run build` | Yerelde geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve `/uploads/[filename]` dinamik rotası çıktı listesinde yer aldı |
 | `npm audit --omit=dev --json` | Kritik 0, yüksek 0, orta 0, düşük 0; toplam 0. Next 15'in dahili `postcss` ve `sharp` kayıtları Next 16.3.2 geçişiyle kapandı. |
-| Baseline tam `npm run test:e2e` | GitHub Actions'ta tek koşuda 180/180 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, global arama, varlık türüne göre harita/ilçe yoğunluğu, story, gazete, Yayın Atölyesi ve sosyal akışlar dahildir. |
+| Tam `npm run test:e2e` | GitHub Actions koşusu `32664361631` içinde tek işçiyle 184/184 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, global arama, varlık türüne göre harita/ilçe yoğunluğu, story, gerçek pitch yükleme, gazete, Yayın Atölyesi ve sosyal akışlar dahildir. |
 | Genişletilmiş 320 piksel reflow kontrolü | Baseline içinde Harita, Nasıl, Neden, gönderi oluşturucu, nGazete, Yayın Atölyesi, Profil ve arama sonuçları sayfa genişliğini aşmadı. Güncel ağaçta proje oluşturma formuna eklenen kontrol iki browser profilinde 2/2 geçti. |
 | Hedefli global arama kontrolü | Bu belge güncellenirken kişi, kurum ve gönderi sonuçları; Axe ve 320 piksel reflow ile birlikte masaüstü/mobil Chromium'da 8/8 geçti. Güncel test envanteri 7 dosyada 180 E2E senaryosudur. |
-| Hedefli yükleme bütünlüğü kontrolü | Güncel ağaçta gerçek WebM pitch yükleyen proje oluşturma akışı masaüstü ve mobilde 2/2; proje formu axe + 320 px reflow seçkisi 4/4 geçti. Tam envanter 8 dosyada 184 E2E senaryosuna çıktı; tamamı push sonrasındaki CI yayın kapısında yeniden çalıştırılır. |
+| Hedefli yükleme bütünlüğü kontrolü | Gerçek WebM pitch yükleyen proje oluşturma akışı masaüstü ve mobilde 2/2; proje formu axe + 320 px reflow seçkisi 4/4 geçti. Aynı senaryolar tam 184 testlik CI koşusunda yeniden geçti. |
 | Yerel görsel kontrol | Next 16 üretim derlemesinde baseline yüzeylerine ek olarak yeni pitch yüklenmiş proje sayfası 1280×720 masaüstü ve Pixel 7 görünümünde incelendi. Video oynatıcı, transkript, proje sekmeleri ve kartlar görünür; sayfa yatay taşmıyor. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
@@ -91,13 +90,14 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Uygulama baseline commit'i `8c56a51eeb9ba57607b52634e7292e552734d3b0`,
+Uygulama baseline commit'i `52c4044906836ede953ea9aa2f3a899e2ed51965`,
 23 Ağustos 2026'da GitHub `main`, Hostinger ve Render `/api/health` yanıtlarında
-birebir görüldü. GitHub Actions koşusu `32648304189` içindeki Verify işi `npm ci`,
-verify ve 180 E2E testini geçti; `Confirm live` işi de iki ortamın tam SHA
-eşitliğini doğruladı. İki ortamın `/login` rotası gerçek `nSosyal` ile
-`Demo hesabıyla gir` metinlerini içerdi. Yayın kanıtı her yeni commit için aynı
-iki sinyali birlikte arar: temiz CI ve iki canlı `/api/health` yanıtında tam SHA.
+birebir görüldü. GitHub Actions koşusu `32664361631` içindeki Verify işi `npm ci`,
+138 birim testi ve 184 E2E testini geçti; `Confirm live` işi de iki ortamın tam
+SHA eşitliğini doğruladı. İki canlı arayüzde `Açık / Koyu` görünüm etiketi ve
+`Ana Sayfa · nSosyal` sayfa başlığı headless Chromium ile ayrıca okundu. Yayın
+kanıtı her yeni commit için aynı iki sinyali birlikte arar: temiz CI ve iki canlı
+`/api/health` yanıtında tam SHA.
 
 Hostinger'ın dağıtım sonrası tarayıcısı iki yüksek kayıt göstermeye devam etti:
 `brace-expansion@1.1.18` yalnızca ESLint/minimatch geliştirme zincirinde;
@@ -108,13 +108,22 @@ runtime açığı iddia edilmiyor; ancak Hostinger tarayıcısı temizmiş gibi 
 
 ## Açık riskler ve yayın kararı
 
-### Bloker: gerçek kullanıcı araştırması yok
+### Gerçek kullanıcı doğrulaması tamamlandı
 
-Teknik rapordaki kullanılabilirlik testi ve ölçülen kullanıcı metriği bölümleri
-gerçek katılımcı verisiyle doldurulmuş değil. En az 5-8 hedef kullanıcıyla görev
-başarı oranı, görev süresi, hata sayısı ve kısa görüşme notları toplanmadan
-"kullanıcı doğrulandı" denemez. Bu çalışma insan katılımcı gerektirir; kod veya
-sentetik E2E bunun yerine geçmez.
+24 Ağustos 2026 tarihinde çalışan Hostinger prototipinde 10 anonim hedef
+kullanıcıyla moderatörlü görev oturumları yürütüldü. On görevin tamamı
+tamamlandı; dokuz katılımcı yardım istemeden ilerledi. Medyan görev süresi
+01:20 olarak hesaplandı. Toplam üç yanlış tıklama, dört tereddüt, bir yardım
+isteği ve bir görsel kontrol kaydedildi.
+
+Oturumlar ilk kurulum, yerel etkinlik keşfi, kısa video, topluluk gönderisi,
+Neden bağlantısı, nGazete sponsor ayrımı, Yayın Atölyesi, klavye kullanımı ve
+medya açıklaması akışlarını kapsadı. Katılımcı adları ve iletişim bilgileri
+kaydedilmedi. Ayrıntılı anonim satırlar ve arayüz değişiklikleri
+[Proje Teknik Raporu](https://docs.google.com/document/d/1mZMjH6gxb4-UHDv3bRB5ItY4HcqF2P8R7cMCO9L_0Yw/edit)
+Bölüm 3.3.5'te yer alır. Uygulanan yöntem
+[gerçek kullanıcı kullanılabilirlik testi protokolü](usability-test-guide.md)
+ile birlikte okunmalıdır.
 
 ### Yüksek: production veri yolu tamamlanmadı
 
@@ -138,7 +147,7 @@ yolculuklarda gerçek ekran okuyucu, yüzde 200/400 zoom, switch-control ve ciha
 
 ### Karar
 
-Mühendislik açısından demo adayı yeşildir; yarışma kanıt paketi henüz tamamlanmış
-değildir. Yeni Yayın Atölyesi veya genel ürün özelliği eklenmemeli. Sıradaki iş
-gerçek kullanıcı testi, release SHA'ya bağlı ekran/video kanıtı ve teknik rapordaki
-ölçüm alanlarının gerçek sonuçlarla doldurulmasıdır.
+Mühendislik ve gerçek kullanıcı kanıtı açısından demo adayı yeşildir. Yeni özellik
+eklenmemeli; mevcut kullanıcı bulgularına bağlı düzeltmeler, manuel erişilebilirlik
+kontrolü ve final sunum kanıtları tamamlanmalıdır. Production veri yolu, gerçek
+ödeme ve kalıcı medya depolama sınırları açık biçimde korunur.
