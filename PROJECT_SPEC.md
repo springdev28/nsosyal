@@ -177,6 +177,8 @@ Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ür�
 
 Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi türü, konu,
 herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
+Sayaç, taslak etiketi ve Gönder eylemi dar reflow görünümünde birlikte satır
+atlayabildiği için 320 CSS pikselde eylem kırpılmaz ve yatay taşma oluşmaz.
 Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir. Görsel
 sınırı 12 MB'dir; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu, video
 dosyasını yazmadan önce MIME, byte sayısı ve MP4/WebM kapsayıcı süresini doğrular;
@@ -292,7 +294,8 @@ Migration gerektiğinde yeni migration ekle, geçmiş migration'ı değiştirme.
 - keyboard operation + visible focus;
 - accessible names and labelled errors;
 - no colour-only state;
-- reduced motion;
+- reduced-motion tercihinde marka SMIL katmanının gizlenmesi ve nGazete ile Yayın
+  Atölyesi sürekli dekoratif CSS animasyonlarının tamamen durması;
 - video text/caption equivalent;
 - map list equivalent;
 - mobile touch targets and overflow verified.
