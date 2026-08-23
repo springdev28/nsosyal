@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `5169c9ba30d50992c8f924b46fe20f518294f8fd`
+Doğrulanan kaynak SHA: `f6d8a7bfc5294923e03c0c41f70271e576a3c354`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -61,15 +61,15 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `5169c9ba30d50992c8f924b46fe20f518294f8fd` için:
+Kaynak SHA `f6d8a7bfc5294923e03c0c41f70271e576a3c354` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
-| `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npx playwright test tests/e2e/accessibility.spec.ts` | Son tam koşuda 70/72 geçti; axe'in yeni sayfa açmasında masaüstü proje rotası ve mobil karanlık topluluk rotası 45 saniyelik altyapı zaman aşımına uğradı. Aynı iki senaryo temiz çalışan üretim sunucusuna karşı izole tekrarlandığında 5,3 ve 6,4 saniyede geçti. Bundan önceki tam koşu 70/70, son değişikliklerin iki regresyon testi de iki viewportta 4/4 geçti; gerçek axe ihlali raporlanmadı. |
-| `npm run test:e2e -- tests/e2e/five-n-selector.spec.ts` | Bu SHA'da yeniden çalıştırılmadı. Bir önceki kaynak `753fe6d6856225d65c291fb87b1ef99a34b37b86` için masaüstü ve mobilde 16/16 geçti. |
-| Tam `npm run test:e2e` | Bu kaynak SHA'da çalıştırılmadı. Önceki temiz kaynak `c398be223a163065dc72f0fa2037a10d947d38a1` için 144/144 geçti. |
+| `npm ci` | Geçti: kilit dosyasından 538 paket kuruldu, 539 paket denetlendi |
+| `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 130/130 birim testi |
+| `npm run build` | Geçti: Next.js 15.5.23 production derlemesi ve 32/32 sayfa çıktısı |
+| `npm audit --omit=dev --json` | Kritik 0, orta 0, düşük 0, yüksek 3. Kalan kayıtlar Next 15'in dahili `postcss` ve `sharp` sürümlerinden geliyor; npm'in sunduğu tek otomatik çözüm Next 16.3.2 ana-sürüm geçişi. Supabase Auth ve Vitest açıkları doğrudan bağımlılık güncellemeleriyle kaldırıldı. |
+| Tam `npm run test:e2e` | 148/152 geçti. Dört masaüstü senaryo assertion veya axe ihlali raporlamadan 45 saniyelik test işçisi zaman aşımına uğradı; üçü ilk-oturum gazete düğmesinin 3 saniyelik etkinleşmesini beklerken kaldı. Aynı üretim sunucusunda izole tekrarlar 4/4 geçti: bildirim axe 6,9 sn, ilçe haritası 12,1 sn, Yayın Atölyesi ödeme/moderasyon 19,3 sn, 5N kaydırma 8,5 sn. Aynı senaryoların mobil karşılıkları tam turda geçti. Bu nedenle gerçek ürün regresyonu saptanmadı; tek koşuda 152/152 iddia edilmiyor. |
 | Canlı görsel kontrol | Yerel üretim derlemesinde masaüstü görünür/belge genişliği 1265/1265 piksel. 320×800 feed görünümünde taslak açıkken önce 305/316 piksel olan görünür/belge genişliği düzeltmeden sonra 305/305 oldu; Gönder düğmesinin sağ kenarı 281 pikselde kaldı. Normal hareket tercihinde marka ve nGazete animasyonları aktif; reduced-motion E2E ölçümünde nGazete hareket adları `none`, SMIL katmanı `display:none`. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
