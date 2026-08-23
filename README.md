@@ -88,6 +88,8 @@ basar.
 | Nasıl | `/explore/how` | Topluluk kaynakları ve süreç bilgisi |
 | Topluluklar | `/communities` | Kök/dal topluluklar, üyelik ve moderator onaylı başvuru |
 | Projeler | `/projects` | Yaşayan proje sayfaları, ilerleme, ekip, pitch videosu |
+| Profil | `/profile/[username]` | Kimlik, sosyal bağlar, medya, yanıtlar, projeler ve profil düzenleme |
+| Kaydedilenler | `/saved` | Yalnızca oturum sahibinin görebildiği kişisel gönderi koleksiyonu |
 | nGazete | `/newspaper` | Gerçek digital newspaper layout, editorial ve spatial sponsored inventory |
 | Yayın Atölyesi | `/publish` | Bağımsız 30×40 alan seçimi, tek kreatif yükleme, CTA yerleşimi, abonelik ve ödeme sonrası moderasyon |
 | Ayarlar | `/settings` | İlgi, uzun dönem amaçlar, akış, konum, bildirim, erişilebilirlik, nGazete tercihleri |
