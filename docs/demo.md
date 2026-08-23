@@ -53,6 +53,34 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | 0:40 | Admin approval | community/ad moderation ve audit mantığını göster |
 | 0:30 | Settings | long-term goals, privacy ve transient intent ayrımını göster |
 
+## Ana akış ve hikâye demo akışı
+
+1. Oluşturucu açılır; metin taslağının sayfa yenilemesinden sonra korunduğu
+   gösterilir. 320 CSS piksel reflow görünümünde taslak etiketi açıkken Gönder
+   düğmesinin kırpılmadığı ve yatay taşma oluşmadığı doğrulanır.
+2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
+   topluluk seçiminin zorunlu olduğu gösterilir.
+3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
+   alanı gösterilir. İstenirse konum yalnızca bu gönderi için açılır.
+4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
+   geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
+5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği, marka motion
+   katmanının gizlendiği ve nGazete/Yayın Atölyesi sürekli dekoratif
+   animasyonlarının tamamen durduğu gösterilir.
+
+## Proje pitch demo akışı
+
+1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı MP4/WebM pitch seçilir.
+2. Form dosya adını gösterirken tarayıcı metadata'sından süreyi denetler; 90
+   saniyeyi aşan veya süresi okunamayan seçim alanı temizlenir ve ilişkili hata
+   metni gösterilir.
+3. Geçerli dosya gönderildiğinde Server Action MIME, gerçek byte sayısı ve
+   kapsayıcı süresini dosya yazılmadan önce yeniden doğrular. Başarıda ölçülen
+   süre medya kaydına yazılır ve proje bundan sonra oluşturulur.
+4. Geçersiz tür, boyut, süre veya MIME/kapsayıcı uyuşmazlığında proje açılmadığı
+   gösterilir. Production Storage, codec/transcode ve kötü amaçlı dosya taraması
+   bu demo akışının dışında ve planlanandır.
+
 ## 5N demo akışı
 
 ### 1. Kapalı state
@@ -118,15 +146,32 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
-2. Kullanıcı gelecek yedi sayıdan ve en çok beş sayfadan birini seçer; 30×40
-   koyu gazete kâğıdı üzerinde boş bir dörtgen alan belirler.
-3. Canva veya başka bir tasarım aracından dışa aktarılmış PNG, JPG ya da WebP
-   kreatif yüklenir; alan içinde taşınır ve köşe tutamaçlarıyla boyutlandırılır.
-4. Normal üye için bir iç bağlantılı CTA eklenir. Yayınevi üyeliğinde üç CTA,
-   dış bağlantı, özel stil ve yüzde beş ilan indirimi gösterilebilir.
-5. Önizlemede yalnızca temiz gazete çıktısı görünür; seçim çerçevesi, ızgara ve
-   editör kontrolleri görünmez. Taslak kaydedilip yeniden açıldığında kreatif ve
-   CTA ayarlarının korunduğu doğrulanır.
+2. Sayı ve sayfa seçilir; 30×40 grid üzerinde satın alınacak alan çizilir ve
+   gerekirse yeniden boyutlandırılır. Alan seçici yüzeyinin nGazete okuyucusundaki
+   koyu gazete kâğıdıyla aynı olduğu doğrulanır.
+3. Canva veya başka bir araçtan dışa aktarılan PNG/JPG/WebP kreatif yüklenir ve
+   görsel açıklaması girilir.
+4. Standart hesapla bir nSosyal içi CTA eklenir; buton seçili alan içinde
+   sürüklenir ve yeniden boyutlandırılır.
+5. Demo Yayınevi aboneliği açılarak üç CTA, dış `https` linki, gradyan/hareket ve
+   yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
+   değildir.
+6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
+   görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
+   taslak rezerve edilir ve demo ödeme tamamlanır.
+   Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
+   düştüğü gösterilir.
+7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
+   bildirimi oluşturduğu doğrulanır.
+8. Onaylanan ilan için kullanıcı bildirimleri açılır. Hedef sayı yayın eşiğini
+   geçtiyse nGazete'de yüklenen kreatifin düzenleme ızgarası olmadan, alt metni ve
+   onay anındaki CTA'sıyla göründüğü doğrulanır. Gelecek tarihli sayının İstanbul
+   saatiyle 06.00'dan önce doğrudan tarih bağlantısıyla açılamadığı ayrıca söylenir.
+   Yeni sayı yalnızca ilandan oluşmaz; son sayının sponsorlu olmayan editoryal
+   omurgası korunur ve önceki günün sponsorlu yerleşimleri taşınmaz. Uzun süre açık
+   kalan demo sunucusunda gün değişimi ilk okumada gerçekleşir, mevcut kullanıcı
+   mutasyonları korunur. İlk oturum kapağı 06.00'dan önce son yayımlanmış sayıyı,
+   eşikten sonra yeni sayıyı gösterir.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.
@@ -169,12 +214,14 @@ Sunumdan önce elle kontrol:
 - N yeniden selector açıyor mu;
 - map density renkleri blue/cyan family içinde mi;
 - legend ve hover/click value okunuyor mu;
-- mobile filter/chip/button clipping var mı;
+- mobile filter/chip/button clipping var mı; oluşturucu taslak etiketi açıkken
+  320 CSS pikselde Gönder eylemi görünür ve belge taşmasız mı;
 - nGazete gerçek newspaper composition gibi mi;
 - sponsored slot grid'in içinde ve açık etiketli mi;
 - advertiser size/placement/price ilişkisi görülebiliyor mu;
 - Settings long-term goals ile transient intent'i ayırıyor mu;
-- map list equivalent, keyboard, focus ve reduced-motion çalışıyor mu.
+- map list equivalent, keyboard ve focus çalışıyor mu; reduced-motion durumunda
+  CSS animasyon adları `none`, marka SMIL katmanı `display:none` oluyor mu.
 
 ## Test raporlama kuralı
 

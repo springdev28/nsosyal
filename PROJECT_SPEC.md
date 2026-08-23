@@ -175,6 +175,20 @@ Explainable ranking başlangıç sinyalleri: topic match, followed source, commu
 
 Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ürün gerçeği değildir.
 
+Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi türü, konu,
+herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
+Sayaç, taslak etiketi ve Gönder eylemi dar reflow görünümünde birlikte satır
+atlayabildiği için 320 CSS pikselde eylem kırpılmaz ve yatay taşma oluşmaz.
+Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir. Görsel
+sınırı 12 MB'dir; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu, video
+dosyasını yazmadan önce MIME, byte sayısı ve MP4/WebM kapsayıcı süresini doğrular;
+süre okunamazsa veya MIME ile kapsayıcı uyuşmazsa yüklemeyi reddeder. Medya
+açıklaması zorunludur. Akıştaki
+medyalı gönderilerin ilk 12'si tam ekran hikâye izleyicisinde açılır. Görsel
+hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dönüşü ve
+`prefers-reduced-motion` davranışı uygulanmıştır. Dosyalar demo modunda yerel
+`public/uploads` dizinine yazılır; kalıcı Supabase Storage yolu hâlâ planlanandır.
+
 > **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 
 ## 8. Topluluklar
@@ -195,7 +209,12 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
-Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
+Mevcut demo yolunda pitch video en fazla 90 saniye ve 50 MB olabilir. İstemci
+metadata ile hızlı geri bildirim verir; sunucu MIME, byte sayısı ve MP4/WebM
+kapsayıcı süresini proje kaydı açılmadan ve dosya yazılmadan önce yeniden
+doğrular. Doğrulama başarısızsa yarım proje kaydı oluşmaz. Production Storage,
+codec/transcode, kötü amaçlı dosya taraması ve retry-idempotency hattı hâlâ
+planlanandır.
 
 ## 11. nGazete
 
@@ -215,16 +234,31 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 `/publish` ana uygulama kabuğundan ayrılmış, yeni sekmede açılan bağımsız yayın
 çalışma alanıdır. Uygulanan kapsam:
 
-- 30×40 A4 grid üzerinde sürükleme ve klavye oklarıyla blok yerleşimi;
-- başlık, paragraf, liste, alıntı, kod, bağlantı ve temel tablo Markdown desteği;
-- içerik, düzen ve stil sekmeleri;
-- tekrar kullanılabilir doku/kaynaklar ve blok kopyalama/silme;
-- tipografi, hizalama, boşluk, kenarlık, gölge, görsel filtreleri ve dönüşümler;
-- blok ayarlarının güvenli sınırlar içinde temizlenmesi ve taslakta saklanması.
+- nGazete okuyucusu ve Yayın Atölyesi boyunca korunan ortak koyu gazete kâğıdı
+  yüzeyinde 30×40 sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
+  yeniden boyutlandırma;
+- tek PNG/JPG/WebP kreatif yükleme, 8 MB sunucu sınırı ve zorunlu alt metin;
+- kreatif ile seçili alan içinde CTA butonları; düzenleme ızgarası ve alan seçim
+  çerçevesi olmadan temiz önizleme; taslak kaydetme, rezervasyon ve demo ödeme;
+- standart hesapta bir CTA ve yalnızca nSosyal içi bağlantılar;
+- 200 TL/ay olarak gösterilen demo Yayınevi aboneliğinde üç CTA, dış `https`
+  bağlantıları, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi;
+- ödeme simülasyonu sonrası moderasyon kuyruğu; moderator/admin için onay,
+  reddetme veya düzenleme isteme, audit kaydı ve kullanıcı bildirimi;
+- onay anındaki kreatif, alt metin ve CTA görünümünün değişmez okuyucu kaydına
+  alınması; gelecek tarihli sayının İstanbul saatiyle 06.00'dan önce doğrudan
+  tarih bağlantısıyla da açılmaması ve eşik sonrasındaki ilk okumada yayımlanması;
+- uzun süre çalışan demo sunucusunda yeni İstanbul gününün ilk okumada, mevcut
+  kullanıcı mutasyonları sıfırlanmadan oluşturulması;
+- yeni sayıya son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal
+  omurgasının kopyalanması; önceki günün sponsorlu yerleşimlerinin taşınmaması ve
+  ücretli yerleşimin tek başına gazete oluşturmaması;
+- ilk oturum kapağının 06.00'dan önce son yayımlanmış sayıyı, eşikten sonra yeni
+  sayıyı göstermesi ve görülme kaydının takvim günü yerine sunulan sayı tarihine
+  bağlanması.
 
-Yeni blok alanları mevcut taslakların okunabilmesi için opsiyoneldir. Bu bölüm
-uygulanmış prototip davranışını anlatır; Supabase-backed kalıcı üretim yolu hâlâ
-planlanan mimaridir.
+Gerçek ödeme, faturalandırma ve Supabase Storage/RLS kalıcılığı uygulanmış değildir.
+Abonelik etkinleştirme ve ödeme yalnızca yarışma prototipi akışını gösterir.
 
 Sponsorlu alanlar ayrı `Ücretli alanlar` listesinin altında toplanmaz. Gazetenin grid'inde tanımlı spatial inventory satın alır ve açık `Sponsorlu` etiketi taşır.
 
@@ -260,7 +294,8 @@ Migration gerektiğinde yeni migration ekle, geçmiş migration'ı değiştirme.
 - keyboard operation + visible focus;
 - accessible names and labelled errors;
 - no colour-only state;
-- reduced motion;
+- reduced-motion tercihinde marka SMIL katmanının gizlenmesi ve nGazete ile Yayın
+  Atölyesi sürekli dekoratif CSS animasyonlarının tamamen durması;
 - video text/caption equivalent;
 - map list equivalent;
 - mobile touch targets and overflow verified.

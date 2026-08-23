@@ -25,6 +25,27 @@ Ayrı bir genel REST API katmanı yoktur. Sayfalar sunucuda veriyi okur, kullan�
 mutasyonları Server Actions üzerinden gider. Teknik uç noktalar `/api/health` ve
 demo testlerini sıfırlamak için `/api/demo/reset`tir.
 
+## 1.1. Güncel çalışma zamanı ve tarayıcı sınırı
+
+Uygulanan sürüm **Node.js 22**, **Next.js 16.3.2 App Router**, **React
+19.2.8** ve TypeScript üzerinde çalışır. `package.json`, `.nvmrc`, `.npmrc` ve CI
+aynı Node ana sürümünü zorunlu tutar. Üretim komutu `next build --webpack`tir.
+Bu seçim Next 16'dan geri dönüş değildir; çalışma ortamında Turbopack PostCSS
+işçisinin yerel port açma girişimi `EPERM` ile engellendiği için yerel,
+Hostinger ve Render çıktılarının aynı desteklenen ve tekrarlanabilir paketleyici
+yolunu kullanmasını sağlar.
+
+Tarayıcı hydration durumu ve `prefers-reduced-motion` tercihi
+`src/lib/browser-preferences.ts` içindeki `useSyncExternalStore` tabanlı ortak
+katmandan okunur. Sunucu snapshot'ı güvenli biçimde `false`tur; açık arayüzler
+işletim sistemi tercihi değiştiğinde güncellenir. Bu katman 5N seçici, hikâye
+izleyicisi ve nGazete açılış modalının ayrı `mounted`/`matchMedia` effect
+zincirleri kurmasını önler.
+
+Karar kaydı:
+[0015](decisions/0015-next-16-ve-tekrarlanabilir-uretim-derlemesi.md).
+
+
 ## 2. Demo ve Supabase yolu
 
 `DEMO_MODE=true` yarışma demosu için ağsız, deterministik sentetik veri yoludur.

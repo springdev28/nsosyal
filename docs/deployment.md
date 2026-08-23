@@ -1,5 +1,24 @@
 # Dağıtım
 
+## Çalışma zamanı ve üretim derlemesi
+
+Dağıtım ortamları **Node.js 22** kullanmalıdır. Yerelde `.nvmrc` bu ana sürümü
+seçer, `package.json` `node >=22` ister ve `.npmrc` içindeki
+`engine-strict=true` desteklenmeyen sürümde kurulumu durdurur. CI da
+`actions/setup-node` ile Node 22 kullanır.
+
+`npm run build`, Next.js 16.3.2 üzerinde açıkça `next build --webpack`
+çalıştırır. Bu bir Next 15'e dönüş değildir. Çalışma ortamında Turbopack'in
+PostCSS işçisi yerel port açarken `EPERM` aldığı için desteklenen Webpack yolu
+yerel, Hostinger ve Render derlemelerini tekrarlanabilir tutar.
+
+23 Ağustos 2026 tarihli kayıtlı kanıtta `f354f207...` kaynağı Node 22 üzerinde
+130/130 birim testi, 31 rotalı üretim derlemesi ve tek koşuda 152/152 E2E
+senaryosunu tamamladı. `a12e752...` sürümü daha sonra hem Hostinger hem Render
+`/api/health` yanıtında görüldü ve iki canlı giriş sayfası HTTP 200 döndü.
+Bu belgenin güncel ana dal başı `ed819446...` için son canlı-SHA doğrulaması
+ayrıca beklenmelidir; eski 200 yanıtı güncel dağıtım kanıtı sayılmaz.
+
 ## Bu depo hiçbir yere dosya göndermez
 
 İki hedef de `main`'e push'u kendisi görür, kendisi klonlar, kendisi derler.
