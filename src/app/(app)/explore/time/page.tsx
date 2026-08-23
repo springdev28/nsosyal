@@ -107,6 +107,7 @@ export default async function TimePage({
             action={
               <Link
                 href={buildFilterHref(base, filters, { time: 'all', mode: 'all' })}
+                scroll={false}
                 className="text-sm font-semibold text-accent underline"
               >
                 Tüm zamanları göster

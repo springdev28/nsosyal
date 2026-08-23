@@ -383,6 +383,7 @@ export function FilterChip({
   return (
     <Link
       href={href}
+      scroll={false}
       aria-current={active ? 'true' : undefined}
       className={`inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-sm transition-colors ${
         active
@@ -390,7 +391,7 @@ export function FilterChip({
           : 'bg-bg-sunken text-fg-muted ring-1 ring-[var(--border)] hover:bg-bg-hover hover:text-fg'
       }`}
     >
-      {/* Aktiflik yalnizca renkle degil, isaretle de belirtilir. */}
+      {/* The check mark keeps the selected state understandable without color. */}
       {active ? <Icon name="check" size={13} /> : null}
       {children}
     </Link>

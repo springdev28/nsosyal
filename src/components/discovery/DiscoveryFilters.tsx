@@ -5,6 +5,8 @@ import { DISTRICTS, PROVINCES } from '@/lib/geo';
 import { PRESET_LABELS, type TimePreset } from '@/lib/time';
 import type { Topic } from '@/types/domain';
 
+import { FilterSearchForm } from './FilterSearchForm';
+
 /**
  * Explore pages share this URL-based filter bar. Keeping state in the URL makes
  * Back, refresh and shared links work without client-only state.
@@ -91,7 +93,7 @@ export function DiscoveryFilterBar({
 
   return (
     <div className="space-y-3">
-      <form action={base} method="get" role="search" className="flex gap-2">
+      <FilterSearchForm action={base} className="flex gap-2">
         {/* These hidden fields keep the active filters when only the query changes. */}
         {state.province ? <input type="hidden" name="province" value={state.province} /> : null}
         {state.district ? <input type="hidden" name="district" value={state.district} /> : null}
@@ -118,7 +120,7 @@ export function DiscoveryFilterBar({
         >
           Ara
         </button>
-      </form>
+      </FilterSearchForm>
 
       <div className="space-y-2">
         <FilterGroup label="Ne · konu">
@@ -210,7 +212,7 @@ export function DiscoveryFilterBar({
           {state.query ? (
             <ActiveFilter label={`Arama: ${state.query}`} href={buildFilterHref(base, state, { query: '' })} />
           ) : null}
-          <Link href={base} className="text-fg-muted underline">
+          <Link href={base} scroll={false} className="text-fg-muted underline">
             Hepsini temizle
           </Link>
         </div>
@@ -232,6 +234,7 @@ function ActiveFilter({ label, href }: { label: string; href: string }) {
   return (
     <Link
       href={href}
+      scroll={false}
       className="inline-flex items-center gap-1 rounded-full border border-line bg-bg-sunken px-2 py-0.5 hover:border-line-strong"
     >
       {label}

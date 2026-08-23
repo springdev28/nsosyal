@@ -130,6 +130,7 @@ export default async function MapPage({
             action={
               <Link
                 href={buildFilterHref(currentPath, filters, { time: 'all', mode: 'all' })}
+                scroll={false}
                 className="text-sm font-semibold text-accent underline"
               >
                 Zaman ve biçim filtrelerini temizle
@@ -142,6 +143,7 @@ export default async function MapPage({
               <li key={entry.code}>
                 <Link
                   href={buildFilterHref(currentPath, filters, { province: entry.code, district: null })}
+                  scroll={false}
                   aria-current={entry.code === filters.province ? 'true' : undefined}
                   className={`flex min-h-11 min-w-[7.5rem] flex-col justify-center rounded-xl border px-3 py-1.5 ${
                     entry.code === filters.province
@@ -170,6 +172,7 @@ export default async function MapPage({
               </h2>
               <Link
                 href={buildFilterHref(currentPath, filters, { province: null, district: null })}
+                scroll={false}
                 className="text-sm text-fg-muted underline"
               >
                 Seçimi temizle
@@ -185,6 +188,7 @@ export default async function MapPage({
                   <li>
                     <Link
                       href={buildFilterHref(currentPath, filters, { district: null })}
+                      scroll={false}
                       aria-current={!filters.district ? 'true' : undefined}
                       className={`inline-flex min-h-9 items-center whitespace-nowrap rounded-full border px-3 text-sm ${
                         !filters.district
@@ -201,6 +205,7 @@ export default async function MapPage({
                     <li key={entry.code}>
                       <Link
                         href={buildFilterHref(currentPath, filters, { district: entry.code })}
+                        scroll={false}
                         aria-current={filters.district === entry.code ? 'true' : undefined}
                         className={`inline-flex min-h-9 items-center whitespace-nowrap rounded-full border px-3 text-sm ${
                           filters.district === entry.code

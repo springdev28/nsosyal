@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { FilterSearchForm } from '@/components/discovery/FilterSearchForm';
 import { Card, ChipRow, EmptyState, FilterChip, SectionHeader } from '@/components/ui';
 import { CoverBadge } from '@/components/ui/CoverTile';
 import { getStore } from '@/lib/data/store';
@@ -44,7 +45,7 @@ export default async function ProjectsPage({
         }
       />
 
-      <form action="/projects" method="get" role="search" className="flex gap-2">
+      <FilterSearchForm action="/projects" className="flex gap-2">
         {params.topic ? <input type="hidden" name="topic" value={params.topic} /> : null}
         <label htmlFor="project-q" className="sr-only">
           Proje ara
@@ -63,7 +64,7 @@ export default async function ProjectsPage({
         >
           Ara
         </button>
-      </form>
+      </FilterSearchForm>
 
       <ChipRow label="Konu">
         <FilterChip href={href(null)} active={!topic}>

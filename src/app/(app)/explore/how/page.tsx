@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { FilterSearchForm } from '@/components/discovery/FilterSearchForm';
 import { ResourceCard } from '@/components/discovery/ResourceCard';
 import { ChipRow, EmptyState, FilterChip, SectionHeader } from '@/components/ui';
 import { getStore } from '@/lib/data/store';
@@ -68,9 +69,8 @@ export default async function HowPage({
         description="Toplulukların kendi deneyimlerinden ürettiği kısa rehberler, kontrol listeleri ve derlemeler."
       />
 
-      {/* Uzun placeholder flex satirinin min-content genisligini buyutebilir;
-          inputun kuculmesine izin verip eylemi 400% reflowda gorunur tutariz. */}
-      <form action="/explore/how" method="get" role="search" className="flex gap-2">
+      {/* The input may shrink so its long placeholder cannot hide the action at 400% zoom. */}
+      <FilterSearchForm action="/explore/how" className="flex gap-2">
         {level !== 'all' ? <input type="hidden" name="level" value={level} /> : null}
         {type !== 'all' ? <input type="hidden" name="type" value={type} /> : null}
         {params.topic ? <input type="hidden" name="topic" value={params.topic} /> : null}
@@ -91,7 +91,7 @@ export default async function HowPage({
         >
           Ara
         </button>
-      </form>
+      </FilterSearchForm>
 
       <div className="space-y-2">
         <ChipRow label="Seviye">
@@ -128,7 +128,7 @@ export default async function HowPage({
           title="Bu filtrede kaynak yok"
           description="Seviye veya tür filtresini gevşetebilirsin. Kaynaklar topluluk sayfalarındaki Kaynaklar sekmesinden de eklenir."
           action={
-            <Link href="/explore/how" className="text-sm font-semibold text-accent underline">
+            <Link href="/explore/how" scroll={false} className="text-sm font-semibold text-accent underline">
               Filtreleri temizle
             </Link>
           }
