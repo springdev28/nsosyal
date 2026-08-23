@@ -2,7 +2,8 @@
 
 Bu belge sistemin **mevcut teknik durumunu** ve güncel ürün hedefiyle arasındaki
 farkları birlikte anlatır. Ürün sözleşmesi için [PROJECT_SPEC.md](../PROJECT_SPEC.md),
-kararların gerekçeleri için [decisions/](decisions/) klasörüne bakın.
+kararların gerekçeleri için [decisions/](decisions/) klasörüne, kodu hangi sırayla
+okuyacağınız için [kod okuma rehberine](code-reading-guide.md) bakın.
 
 Önemli kural: mevcut kod veya veri envanteri bir ürün gereksinimi değildir. Bu
 belgede "mevcut" ve "hedef" ayrımı özellikle korunur.
@@ -44,10 +45,9 @@ arayüzüdür. Seed modülleri sayfalar tarafından doğrudan okunmaz.
 birleştirilmiş view modellerini tanımlar. Bileşenler mümkün olduğunca domain
 join'leri yapmaz.
 
-### 3.1 Kişiselleştirme hedef modeli
+### 3.1 Kişiselleştirme modeli
 
-Mevcut tek `intentMode` alanı güncel ürün vizyonunun tamamını karşılamaz.
-Kişiselleştirme iki katmana ayrılmalıdır:
+Mevcut kişiselleştirme iki ayrı katman olarak uygulanır:
 
 1. **Kalıcı profil tercihleri:** interests, long-term platform goals, content/feed
    preferences, location/privacy, notifications, accessibility ve nGazete
@@ -55,7 +55,12 @@ Kişiselleştirme iki katmana ayrılmalıdır:
 2. **Geçici niyet:** `Sosyalleş`, `Keşfet`, `Öğren`, `Üret`. Bunlar yalnızca o
    anki ranking/discovery ağırlıklarını geçici olarak değiştirir.
 
-Önerilen ilişkisel ek model:
+DemoStore profilde kontrollü `goalKeys` dizisini tutar. Ranking önce kalıcı hedef
+önyargılarını taban ağırlıklara uygular, sonra varsa geçici niyet ağırlıklarını
+bunun üzerine bindirir. Onboarding başlangıç değerlerini toplar; Settings iki
+katmanı da daha sonra değiştirebilir.
+
+Production Supabase adaptöründe karşılığı ayrı ilişki olmalıdır:
 
 ```text
 profile_goals
@@ -65,25 +70,20 @@ profile_goals
   created_at
 ```
 
-`goal_key` kontrollü değerlerden oluşabilir: socialize, meet_people,
+`goal_key` kontrollü değerlerden oluşur: socialize, meet_people,
 find_communities, discover_events, discover_projects, share_projects,
 find_collaborators, learn, find_resources, follow_developments,
 discover_local_ecosystem, find_institutions, discover_opportunities,
 casual_discussion, follow_creation_stories, discover_people.
-
-Onboarding başlangıç değerlerini toplar. Settings bu değerlerin kalıcı yönetim
-yüzeyidir.
 
 ## 4. Akış sıralaması
 
 Mevcut `src/lib/ranking/rank.ts` makine öğrenmesi kullanmadan açıklanabilir
 weighted score hesaplar. Bugünkü sinyaller topic match, followed source, community
 match, transient intent, recency, optional location match ve exploration bonusudur.
-
-Güncel hedef modelde buna **long-term profile preference match** de eklenmelidir.
-Mevcut ağırlıklar demo başlangıç değerleridir, değişmez ürün gerçeği değildir.
-Transient intent mevcut tercihlere ek olarak kısa süreli yeniden ağırlıklandırma
-yapar.
+Kalıcı `goalKeys` bu sinyallerin taban ağırlıklarını eğriltir; transient intent
+mevcut tercihlere ek olarak kısa süreli yeniden ağırlıklandırma yapar. Mevcut
+ağırlıklar demo başlangıç değerleridir, değişmez ürün gerçeği değildir.
 
 "Neden gösteriliyor?" açıklaması kullanıcı için anlamlı en güçlü sinyali kısa
 biçimde gösterebilir. Bu açıklama her post kartında uzun metin veya ürün eğitimi
@@ -152,22 +152,21 @@ listesi + previous/next/confirm mantığıyla aynı fonksiyonu verir.
 ### 6.1 Mevcut teknik envanter
 
 `src/components/map/TurkeyMap.tsx` MapLibre GL JS kullanır ve dış tile sunucusuna
-bağlanmaz. `public/geo/turkey-provinces.geojson` 81 ili içerir. Repo ayrıca şu anda
-İzmir ilçe GeoJSON'u içerir.
+bağlanmaz. `public/geo/turkey-provinces.geojson` 81 ili; `districts-XX.geojson`
+dosyaları 81 ilin ilçe katmanlarını içerir. Üretilen il/ilçe indeksi
+`src/lib/geo/` altındadır. Üretilen dosyalar elle düzenlenmez; kaynak veriden
+script ile yeniden oluşturulur.
 
-Bu **mevcut dosya envanteridir**. İzmir ürün mimarisinde pilot veya özel şehir
-değildir.
-
-### 6.2 Güncel ürün hedefi
+### 6.2 Uygulanan sorgu ve etkileşim
 
 Nerede ekranı kullanıcının şu sorusunu cevaplar:
 
 > Seçtiğim konu ve varlık türünde Türkiye'nin nerelerinde daha fazla hareket var?
 
-Harita yalnızca selectable polygon view değildir. Province-level
-**density/choropleth** üretir.
+Harita yalnızca seçilebilir polygon görünümü değildir. İl ve seçilen il içinde
+ilçe düzeyinde **density/choropleth** üretir.
 
-Önerilen sorgu sözleşmesi:
+Sayfa sorgusu şu ürün kavramlarını taşır:
 
 ```text
 MapDiscoveryQuery
@@ -178,7 +177,7 @@ MapDiscoveryQuery
   onlinePolicy?
 ```
 
-Önerilen sonuç:
+Store sonucu şu biçime dönüştürülür:
 
 ```text
 RegionDensity
@@ -196,9 +195,9 @@ Renk scale bir single-hue nSosyal blue/cyan family kullanır. Rainbow red/yellow
 green heatmap kullanılmaz. Legend düşük-yüksek ilişkisini açıkça gösterir.
 Renk tek başına bilgi taşımaz; hover/click value, legend ve liste sonucu vardır.
 
-Province selection region detail panel açar. District data bulunan her bölgede
-aynı query/state architecture ile district drill-down yapılabilir. Tüm Türkiye
-ilçe verisi eklendiğinde component mantığı değişmemelidir.
+İl seçimi aynı haritada ilçe katmanına iner; ilçe seçimi ilgili sonuçları açar.
+URL parametreleri seçimi korur. Renk tek başına bilgi taşımaz: hover/click değeri,
+legend ve klavyeyle erişilebilen eşdeğer sonuç listesi birlikte sunulur.
 
 Kullanıcının kendi location paylaşımı haritayı kullanmak için zorunlu değildir.
 Personal location yalnızca kişinin yerel kişi sonuçlarında görünürlük ve öneri
@@ -283,23 +282,28 @@ Karar kaydı:
 
 `/publish` rotası ana `(app)` layout grubunun dışında çalışır ve ana `AppShell`
 kabuğunu kullanmaz. `src/app/(app)/publish/PublicationStudio.tsx` istemci editörü,
-30×40 A4 grid üzerinde pointer sürükleme ve klavye oklarıyla blok yerleşimi sağlar.
-Üç denetçi sekmesi içerik, düzen ve stili ayırır. Markdown renderer başlık,
-paragraf, kalın/italik metin, inline code, bağlantı, alıntı, madde/numara listesi
-ve temel tabloyu destekler. Tekrar kullanılabilir doku/kaynaklar ile blok
-kopyalama ve silme editör içinde bulunur.
+30×40 A4 grid üzerinde alan seçimi yapar. Kullanıcı Canva veya başka bir araçta
+hazırladığı PNG/JPG/WebP kreatifi yükler, seçtiği alan içinde taşır ve köşe
+tutamaçlarıyla boyutlandırır. Delete, ok tuşları, çoklu seçim, kopyalama ve
+yapıştırma aynı tuval state machine'inde çalışır. Bir taslağa tek kreatif eklenir;
+başka dosya yüklemek öncekinin üzerine yığılmaz, onun yerini alır.
 
-`PublicationBlock` yeni stil alanlarını eski taslaklarla uyum için opsiyonel taşır.
-`DemoStore` gelen değerleri doğrular, sayısal ayarları izin verilen aralıklara
-sınırlar ve taslağa kaydeder. Bu, mevcut demo-mode uygulamasıdır; production
-yolunda aynı sözleşmenin Supabase kalıcılığı ve RLS politikalarıyla uygulanması
-gerekir.
+Standart hesap bir nSosyal iç bağlantılı CTA; Yayınevi abonesi üç CTA, dış HTTPS
+bağlantısı, özel renk/gradyan ve sınırlı hareket kullanabilir. Önizleme ızgarayı,
+seçim çerçevesini ve editör kontrollerini göstermez. Görsel, alt metin ve bütün
+bağlantılar yayın öncesi moderasyona gider.
+
+`PublicationBlock` kreatif ve CTA yerleşimini aynı koordinat sözleşmesiyle taşır.
+`DemoStore` alan sınırını, tek kreatif kuralını, CTA sayısını, bağlantı yetkisini,
+abonelik ayrıcalıklarını ve optimistic `revision` değerini sunucuda yeniden
+doğrular. Bu, mevcut demo-mode uygulamasıdır; production yolunda aynı sözleşmenin
+Supabase kalıcılığı, RLS ve transaction kilidiyle uygulanması gerekir.
 
 ### 11.1 Reader model
 
 nGazete generic card collection değil, gerçek digital newspaper composition'dır.
 
-`newspaper_items` hedef alanları:
+`newspaper_items` mevcut görünüm sözleşmesinde şu alanları taşır:
 
 ```text
 issue_id
@@ -369,8 +373,9 @@ status
 published_item_id
 ```
 
-Gerçek ödeme P2 olabilir. Ancak prototype request, quote, placement ve admin approval
-modelini gösterebilmelidir.
+Prototip gerçek para çekmez; alan çakışmasını ödeme niyetinden hemen önce yeniden
+denetler, fiyat snapshot'ını dondurur ve kaydı moderasyon kuyruğuna yollar. Gerçek
+ödeme adaptörü bu sınırın arkasına idempotency key ve webhook ile eklenmelidir.
 
 **Feed ranking sponsorship bilmez.**
 
@@ -401,10 +406,10 @@ Repo test suite'i unit, E2E ve accessibility katmanları içerir. Belgedeki test
 sayısı **suite inventory** olarak okunmalıdır. Testler bu değişiklikte gerçekten
 çalıştırılmadıysa "passes" yazılmaz.
 
-Yeni/yenilenecek kritik senaryolar:
+Tam E2E paketi şu kritik senaryoları masaüstü ve mobil projelerde korur:
 
 - onboarding + editable long-term goals;
-- N selector open/drag/confirm/reopen;
+- 5N selector open/drag/confirm/reopen;
 - Nerede density + filters + region + accessible list;
 - community approval;
 - Why -> project;
@@ -414,24 +419,21 @@ Yeni/yenilenecek kritik senaryolar:
 - location/privacy;
 - reduced motion ve keyboard flows.
 
-## 14. Bilinen mevcut implementasyon farkları
+## 14. Bilinen production farkları
 
 Bu bölüm ürün kapsamı değil, **gap listesi**dir.
 
-- Current district GeoJSON yalnızca İzmir için bulunuyor. Ürün Türkiye-wide ve
-  district architecture geneldir.
-- Current map primarily selection/filter UI'dır. Product target metric-based
-  density/choropleth'tir.
-- Current personalization tek intent ağırlıklıdır. Product target long-term goals
-  + transient intent ayrımıdır.
-- Current nGazete schema/layout product target'ın image/grid/size/pricing alanlarını
-  eksik taşır.
-- Current project upload flow kayıt öncesinde süre/boyut doğrular ve bozuk dosyada
-  proje açmaz; production codec/transcode, Storage ve retry-idempotency hattı
-  henüz yoktur.
-- Supabase store implementation tamamlanmamıştır.
-- Search basit text match'tir.
-- Notifications real-time değildir.
+- Çalışma zamanı hâlâ bellek içi `DemoStore` kullanır; Supabase store adaptörü,
+  Auth ve Storage yolu tamamlanmamıştır.
+- Proje ve gazete yüklemeleri demo Node dosya sistemindedir; production codec,
+  virüs taraması, kalıcı Storage/CDN ve transcoding hattı yoktur.
+- nGazete ödeme akışı fiyat ve çakışma kararını gösterir ama gerçek sağlayıcı,
+  idempotency key, webhook ve muhasebe kaydı içermez.
+- Arama basit metin eşleşmesidir; typo tolerance ve tam metin indeksi yoktur.
+- Bildirimler aynı DemoStore sürecinde oluşur; gerçek zamanlı kanal ve kalıcı
+  teslimat kuyruğu yoktur.
+- Otomatik erişilebilirlik ve klavye testleri geniştir; gerçek ekran okuyucu,
+  switch-control ve cihaz üstü yüzde 200/400 zoom turu ayrıca yapılmalıdır.
 
 Bu maddeler `PROJECT_SPEC.md` değiştirilerek kapatılmaz. Implementasyon bunlara
 doğru geliştirilir.
