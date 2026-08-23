@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `753fe6d6856225d65c291fb87b1ef99a34b37b86`
+Doğrulanan kaynak SHA: `5169c9ba30d50992c8f924b46fe20f518294f8fd`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -31,7 +31,7 @@ Durum sözlüğü:
 
 | P0 yolculuk | Rotalar | Veri ve mutasyon yolu | Otomatik kanıt | Görsel/a11y kanıtı | Durum |
 | --- | --- | --- | --- | --- | --- |
-| Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` 1440×1000 ve 390×844 incelendi; desktop/mobile axe | Doğrulandı |
+| Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` masaüstü ve 320×800 incelendi; taslak etiketi açıkken Gönder eylemi kırpılmıyor; desktop/mobile axe | Doğrulandı |
 | N işareti → yarım yay → gerçek 5N paneli | `/explore`, `/explore/map`, `/explore/time`, `/explore/how`, `/explore/why` | İstemci seçim durumu; seçim URL rotasına taşınır | `five-n-selector` içindeki 8 senaryo iki viewportta geçti | Açık yay 1440×1000 ve 390×844 incelendi; `Nasıl` araması ile `Neden` kartları 320×800 reflow görünümüne sığıyor; hedefler en az 44×44; axe temiz | Doğrulandı |
 | Türkiye yoğunluk haritası → il → ilçe → sonuç | `/explore/map` | Yerel GeoJSON + `DemoStore` yoğunluk sorgusu; kişisel canlı koordinat yok | `map-density`; `competition-flows` 2 | Desktop/mobile harita, legend ve erişilebilir liste incelendi; axe temiz | Doğrulandı |
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
@@ -61,16 +61,16 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `753fe6d6856225d65c291fb87b1ef99a34b37b86` için:
+Kaynak SHA `5169c9ba30d50992c8f924b46fe20f518294f8fd` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e -- tests/e2e/accessibility.spec.ts` | Geçti: masaüstü ve mobilde 68/68 Playwright senaryosu, 7,8 dakika; başarısız veya atlanan test yok |
-| `npm run test:e2e -- tests/e2e/five-n-selector.spec.ts` | Geçti: masaüstü ve mobilde 16/16 yarım yay, klavye, dokunma hedefi, taşma ve axe senaryosu, 1,4 dakika; başarısız veya atlanan test yok |
-| Tam `npm run test:e2e` | Bu kaynak SHA'da çalıştırılmadı. Önceki temiz kaynak `c398be223a163065dc72f0fa2037a10d947d38a1` için 144/144 geçti; güncel kaynakta ilgili 84/84 E2E senaryosu geçti. |
-| Canlı görsel kontrol | Yerelde 1440×1000 ve 320×800: `Nasıl` ile `Neden` sayfaları incelendi. 320 CSS pikselde `Nasıl` 19 piksel, `Neden` 80 piksel taşarken düzeltmeden sonra ikisinin belge genişliği görünür genişlikle eşitlendi; arama düğmesi ve ilk hikâye kartının sağ kenarı 293 pikselde kaldı. Masaüstünde iki rota 1425 piksel görünür genişlikte taşmadan iki kolonlu düzeni korudu. |
+| `npx playwright test tests/e2e/accessibility.spec.ts` | Son tam koşuda 70/72 geçti; axe'in yeni sayfa açmasında masaüstü proje rotası ve mobil karanlık topluluk rotası 45 saniyelik altyapı zaman aşımına uğradı. Aynı iki senaryo temiz çalışan üretim sunucusuna karşı izole tekrarlandığında 5,3 ve 6,4 saniyede geçti. Bundan önceki tam koşu 70/70, son değişikliklerin iki regresyon testi de iki viewportta 4/4 geçti; gerçek axe ihlali raporlanmadı. |
+| `npm run test:e2e -- tests/e2e/five-n-selector.spec.ts` | Bu SHA'da yeniden çalıştırılmadı. Bir önceki kaynak `753fe6d6856225d65c291fb87b1ef99a34b37b86` için masaüstü ve mobilde 16/16 geçti. |
+| Tam `npm run test:e2e` | Bu kaynak SHA'da çalıştırılmadı. Önceki temiz kaynak `c398be223a163065dc72f0fa2037a10d947d38a1` için 144/144 geçti. |
+| Canlı görsel kontrol | Yerel üretim derlemesinde masaüstü görünür/belge genişliği 1265/1265 piksel. 320×800 feed görünümünde taslak açıkken önce 305/316 piksel olan görünür/belge genişliği düzeltmeden sonra 305/305 oldu; Gönder düğmesinin sağ kenarı 281 pikselde kaldı. Normal hareket tercihinde marka ve nGazete animasyonları aktif; reduced-motion E2E ölçümünde nGazete hareket adları `none`, SMIL katmanı `display:none`. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
