@@ -21,6 +21,7 @@ import {
   inspectVideoUpload,
 } from '@/lib/media/constraints';
 import { commitLocalUploadBatch } from '@/lib/media/local-upload';
+import { isVideoKind } from '@/lib/video/kinds';
 import type { PostType } from '@/types/domain';
 
 /** Every action resolves the viewer from the server session instead of form data. */
@@ -143,6 +144,10 @@ export async function createPost(_prev: ComposerState, formData: FormData): Prom
   const mediaAlt = String(formData.get('mediaAlt') ?? '').trim();
   if (mediaFiles.length && mediaAlt.length < 3) return { error: 'Medya için kısa bir açıklama ekle.' };
 
+  const hasVideo = mediaFiles.some((file) => (ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type));
+  const submittedVideoKind = String(formData.get('videoKind') ?? '');
+  if (hasVideo && !isVideoKind(submittedVideoKind)) return { error: 'Kısa video türünü seç.' };
+
   const type = String(formData.get('type') ?? 'text') as PostType;
   const communityId = String(formData.get('communityId') ?? '') || null;
   const topicIds = formData.getAll('topics').map(String);
@@ -191,8 +196,8 @@ export async function createPost(_prev: ComposerState, formData: FormData): Prom
       provinceCode: shareLocation ? viewer.provinceCode : null,
       districtCode: shareLocation ? viewer.districtCode : null,
       mediaIds,
-      isShortVideo: preparedMedia.some((media) => media.mediaType === 'video'),
-      videoKind: preparedMedia.some((media) => media.mediaType === 'video') ? 'gundelik' : null,
+      isShortVideo: hasVideo,
+      videoKind: hasVideo && isVideoKind(submittedVideoKind) ? submittedVideoKind : null,
     });
   } catch {
     store.removeMedia(mediaIds);
@@ -202,10 +207,17 @@ export async function createPost(_prev: ComposerState, formData: FormData): Prom
 
   store.track(
     'post_created',
-    { type, hasCommunity: Boolean(communityId), shareLocation, mediaCount: mediaIds.length },
+    {
+      type,
+      hasCommunity: Boolean(communityId),
+      shareLocation,
+      mediaCount: mediaIds.length,
+      videoKind: hasVideo ? submittedVideoKind : null,
+    },
     viewer.id,
   );
   revalidatePath('/feed');
+  if (hasVideo) revalidatePath('/video');
   if (communityId) revalidatePath('/communities');
 
   return { message: 'Paylaşıldı.' };
