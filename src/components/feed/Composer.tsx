@@ -63,7 +63,10 @@ export function Composer({
 
   useEffect(() => {
     const draft = window.localStorage.getItem('nsosyal-composer-draft');
-    if (draft) setBody(draft);
+    if (!draft) return;
+    // Taslagi effect govdesinde senkron state zincirine cevirmeden ilk karede geri yukle.
+    const frame = window.requestAnimationFrame(() => setBody(draft));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -73,17 +76,21 @@ export function Composer({
 
   useEffect(() => {
     if (!state.message) return;
-    setBody('');
-    setOpen(false);
-    setPanel(null);
-    setCommunityId('');
-    setTopicIds([]);
-    setShareLocation(false);
-    setMedia((items) => {
-      items.forEach((item) => URL.revokeObjectURL(item.url));
-      return [];
+    // Server Action sonucu commit edildikten sonraki kare formu tek seferde temizler.
+    const frame = window.requestAnimationFrame(() => {
+      setBody('');
+      setOpen(false);
+      setPanel(null);
+      setCommunityId('');
+      setTopicIds([]);
+      setShareLocation(false);
+      setMedia((items) => {
+        items.forEach((item) => URL.revokeObjectURL(item.url));
+        return [];
+      });
+      if (mediaInputRef.current) mediaInputRef.current.value = '';
     });
-    if (mediaInputRef.current) mediaInputRef.current.value = '';
+    return () => window.cancelAnimationFrame(frame);
   }, [state.message]);
 
   useEffect(

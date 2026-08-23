@@ -31,8 +31,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const view = store.getEventView(slug, viewer?.id ?? null);
   if (!view) notFound();
 
-  const { event } = view;
-  const isPast = new Date(event.endsAt).getTime() < Date.now();
+  const { event, isPast } = view;
   const base = `/events/${slug}`;
 
   return (

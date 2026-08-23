@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `f6d8a7bfc5294923e03c0c41f70271e576a3c354`
+Doğrulanan kaynak SHA: `f354f207301d43ee73147397ef5910f98e0888db`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -61,17 +61,23 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `f6d8a7bfc5294923e03c0c41f70271e576a3c354` için:
+Kaynak SHA `f354f207301d43ee73147397ef5910f98e0888db` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
-| `npm ci` | Geçti: kilit dosyasından 538 paket kuruldu, 539 paket denetlendi |
+| `npm ci` | Geçti: nihai kilit dosyasından 554 paket kuruldu, 555 paket denetlendi; npm 0 açık bildirdi |
 | `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 130/130 birim testi |
-| `npm run build` | Geçti: Next.js 15.5.23 production derlemesi ve 32/32 sayfa çıktısı |
-| `npm audit --omit=dev --json` | Kritik 0, orta 0, düşük 0, yüksek 3. Kalan kayıtlar Next 15'in dahili `postcss` ve `sharp` sürümlerinden geliyor; npm'in sunduğu tek otomatik çözüm Next 16.3.2 ana-sürüm geçişi. Supabase Auth ve Vitest açıkları doğrudan bağımlılık güncellemeleriyle kaldırıldı. |
-| Tam `npm run test:e2e` | 148/152 geçti. Dört masaüstü senaryo assertion veya axe ihlali raporlamadan 45 saniyelik test işçisi zaman aşımına uğradı; üçü ilk-oturum gazete düğmesinin 3 saniyelik etkinleşmesini beklerken kaldı. Aynı üretim sunucusunda izole tekrarlar 4/4 geçti: bildirim axe 6,9 sn, ilçe haritası 12,1 sn, Yayın Atölyesi ödeme/moderasyon 19,3 sn, 5N kaydırma 8,5 sn. Aynı senaryoların mobil karşılıkları tam turda geçti. Bu nedenle gerçek ürün regresyonu saptanmadı; tek koşuda 152/152 iddia edilmiyor. |
-| Canlı görsel kontrol | Yerel üretim derlemesinde masaüstü görünür/belge genişliği 1265/1265 piksel. 320×800 feed görünümünde taslak açıkken önce 305/316 piksel olan görünür/belge genişliği düzeltmeden sonra 305/305 oldu; Gönder düğmesinin sağ kenarı 281 pikselde kaldı. Normal hareket tercihinde marka ve nGazete animasyonları aktif; reduced-motion E2E ölçümünde nGazete hareket adları `none`, SMIL katmanı `display:none`. |
+| `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 31 App Router rotasının tamamı üretildi |
+| `npm audit --omit=dev --json` | Kritik 0, yüksek 0, orta 0, düşük 0; toplam 0. Next 15'in dahili `postcss` ve `sharp` kayıtları Next 16.3.2 geçişiyle kapandı. |
+| Tam `npm run test:e2e` | Tek koşuda 152/152 geçti: 76 masaüstü + 76 Pixel 7, 15,6 dakika. Axe, 320 piksel reflow, klavye, reduced-motion, harita/ilçe, story, gazete ve Yayın Atölyesi akışları dahildir. Atlanan, izole tekrar gerektiren veya zaman aşımına uğrayan senaryo yoktur. |
+| Canlı görsel kontrol | Yerel Next 16 üretim derlemesinde masaüstü ana akış, nGazete ve Yayın Atölyesi; 412×915 Pixel 7 görünümünde ana akış, Yayın Atölyesi, Türkiye haritası ve açık yarım yay 5N seçici incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
+
+`npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
+ayrıca denendi; ancak Next 16.3.2'nin paketlediği üç ESLint eklentisi henüz 10'u
+peer aralığına almadığı için `npm ls` geçersiz ağaç raporladı. Zorlanmış ve
+tekrarlanamaz bir kurulum yerine geçerli ESLint 9 ağacı korundu; gerekçe ve
+yeniden değerlendirme koşulu karar 0015'te kayıtlıdır.
 
 Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
 oranı korunarak gösterilir. CTA renkleri, biçimi ve izin verilen hareketi onay
@@ -79,7 +85,18 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Nihai canlı SHA, push sonrası iki ortamın `/api/health` yanıtıyla ayrıca doğrulanır.
+Kod ve ilk kanıt commit'ini içeren `a12e752b013fc2a384f5cbc26295e3a6c6f29e74`
+SHA'sı, 23 Ağustos 2026'da hem Hostinger hem Render `/api/health` yanıtında
+görüldü. İki ortamın `/login` rotası da HTTP 200 döndü ve gerçek `nSosyal` ile
+`Demo hesabıyla gir` metinlerini içerdi. Hostinger dağıtımı
+`01a02d7c-d24c-726f-bfa4-e019900e1dfe` kimliğiyle `completed` durumuna ulaştı.
+
+Hostinger'ın dağıtım sonrası tarayıcısı iki yüksek kayıt göstermeye devam etti:
+`brace-expansion@1.1.18` yalnızca ESLint/minimatch geliştirme zincirinde;
+`esbuild@0.25.12` ise Vite test aracında bulunuyor ve eşleşen duyuru geri çekilmiş
+bir `deno-esbuild` duyurusudur. `npm ls brace-expansion esbuild --omit=dev --all`
+üretim ağacında iki paketin de bulunmadığını (`empty`) doğruladı. Bu nedenle
+runtime açığı iddia edilmiyor; ancak Hostinger tarayıcısı temizmiş gibi de raporlanmıyor.
 
 ## Açık riskler ve yayın kararı
 

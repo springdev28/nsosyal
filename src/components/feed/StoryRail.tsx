@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 
 import { Avatar } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
+import { useHydrated, useReducedMotion } from '@/lib/browser-preferences';
 import type { PostView } from '@/types/view';
 
 const IMAGE_DURATION_MS = 6_000;
@@ -21,8 +22,8 @@ export function StoryRail({ stories }: { stories: PostView[] }) {
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const mounted = useHydrated();
+  const reducedMotion = useReducedMotion();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const returnFocusRef = useRef<HTMLButtonElement | null>(null);
@@ -30,16 +31,6 @@ export function StoryRail({ stories }: { stories: PostView[] }) {
 
   const active = activeIndex === null ? null : stories[activeIndex] ?? null;
   const activeMedia = active?.media[0] ?? null;
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const apply = () => setReducedMotion(query.matches);
-    apply();
-    query.addEventListener('change', apply);
-    return () => query.removeEventListener('change', apply);
-  }, []);
 
   const close = useCallback(() => {
     setActiveIndex(null);

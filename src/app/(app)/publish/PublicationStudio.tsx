@@ -326,6 +326,92 @@ function ctaStyle(block: PublicationBlock): React.CSSProperties {
   };
 }
 
+/**
+ * Tek bir gazete blogunun gorunumu ref bilmez. Tuval ref'leri yalnizca
+ * asagidaki koordinat denetleyicisinde kalir; boylece render ve dogrudan
+ * manipulasyon sinirlari birbirine karismaz.
+ */
+function PlacementBlockView({
+  block,
+  selected,
+  outside,
+  readonly,
+  subscriber,
+  selectedIds,
+  setSelectedIds,
+  onBegin,
+}: {
+  block: PublicationBlock;
+  selected: boolean;
+  outside: boolean;
+  readonly: boolean;
+  subscriber: boolean;
+  selectedIds: string[];
+  setSelectedIds: Dispatch<SetStateAction<string[]>>;
+  onBegin: (
+    event: ReactPointerEvent,
+    ids: string[],
+    kind: 'move' | 'resize',
+    corner?: Corner,
+  ) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={block.role === 'creative' ? 'Yüklenen tasarım' : `CTA butonu: ${block.content}`}
+      aria-pressed={selected}
+      className={`absolute z-20 touch-none overflow-visible ${outside ? 'outline outline-[3px] outline-red-600' : selected ? 'outline outline-2 outline-accent' : ''} ${subscriber && block.role === 'creative' ? 'publication-subscriber-glow' : ''}`}
+      style={{ ...rectStyle(block), transform: 'translateZ(0)' }}
+      onClick={(event) => {
+        if (readonly) return;
+        if (event.shiftKey) {
+          setSelectedIds((current) =>
+            current.includes(block.id) ? current.filter((id) => id !== block.id) : [...current, block.id],
+          );
+        } else {
+          setSelectedIds([block.id]);
+        }
+      }}
+      onPointerDown={(event) => {
+        if (readonly) return;
+        const ids = selectedIds.includes(block.id) ? selectedIds : [block.id];
+        if (!selectedIds.includes(block.id)) setSelectedIds(ids);
+        onBegin(event, ids, 'move');
+      }}
+    >
+      <span
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        style={block.role === 'cta' ? ctaStyle(block) : { borderRadius: block.borderRadius }}
+      >
+        {block.role === 'creative' ? (
+          <Image
+            src={block.content}
+            alt={block.altText}
+            fill
+            unoptimized
+            sizes="(max-width: 767px) 90vw, 610px"
+            style={{ objectFit: block.objectFit }}
+          />
+        ) : (
+          <span className={`flex h-full w-full items-center justify-center px-2 text-center text-[clamp(7px,1.7cqi,15px)] font-black ${block.animation && block.animation !== 'none' ? `publication-cta--${block.animation}` : ''}`}>
+            {block.content}
+          </span>
+        )}
+      </span>
+      {selected && !readonly
+        ? (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
+            <span
+              key={corner}
+              aria-hidden="true"
+              className={`studio-resize-handle studio-resize-handle--${corner}`}
+              onPointerDown={(event) => onBegin(event, [block.id], 'resize', corner)}
+            />
+          ))
+        : null}
+    </button>
+  );
+}
+
 function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds, subscriber, onLimit, readonly = false }: {
   draft: PublicationDraft;
   blocks: PublicationBlock[];
@@ -459,42 +545,19 @@ function PlacementCanvas({ draft, blocks, setBlocks, selectedIds, setSelectedIds
     >
       {/* Alan cercevesi bir duzenleme yardimcisidir; gazete onizlemesinin parcasi degildir. */}
       {!readonly ? <div className="pointer-events-none absolute z-10 border-2 border-accent bg-accent/5" style={rectStyle(draft.rect)} /> : null}
-      {blocks.map((block) => {
-        const selected = selectedIds.includes(block.id);
-        const outside = !contains(draft.rect, block);
-        return (
-          <button
-            key={block.id}
-            type="button"
-            aria-label={block.role === 'creative' ? 'Yüklenen tasarım' : `CTA butonu: ${block.content}`}
-            aria-pressed={selected}
-            className={`absolute z-20 touch-none overflow-visible ${outside ? 'outline outline-[3px] outline-red-600' : selected ? 'outline outline-2 outline-accent' : ''} ${subscriber && block.role === 'creative' ? 'publication-subscriber-glow' : ''}`}
-            style={{ ...rectStyle(block), transform: 'translateZ(0)' }}
-            onClick={(event) => {
-              if (readonly) return;
-              if (event.shiftKey) setSelectedIds((current) => current.includes(block.id) ? current.filter((id) => id !== block.id) : [...current, block.id]);
-              else setSelectedIds([block.id]);
-            }}
-            onPointerDown={(event) => {
-              if (readonly) return;
-              const ids = selectedIds.includes(block.id) ? selectedIds : [block.id];
-              if (!selectedIds.includes(block.id)) setSelectedIds(ids);
-              begin(event, ids, 'move');
-            }}
-          >
-            <span className="pointer-events-none absolute inset-0 overflow-hidden" style={block.role === 'cta' ? ctaStyle(block) : { borderRadius: block.borderRadius }}>
-              {block.role === 'creative' ? (
-                <Image src={block.content} alt={block.altText} fill unoptimized sizes="(max-width: 767px) 90vw, 610px" style={{ objectFit: block.objectFit }} />
-              ) : (
-                <span className={`flex h-full w-full items-center justify-center px-2 text-center text-[clamp(7px,1.7cqi,15px)] font-black ${block.animation && block.animation !== 'none' ? `publication-cta--${block.animation}` : ''}`}>{block.content}</span>
-              )}
-            </span>
-            {selected && !readonly ? (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
-              <span key={corner} aria-hidden="true" className={`studio-resize-handle studio-resize-handle--${corner}`} onPointerDown={(event) => begin(event, [block.id], 'resize', corner)} />
-            )) : null}
-          </button>
-        );
-      })}
+      {blocks.map((block) => (
+        <PlacementBlockView
+          key={block.id}
+          block={block}
+          selected={selectedIds.includes(block.id)}
+          outside={!contains(draft.rect, block)}
+          readonly={readonly}
+          subscriber={subscriber}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+          onBegin={begin}
+        />
+      ))}
       {blocks.some((block) => !contains(draft.rect, block)) ? (
         <p role="alert" className="absolute inset-x-4 bottom-4 z-40 rounded-xl bg-red-700 px-3 py-2 text-center text-xs font-bold text-white shadow-xl">Kırmızı sınır alan dışında. Kaydetme ve ödeme kapalı.</p>
       ) : null}

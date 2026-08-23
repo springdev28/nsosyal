@@ -26,7 +26,7 @@ Kodda bulunan geçici veya eski bir sınır ürün gereksinimine dönüştürül
 
 ## Hızlı başlangıç
 
-Gereksinim: Node.js 20+.
+Gereksinim: Node.js 22+.
 
 ```bash
 npm install
@@ -173,7 +173,7 @@ ve subscription discount sinyallerine göre açıklanabilir biçimde hesaplanır
 
 ## Teknoloji
 
-- **Next.js App Router + React + TypeScript**
+- **Next.js 16.3.2 App Router + React 19.2.8 + TypeScript**
 - **Tailwind CSS** ve mevcut nSosyal dark-first görsel sistemi
 - **MapLibre GL JS + yerel GeoJSON**
 - **Supabase Postgres/Auth/Storage + RLS** production yolu
