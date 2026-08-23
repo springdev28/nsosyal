@@ -189,6 +189,13 @@ hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dön�
 `prefers-reduced-motion` davranışı uygulanmıştır. Dosyalar demo modunda yerel
 `public/uploads` dizinine yazılır; kalıcı Supabase Storage yolu hâlâ planlanandır.
 
+Beğeni, kaydetme, yorum ve takip eylemleri mevcut prototipte gerçek Server Action
+ve `DemoStore` mutasyonlarıdır. Kaydedilen gönderiler `/saved` rotasında yalnızca
+oturum sahibine ait kişisel koleksiyon olarak listelenir. Koleksiyona masaüstünde
+ana gezinmeden, mobilde kullanıcının kendi profilindeki `Kaydedilenler`
+kısayolundan ulaşılır. Kısa video kartları da beğeni, yorum ve kaydetme
+eylemlerini aynı sosyal veri sözleşmesiyle kullanır.
+
 > **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 
 ## 8. Topluluklar
@@ -316,6 +323,7 @@ Critical E2E hedefleri:
 - community join/resources + moderator approval
 - Why → project
 - project create + validated pitch upload
+- like/save/comment/follow Server Action journeys + private `/saved` collection
 - nGazete reader + spatial sponsored placement + advertiser request/admin approval
 - location/privacy + accessibility states
 
