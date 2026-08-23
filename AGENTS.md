@@ -191,10 +191,11 @@ Never say a test passed unless you actually ran it in the current work.
 
 ## House style
 
-- Source comments are in Turkish without Turkish-specific characters
-  (`ç ğ ı ö ş ü` -> `c g i o s u`) and explain **why**, not what. User-facing
-  strings use proper Turkish with full diacritics.
-- Comment density matches the surrounding file.
+- Source comments use plain English. Add them only where a beginner needs help
+  understanding a block's responsibility, why it exists, or which files and
+  data flow it connects to. Do not narrate code that already explains itself.
+  User-facing strings use proper Turkish with full diacritics.
+- Comment density follows those needs rather than the density of older files.
 - Components take view models from `src/types/view.ts`; pages do the data loading.
 - All reads and mutations go through `DemoStore` (`src/lib/data/store.ts`), never
   through ad-hoc module state.

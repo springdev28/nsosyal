@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildFilterHref, parseFilters } from '@/components/discovery/DiscoveryFilters';
 import { getStore } from '@/lib/data/store';
 import { PROVINCES } from '@/lib/geo';
 
@@ -47,6 +48,15 @@ describe('Nerede yogunluk verisi', () => {
     const busiest = [...withContent].sort((a, b) => b.total - a.total)[0];
     expect(busiest.communities + busiest.events + busiest.projects).toBeGreaterThan(0);
     expect(busiest.name.length).toBeGreaterThan(0);
+  });
+
+  it('varlik filtresini paylasilabilir URL durumunda korur', () => {
+    const filters = parseFilters({ metric: 'events', topic: 'robotik' });
+
+    expect(filters.metric).toBe('events');
+    expect(buildFilterHref('/explore/map', filters, { time: 'next-30' })).toContain('metric=events');
+    // An invalid hand-written URL must fall back to a usable map.
+    expect(parseFilters({ metric: 'bilinmeyen' }).metric).toBe('all');
   });
 
   it('sentetik bolgesel icerik demo olarak isaretlidir', () => {

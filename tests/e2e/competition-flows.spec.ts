@@ -114,6 +114,25 @@ test.describe('2 · Harita, konu ve zaman filtresiyle etkinlik bulma', () => {
     await expect(ankaraDistricts.getByRole('link', { name: /Çankaya/ })).toBeVisible();
   });
 
+  test('harita seçilen varlığın yoğunluğunu ve yalnız ilgili sonuçları gösterir', async ({ page }) => {
+    await loginAs(page, 'user');
+    await page.goto('/explore/map?province=35&metric=events');
+
+    await expect(page.getByText('Etkinlik yoğunluğu')).toBeVisible();
+    await expect(page.getByText(/Renk, bu filtredeki etkinlik sayısını gösterir/)).toBeVisible();
+    await expect(page.getByRole('link', { name: /Varlık: Etkinlik/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Etkinlikler \(/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Topluluklar \(/ })).toHaveCount(0);
+
+    // The filter lives in the URL, so Back, refresh and shared links keep the same map.
+    const metricGroup = page.getByRole('group', { name: 'Varlık türü' });
+    await metricGroup.getByRole('link', { name: 'Topluluk', exact: true }).click();
+    await expect(page).toHaveURL(/metric=communities/);
+    await expect(page.getByText('Topluluk yoğunluğu')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Topluluklar \(/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Etkinlikler \(/ })).toHaveCount(0);
+  });
+
   test('sonuç bulunmayan filtrede yol gösteren boş durum çıkar', async ({ page }) => {
     await loginAs(page, 'user');
     // Kars'ta (36) demo verisi yok.

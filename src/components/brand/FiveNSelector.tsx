@@ -219,6 +219,13 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
 
   useEffect(() => {
     if (!open) return;
+    // FiveNSelector sends this route to Next's router before confirmation.
+    // This keeps a fast keyboard selection from waiting for the next page.
+    router.prefetch(DIMENSIONS[activeIndex].href);
+  }, [activeIndex, open, router]);
+
+  useEffect(() => {
+    if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.stopPropagation();

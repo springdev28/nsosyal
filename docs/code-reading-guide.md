@@ -111,7 +111,10 @@ klavye ve reduced-motion destekli bir izleyicide yeniden sunar.
 
 `TurkeyMap` dış tile hizmeti çağırmaz. İl ve ilçe poligonları `public/geo/`
 altındadır. Yoğunluk nüfus veya canlı kişi konumu değil, seçili platform
-varlıklarının sayısı/normalize skorudur.
+varlıklarının sayısı/normalize skorudur. `metric` URL filtresi topluluk,
+etkinlik, proje, kurum, kişi veya paylaşım sayısını seçer. Sayfa, Store'un tür
+kırılımını koruyup yalnız haritada kullanılan `total` değerini seçilen türe göre
+üretir; böylece tooltip kırılımı ile renk ölçeği aynı veri anlık görüntüsünden gelir.
 
 ### Topluluk moderasyonu
 
@@ -194,9 +197,9 @@ Tarih hesabı için doğrudan `new Date().toLocaleString(...)` yaymayın.
 
 ## 7. Yorumları nasıl okuyup eklemeli?
 
-Kod yorumları Türkçe, ASCII harflerle ve **neden** odaklıdır. İyi yorum bir ürün
-invariantını, güvenlik sınırını, tarayıcı/React tuzağını veya sıradan görünmeyen
-bir tercih gerekçesini açıklar. `x değerini artır` gibi kodu tekrar eden yorum
+Kaynak kod yorumları kısa ve sade İngilizce yazılır. Yorum, sıfırdan başlayan bir
+okura bloğun görevini, neden ayrı olduğunu ve hangi dosya ya da veri akışıyla
+bağlantılı olduğunu anlatmalıdır. `x değerini artır` gibi kodu tekrar eden yorum
 eklenmez; bu tür yorumlar değişiklikte hemen eskir.
 
 Çekirdek giriş noktalarında dosya üstü yorumlar bulunur: `DemoStore`, domain/view

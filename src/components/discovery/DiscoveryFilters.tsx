@@ -12,10 +12,27 @@ import type { Topic } from '@/types/domain';
  * tusu beklendigi gibi davranir ve her durum paylasilabilir bir URL'e sahiptir.
  */
 
+export const DISCOVERY_METRIC_OPTIONS = [
+  { value: 'all', label: 'Tümü', noun: 'sonuç', densityLabel: 'Tüm sonuçların yoğunluğu' },
+  { value: 'communities', label: 'Topluluk', noun: 'topluluk', densityLabel: 'Topluluk yoğunluğu' },
+  { value: 'events', label: 'Etkinlik', noun: 'etkinlik', densityLabel: 'Etkinlik yoğunluğu' },
+  { value: 'projects', label: 'Proje', noun: 'proje', densityLabel: 'Proje yoğunluğu' },
+  { value: 'organizations', label: 'Kurum', noun: 'kurum', densityLabel: 'Kurum yoğunluğu' },
+  { value: 'people', label: 'Kişi', noun: 'kişi', densityLabel: 'Kişi yoğunluğu' },
+  { value: 'posts', label: 'Paylaşım', noun: 'paylaşım', densityLabel: 'Paylaşım yoğunluğu' },
+] as const;
+
+export type DiscoveryMetric = (typeof DISCOVERY_METRIC_OPTIONS)[number]['value'];
+
+export function getDiscoveryMetricOption(metric: DiscoveryMetric) {
+  return DISCOVERY_METRIC_OPTIONS.find((entry) => entry.value === metric) ?? DISCOVERY_METRIC_OPTIONS[0];
+}
+
 export interface FilterState {
   province: string | null;
   district: string | null;
   topic: string | null;
+  metric: DiscoveryMetric;
   time: TimePreset;
   mode: 'all' | 'physical' | 'online' | 'hybrid';
   query: string;
@@ -43,6 +60,7 @@ export function buildFilterHref(base: string, state: FilterState, patch: Partial
   if (next.province) params.set('province', next.province);
   if (next.district) params.set('district', next.district);
   if (next.topic) params.set('topic', next.topic);
+  if (next.metric !== 'all') params.set('metric', next.metric);
   if (next.time && next.time !== 'all') params.set('time', next.time);
   if (next.mode && next.mode !== 'all') params.set('mode', next.mode);
   if (next.query) params.set('q', next.query);
@@ -55,19 +73,22 @@ export function DiscoveryFilterBar({
   state,
   topics,
   showLocation = true,
+  showMetric = false,
   showMode = true,
 }: {
   base: string;
   state: FilterState;
   topics: Topic[];
   showLocation?: boolean;
+  showMetric?: boolean;
   showMode?: boolean;
 }) {
   const province = PROVINCES.find((entry) => entry.code === state.province);
   const district = DISTRICTS.find((entry) => entry.code === state.district);
   const topic = topics.find((entry) => entry.slug === state.topic);
 
-  const activeCount = [state.province, state.topic, state.time !== 'all' ? state.time : null, state.mode !== 'all' ? state.mode : null, state.query]
+  const metricOption = getDiscoveryMetricOption(state.metric);
+  const activeCount = [state.province, state.topic, showMetric && state.metric !== 'all' ? state.metric : null, state.time !== 'all' ? state.time : null, state.mode !== 'all' ? state.mode : null, state.query]
     .filter(Boolean).length;
 
   return (
@@ -77,6 +98,7 @@ export function DiscoveryFilterBar({
         {state.province ? <input type="hidden" name="province" value={state.province} /> : null}
         {state.district ? <input type="hidden" name="district" value={state.district} /> : null}
         {state.topic ? <input type="hidden" name="topic" value={state.topic} /> : null}
+        {showMetric && state.metric !== 'all' ? <input type="hidden" name="metric" value={state.metric} /> : null}
         {state.time !== 'all' ? <input type="hidden" name="time" value={state.time} /> : null}
         {state.mode !== 'all' ? <input type="hidden" name="mode" value={state.mode} /> : null}
 
@@ -117,6 +139,20 @@ export function DiscoveryFilterBar({
           ))}
         </FilterGroup>
 
+        {showMetric ? (
+          <FilterGroup label="Varlık türü">
+            {DISCOVERY_METRIC_OPTIONS.map((entry) => (
+              <FilterChip
+                key={entry.value}
+                href={buildFilterHref(base, state, { metric: entry.value })}
+                active={state.metric === entry.value}
+              >
+                {entry.label}
+              </FilterChip>
+            ))}
+          </FilterGroup>
+        ) : null}
+
         <FilterGroup label="Ne zaman">
           {TIME_PRESETS.map((preset) => (
             <FilterChip
@@ -155,6 +191,12 @@ export function DiscoveryFilterBar({
           ) : null}
           {topic ? (
             <ActiveFilter label={`Ne: ${topic.name}`} href={buildFilterHref(base, state, { topic: null })} />
+          ) : null}
+          {showMetric && state.metric !== 'all' ? (
+            <ActiveFilter
+              label={`Varlık: ${metricOption.label}`}
+              href={buildFilterHref(base, state, { metric: 'all' })}
+            />
           ) : null}
           {state.time !== 'all' && state.time !== 'custom' ? (
             <ActiveFilter
@@ -211,11 +253,13 @@ export function parseFilters(params: Record<string, string | string[] | undefine
 
   const time = (single('time') ?? 'all') as TimePreset;
   const mode = (single('mode') ?? 'all') as FilterState['mode'];
+  const metric = (single('metric') ?? 'all') as DiscoveryMetric;
 
   return {
     province: single('province'),
     district: single('district'),
     topic: single('topic'),
+    metric: DISCOVERY_METRIC_OPTIONS.some((entry) => entry.value === metric) ? metric : 'all',
     time: ['today', 'this-week', 'this-month', 'next-7', 'next-30', 'past-30', 'all'].includes(time)
       ? time
       : 'all',
