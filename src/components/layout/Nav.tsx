@@ -100,14 +100,16 @@ export function MainNav({
       label: 'Profil',
       icon: 'users',
       mobile: true,
-      match: (p) => p.startsWith('/profile') && !p.includes('kaydedilenler'),
+      match: (p) => p.startsWith('/profile'),
     },
     {
-      href: viewer ? `/profile/${viewer.username}?tab=kaydedilenler` : '/feed',
+      // Query tab'i usePathname ile aktiflesmez ve koleksiyonu normal profil
+      // gonderileriyle karistirir; kayitlar bu nedenle gercek bir rotada yasar.
+      href: viewer ? '/saved' : '/login',
       label: 'Kaydedilenler',
       icon: 'bookmark',
       mobile: false,
-      match: (p) => p.startsWith('/profile') && p.includes('kaydedilenler'),
+      match: (p) => p.startsWith('/saved'),
     },
     NAV_ITEMS[6],
     ...(canModerate
@@ -141,6 +143,7 @@ export function MainNav({
         '/communities',
         '/projects',
         '/newspaper',
+        '/saved',
         '/settings',
         '/about',
         '/create',
@@ -300,7 +303,9 @@ export function MobileNav({
       label: 'Profil',
       icon: 'users' as IconName,
       mobile: true,
-      match: (p: string) => p.startsWith('/profile'),
+      // Kaydedilenler mobilde profil kumesinden acilir; alt gezinme bu rotada
+      // da kullanicinin hangi ana bolumde oldugunu gostermeye devam eder.
+      match: (p: string) => p.startsWith('/profile') || p.startsWith('/saved'),
     },
   ];
 

@@ -140,6 +140,23 @@ ProjectForm
 Dosya doğrulaması proje kaydından önce yapılır; bozuk yükleme yarım proje
 bırakmaz. Production'da yerel dosya yazımı Storage/worker hattıyla değişmelidir.
 
+### Sosyal eylem ve Kaydedilenler
+
+```text
+PostCard / VideoFeedPage
+  -> social Server Action
+  -> DemoStore.toggleLike / toggleSave / createComment
+  -> ilgili rotanın revalidate edilmesi
+  -> /saved/page.tsx
+  -> DemoStore.listSavedPosts
+  -> aynı PostView + PostCard sunumu
+```
+
+`/saved` bir profil filtresi değildir. Kişisel koleksiyon ayrı rota olduğu için
+masaüstü gezinmede doğru aktif durum, mobilde profil içinden görünür giriş ve
+doğrudan gizlilik sınırı sağlanır. Kart sunumu kopyalanmaz; ana akışla aynı
+`PostView` ve `PostCard` sözleşmesi kullanılır.
+
 ### nGazete okuyucu
 
 ```text

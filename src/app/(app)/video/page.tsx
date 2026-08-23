@@ -94,7 +94,11 @@ export default async function VideoFeedPage({
 
                   <div className="p-3">
                     <div className="flex items-center gap-2">
-                      <Link href={`/profile/${view.author.username}`} className="shrink-0">
+                      <Link
+                        href={`/profile/${view.author.username}`}
+                        aria-label={`${view.author.displayName} profili`}
+                        className="shrink-0"
+                      >
                         <Avatar profile={view.author} size={36} />
                       </Link>
                       <div className="min-w-0 flex-1">
@@ -142,7 +146,8 @@ export default async function VideoFeedPage({
                           href={`/explore/why/${view.whyStory.id}`}
                           className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line px-3 text-sm font-semibold hover:bg-bg-sunken"
                         >
-                          <span aria-hidden="true">💭</span> Neden hikâyesi
+                          <Icon name="question" size={17} />
+                          Neden hikâyesi
                         </Link>
                       ) : null}
                     </div>
@@ -158,7 +163,7 @@ export default async function VideoFeedPage({
                             view.viewerLiked ? 'font-semibold text-danger' : 'text-fg-muted'
                           }`}
                         >
-                          <span aria-hidden="true">{view.viewerLiked ? '❤️' : '🤍'}</span>
+                          <Icon name="heart" size={18} filled={view.viewerLiked} />
                           {view.post.likeCount}
                           <span className="sr-only">beğeni</span>
                         </button>
@@ -168,7 +173,7 @@ export default async function VideoFeedPage({
                         href={`/posts/${view.post.id}`}
                         className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm text-fg-muted hover:bg-bg-sunken"
                       >
-                        <span aria-hidden="true">💬</span>
+                        <Icon name="message" size={18} />
                         {view.post.commentCount}
                         <span className="sr-only">yorum</span>
                       </Link>
@@ -183,7 +188,7 @@ export default async function VideoFeedPage({
                             view.viewerSaved ? 'font-semibold text-accent' : 'text-fg-muted'
                           }`}
                         >
-                          <span aria-hidden="true">{view.viewerSaved ? '🔖' : '📑'}</span>
+                          <Icon name="bookmark" size={18} filled={view.viewerSaved} />
                           {view.viewerSaved ? 'Kaydedildi' : 'Kaydet'}
                         </button>
                       </form>

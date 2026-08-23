@@ -94,7 +94,22 @@ export default async function ProfilePage({
             </span>
             <div className="flex flex-wrap justify-end gap-2 pt-3">
               {isSelf ? (
-                <Link href={`${base}/edit`} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold hover:bg-bg-hover"><Icon name="camera" size={16} />Profili düzenle</Link>
+                <>
+                  <Link
+                    href="/saved"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold hover:bg-bg-hover"
+                  >
+                    <Icon name="bookmark" size={16} />
+                    Kaydedilenler
+                  </Link>
+                  <Link
+                    href={`${base}/edit`}
+                    className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold hover:bg-bg-hover"
+                  >
+                    <Icon name="camera" size={16} />
+                    Profili düzenle
+                  </Link>
+                </>
               ) : viewer ? (
                 <FollowButton profile={profile} revalidate={base} following={following} requestPending={requestPending} />
               ) : null}
