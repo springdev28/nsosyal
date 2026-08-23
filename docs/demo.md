@@ -56,14 +56,17 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 ## Ana akış ve hikâye demo akışı
 
 1. Oluşturucu açılır; metin taslağının sayfa yenilemesinden sonra korunduğu
-   gösterilir.
+   gösterilir. 320 CSS piksel reflow görünümünde taslak etiketi açıkken Gönder
+   düğmesinin kırpılmadığı ve yatay taşma oluşmadığı doğrulanır.
 2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
    topluluk seçiminin zorunlu olduğu gösterilir.
 3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
    alanı gösterilir. İstenirse konum yalnızca bu gönderi için açılır.
 4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
    geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
-5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği belirtilir.
+5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği, marka motion
+   katmanının gizlendiği ve nGazete/Yayın Atölyesi sürekli dekoratif
+   animasyonlarının tamamen durduğu gösterilir.
 
 ## Proje pitch demo akışı
 
@@ -211,12 +214,14 @@ Sunumdan önce elle kontrol:
 - N yeniden selector açıyor mu;
 - map density renkleri blue/cyan family içinde mi;
 - legend ve hover/click value okunuyor mu;
-- mobile filter/chip/button clipping var mı;
+- mobile filter/chip/button clipping var mı; oluşturucu taslak etiketi açıkken
+  320 CSS pikselde Gönder eylemi görünür ve belge taşmasız mı;
 - nGazete gerçek newspaper composition gibi mi;
 - sponsored slot grid'in içinde ve açık etiketli mi;
 - advertiser size/placement/price ilişkisi görülebiliyor mu;
 - Settings long-term goals ile transient intent'i ayırıyor mu;
-- map list equivalent, keyboard, focus ve reduced-motion çalışıyor mu.
+- map list equivalent, keyboard ve focus çalışıyor mu; reduced-motion durumunda
+  CSS animasyon adları `none`, marka SMIL katmanı `display:none` oluyor mu.
 
 ## Test raporlama kuralı
 
