@@ -98,6 +98,23 @@ biçimde yorumlamaz.
 `StoryRail` ayrı bir “Neden” veri modeli değildir. Medyalı postları tam ekran,
 klavye ve reduced-motion destekli bir izleyicide yeniden sunar.
 
+### Global arama
+
+```text
+AppShell SearchBox veya /explore formu
+  -> /explore?q=...
+  -> parseFilters
+  -> DemoStore.discover
+  -> ProfileSummary / PostView / diğer sonuç view modelleri
+  -> profil kartları + ortak PostCard
+```
+
+Arama kutusu sonuç tutmaz; yalnızca paylaşılabilir URL üretir. `/explore/page.tsx`
+URL'yi okur ve bütün varlık türlerini tek seferde `DemoStore.discover` üzerinden
+ister. Konum filtresi yoksa konumunu gizleyen bir kişi de ad veya kullanıcı adıyla
+bulunur. İl ya da ilçe filtresi varsa Store yalnız kullanıcının paylaşmayı seçtiği
+konum düzeyini kullanır. UI kesin konum veya ham profil kaydı almaz.
+
 ### Türkiye haritası
 
 ```text

@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-En son doğrulanan ve dağıtılan baseline SHA: `a48fc4716fcc68718fd891e77745d210ebbe6466`
+En son doğrulanan ve dağıtılan baseline SHA: `39f36934eeeacd5a6fd49d891de035953ef4d525`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -33,6 +33,7 @@ Durum sözlüğü:
 | --- | --- | --- | --- | --- | --- |
 | Demo giriş → karma akış → story → gelişmiş gönderi oluşturucu | `/login`, `/feed`, `/video`, `/create` | Demo oturumu, `DemoStore`, Server Actions | `competition-flows` 1; ranking/store birim testleri | `/feed` masaüstü ve 320×800 incelendi; taslak etiketi açıkken Gönder eylemi kırpılmıyor; desktop/mobile axe | Doğrulandı |
 | Beğeni → yorum → kaydet/koleksiyonda bul → takip et/bırak | `/feed`, `/posts/[id]`, `/saved`, `/profile/[username]` | Social Server Actions → `DemoStore`; kaydedilenler yalnız oturum sahibinin view modelidir | `social-actions` içindeki 4 senaryo iki viewportta; store birim testleri | Profil kısayolu ve `/saved` masaüstü/Pixel 7 incelendi; `/saved` ile `/video` axe temiz | Doğrulandı |
+| Global arama → kişi/kurum/gönderi sonucunu aç | `/explore?q=...`, `/profile/[username]`, `/posts/[id]` | URL filtresi → `parseFilters` → `DemoStore.discover` → ortak view modelleri; konum filtresi yoksa gizli konum profili de ad/kullanıcı adıyla bulunur | `search` içindeki kişi, kurum ve gönderi senaryoları iki viewportta; store mahremiyet testi | Kişi ve gönderi sonuçları masaüstü/Pixel 7 incelendi; sonuç durumu axe ve 320×800 reflow temiz | Doğrulandı |
 | N işareti → yarım yay → gerçek 5N paneli | `/explore`, `/explore/map`, `/explore/time`, `/explore/how`, `/explore/why` | İstemci seçim durumu; seçim URL rotasına taşınır | `five-n-selector` içindeki 8 senaryo iki viewportta geçti | Açık yay 1440×1000 ve 390×844 incelendi; `Nasıl` araması ile `Neden` kartları 320×800 reflow görünümüne sığıyor; hedefler en az 44×44; axe temiz | Doğrulandı |
 | Türkiye yoğunluk haritası → varlık türü → il → ilçe → sonuç | `/explore/map` | Yerel GeoJSON + `DemoStore` yoğunluk sorgusu; seçilen varlık URL'deki `metric` parametresiyle taşınır; kişisel canlı koordinat yok | `map-density`; `competition-flows` 2 | Desktop/mobile harita, seçilen varlığa göre legend, açıklama ve erişilebilir liste incelendi; axe temiz | Doğrulandı |
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
@@ -62,17 +63,19 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Baseline SHA `a48fc4716fcc68718fd891e77745d210ebbe6466` için:
+Baseline SHA `39f36934eeeacd5a6fd49d891de035953ef4d525` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm ci` | Geçti: nihai kilit dosyasından 554 paket kuruldu, 555 paket denetlendi; npm 0 açık bildirdi |
 | `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 131/131 birim testi |
+| Güncel kaynak ağacı `npm run verify` | Geçti: yeni arama mahremiyeti ve filtre anlamı testleriyle TypeScript, ESLint ve 6 dosyada 133/133 birim testi |
 | `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve yeni `/saved` rotası çıktı listesinde yer aldı |
 | `npm audit --omit=dev --json` | Kritik 0, yüksek 0, orta 0, düşük 0; toplam 0. Next 15'in dahili `postcss` ve `sharp` kayıtları Next 16.3.2 geçişiyle kapandı. |
-| Tam `npm run test:e2e` | GitHub Actions'ta tek koşuda 166/166 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, varlık türüne göre harita/ilçe yoğunluğu, story, gazete, Yayın Atölyesi ve beğeni/yorum/kaydet/takip akışları dahildir. Atlanan veya zaman aşımına uğrayan senaryo yoktur. |
-| Genişletilmiş 320 piksel reflow kontrolü | Bu belge güncellenirken masaüstü ve mobil Chromium projelerinde hedeflenen 12/12 geçti: Harita, Nasıl, Neden, gönderi oluşturucu, nGazete, Yayın Atölyesi ve Profil sayfa genişliğini aşmadı. Yeni nGazete/Yayın Atölyesi/Profil kontrolleri bir sonraki tam CI koşusuna dahildir. |
-| Yerel görsel kontrol | Next 16 üretim derlemesinde masaüstü ana akış, nGazete, Yayın Atölyesi, profil kısayolu ve Kaydedilenler; 412×915 Pixel 7 görünümünde ana akış, Yayın Atölyesi, Türkiye haritası, açık yarım yay 5N seçici, profil kısayolu ve Kaydedilenler incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
+| Tam `npm run test:e2e` | GitHub Actions'ta tek koşuda 172/172 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, varlık türüne göre harita/ilçe yoğunluğu, story, gazete, Yayın Atölyesi ve beğeni/yorum/kaydet/takip akışları dahildir. Atlanan veya zaman aşımına uğrayan senaryo yoktur. |
+| Genişletilmiş 320 piksel reflow kontrolü | Baseline içinde Harita, Nasıl, Neden, gönderi oluşturucu, nGazete, Yayın Atölyesi ve Profil masaüstü/mobil Chromium'da sayfa genişliğini aşmadı. Bu belge güncellenirken arama sonuç durumu için eklenen iki reflow kontrolü de 2/2 geçti. |
+| Hedefli global arama kontrolü | Bu belge güncellenirken kişi, kurum ve gönderi sonuçları; Axe ve 320 piksel reflow ile birlikte masaüstü/mobil Chromium'da 8/8 geçti. Güncel test envanteri 7 dosyada 180 E2E senaryosudur. |
+| Yerel görsel kontrol | Next 16 üretim derlemesinde masaüstü ana akış, nGazete, Yayın Atölyesi, profil kısayolu, Kaydedilenler ve global arama kişi/gönderi sonuçları; Pixel 7 görünümünde aynı kritik yüzeyler, Türkiye haritası ve açık yarım yay 5N seçici incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 `npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
@@ -87,10 +90,10 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Uygulama baseline commit'i `a48fc4716fcc68718fd891e77745d210ebbe6466`,
+Uygulama baseline commit'i `39f36934eeeacd5a6fd49d891de035953ef4d525`,
 23 Ağustos 2026'da GitHub `main`, Hostinger ve Render `/api/health` yanıtlarında
-birebir görüldü. GitHub Actions koşusu `32643450990` içindeki Verify işi `npm ci`,
-verify ve 166 E2E testini geçti; `Confirm live` işi de iki ortamın tam SHA
+birebir görüldü. GitHub Actions koşusu `32645269975` içindeki Verify işi `npm ci`,
+verify ve 172 E2E testini geçti; `Confirm live` işi de iki ortamın tam SHA
 eşitliğini doğruladı. İki ortamın `/login` rotası gerçek `nSosyal` ile
 `Demo hesabıyla gir` metinlerini içerdi. Yayın kanıtı her yeni commit için aynı
 iki sinyali birlikte arar: temiz CI ve iki canlı `/api/health` yanıtında tam SHA.

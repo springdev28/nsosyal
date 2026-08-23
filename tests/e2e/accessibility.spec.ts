@@ -32,6 +32,7 @@ async function expectNoHorizontalPageOverflow(page: import('@playwright/test').P
 const PAGES = [
   { path: '/feed', name: 'Ana akış' },
   { path: '/explore', name: 'Keşfet' },
+  { path: '/explore?q=ece.uzay', name: 'Keşfet kişi sonuçları' },
   { path: '/explore/time', name: 'Ne zaman' },
   { path: '/explore/why', name: 'Neden panosu' },
   { path: '/explore/how', name: 'Nasıl kaynakları' },
@@ -92,6 +93,15 @@ test.describe('axe taraması', () => {
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
       .toBeLessThanOrEqual(viewportWidth);
+  });
+
+  test('arama sonucu 320 piksel reflow görünümünde yatay taşmaz', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+    await page.goto('/explore?q=ece.uzay');
+
+    await expect(page.getByRole('region', { name: 'Kişiler (1)' })).toBeVisible();
+    await expectNoHorizontalPageOverflow(page);
   });
 
   test('Nasıl araması ve Neden kartları 320 piksel reflow görünümüne sığar', async ({ page }) => {

@@ -929,11 +929,9 @@ export class DemoStore {
   }
 
   /**
-   * Konum + zaman + konu filtreleriyle butun varlik turlerinde arama.
-   *
-   * Mahremiyet kurali: kisiler yalnizca konum gorunurlugune izin verdikleri
-   * olcude listelenir ve hicbir zaman kesin koordinatla gosterilmez
-   * (PROJECT_SPEC 11.1).
+   * This is the shared search boundary used by Explore and the map. A location
+   * filter limits profiles to the level each person chose to share; a general
+   * search must still include people who keep their location private.
    */
   discover(filters: DiscoveryFilters & { viewerId?: UUID | null } = {}): DiscoveryResults {
     const query = filters.query ? normalize(filters.query) : null;
@@ -974,16 +972,27 @@ export class DemoStore {
       .slice(0, 20)
       .map((post) => this.toPostView(post, filters.viewerId ?? null, null));
 
-    const visibleProfiles = this.data.profiles
-      .filter((profile) => profile.locationVisibility === 'province' || profile.locationVisibility === 'district')
-      .filter((profile) => !filters.provinceCode || profile.provinceCode === filters.provinceCode)
-      .filter((profile) => {
-        if (!filters.districtCode) return true;
-        // Yalnizca ilce gorunurlugu acik olanlar ilce filtresinde cikar.
-        return profile.locationVisibility === 'district' && profile.districtCode === filters.districtCode;
-      })
-      .filter((profile) => !filters.topicId || profile.topicIds.includes(filters.topicId))
-      .filter((profile) => matchesQuery(`${profile.displayName} ${profile.bio}`));
+    // Profiles have no time or attendance mode, so those filters alone cannot produce a meaningful profile result.
+    const profileFilterIsMeaningful = Boolean(
+      query || filters.topicId || filters.provinceCode || filters.districtCode,
+    );
+    const visibleProfiles = profileFilterIsMeaningful
+      ? this.data.profiles
+          .filter((profile) => {
+            if (filters.districtCode) {
+              return profile.locationVisibility === 'district' && profile.districtCode === filters.districtCode;
+            }
+            if (filters.provinceCode) {
+              return (
+                (profile.locationVisibility === 'province' || profile.locationVisibility === 'district') &&
+                profile.provinceCode === filters.provinceCode
+              );
+            }
+            return true;
+          })
+          .filter((profile) => !filters.topicId || profile.topicIds.includes(filters.topicId))
+          .filter((profile) => matchesQuery(`${profile.displayName} ${profile.username} ${profile.bio}`))
+      : [];
 
     return {
       communities,

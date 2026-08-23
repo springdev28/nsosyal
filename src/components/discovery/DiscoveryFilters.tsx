@@ -6,10 +6,8 @@ import { PRESET_LABELS, type TimePreset } from '@/lib/time';
 import type { Topic } from '@/types/domain';
 
 /**
- * Ortak kesif filtreleri (PROJECT_SPEC 7.4 / 12.4).
- *
- * Filtreler tamamen baglanti tabanlidir: JavaScript olmadan da calisir, geri
- * tusu beklendigi gibi davranir ve her durum paylasilabilir bir URL'e sahiptir.
+ * Explore pages share this URL-based filter bar. Keeping state in the URL makes
+ * Back, refresh and shared links work without client-only state.
  */
 
 export const DISCOVERY_METRIC_OPTIONS = [
@@ -94,7 +92,7 @@ export function DiscoveryFilterBar({
   return (
     <div className="space-y-3">
       <form action={base} method="get" role="search" className="flex gap-2">
-        {/* Arama disindaki filtreler form gonderiminde kaybolmasin. */}
+        {/* These hidden fields keep the active filters when only the query changes. */}
         {state.province ? <input type="hidden" name="province" value={state.province} /> : null}
         {state.district ? <input type="hidden" name="district" value={state.district} /> : null}
         {state.topic ? <input type="hidden" name="topic" value={state.topic} /> : null}
@@ -103,7 +101,7 @@ export function DiscoveryFilterBar({
         {state.mode !== 'all' ? <input type="hidden" name="mode" value={state.mode} /> : null}
 
         <label htmlFor="discovery-q" className="sr-only">
-          Konu, topluluk, etkinlik veya proje ara
+          Konu, kişi, topluluk, etkinlik, proje veya paylaşım ara
         </label>
         <input
           id="discovery-q"
@@ -111,8 +109,7 @@ export function DiscoveryFilterBar({
           type="search"
           defaultValue={state.query}
           placeholder="Ara: havacılık, erişilebilirlik, roket…"
-          /* Flex ogeler varsayilan olarak icerik genisliginin altina inmez. Bu
-             sinir, uzun placeholder'in dar ekranda Ara dugmesini kesmesini onler. */
+          /* min-w-0 lets the field shrink so the submit button stays visible at 320 px. */
           className="min-h-11 min-w-0 flex-1 rounded-xl border border-line bg-bg-raised px-3"
         />
         <button
@@ -244,7 +241,7 @@ function ActiveFilter({ label, href }: { label: string; href: string }) {
   );
 }
 
-/** URL parametrelerinden filtre durumunu cozer. */
+/** Converts untrusted URL values into the filter shape used by pages and DemoStore. */
 export function parseFilters(params: Record<string, string | string[] | undefined>): FilterState {
   const single = (key: string) => {
     const value = params[key];
