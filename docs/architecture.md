@@ -160,8 +160,11 @@ panel üzerinde kalır ve yeniden açar.
 Bu component normal UI'da kalıcı eğitim metni taşımaz. İlk kullanım için gerekirse
 tek seferlik contextual hint ayrı ürün davranışı olarak eklenir.
 
-Reduced-motion modunda rotation/reveal minimuma iner. Keyboard erişimi option
-listesi + previous/next/confirm mantığıyla aynı fonksiyonu verir.
+Reduced-motion modunda selector kısa state değişimiyle çalışır. Marka işaretinin
+SMIL hareket katmanı hiç boyanmaz; nGazete ve Yayın Atölyesi içindeki sürekli
+dekoratif CSS animasyonları da `animation: none !important` ile tamamen durur.
+Keyboard erişimi option listesi + previous/next/confirm mantığıyla aynı fonksiyonu
+verir.
 
 ## 6. Nerede haritası
 
@@ -425,7 +428,8 @@ Hedef WCAG 2.2 AA:
 - accessible names;
 - associated form error;
 - no colour-only state;
-- reduced motion;
+- reduced-motion tercihinde CSS animasyonlarının tamamen durması ve SVG/SMIL
+  hareket katmanının gizlenmesi;
 - adequate touch targets;
 - focusable overflow areas;
 - video text/caption equivalent;
@@ -434,6 +438,9 @@ Hedef WCAG 2.2 AA:
 
 Otomatik axe testleri önemlidir ancak keyboard order, visual clipping, readable
 contrast ve screen reader deneyimini tek başına kanıtlamaz. Manual QA gerekir.
+Erişilebilirlik E2E paketi ayrıca 320 CSS pikselde oluşturucu eyleminin görünür
+kalmasını, belge yatay taşmasını ve reduced-motion durumunda nGazete/marka hareket
+durumlarını doğrudan ölçer.
 
 ## 13. Test stratejisi ve doğruluk
 
