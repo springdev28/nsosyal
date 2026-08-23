@@ -4,7 +4,7 @@
   "private": true,
   "description": "nSosyal 5N1K - baglamsal sosyal kesif katmani prototipi (TEKNOFEST nSosyal Inovasyon 2026)",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "next dev",

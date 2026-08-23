@@ -26,7 +26,7 @@ Kodda bulunan geçici veya eski bir sınır ürün gereksinimine dönüştürül
 
 ## Hızlı başlangıç
 
-Gereksinim: Node.js 20+.
+Gereksinim: Node.js 22+.
 
 ```bash
 npm install
