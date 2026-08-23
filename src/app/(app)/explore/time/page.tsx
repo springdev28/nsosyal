@@ -1,4 +1,4 @@
-/** Ne zaman boyutunda gecmis icerik ile gelecek etkinlikleri ayni tarih sozlesmesiyle sunar. */
+/** Combines past content and future events under the shared time helpers. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -14,13 +14,8 @@ import { formatDate, formatRelative, isWithin, resolvePreset } from '@/lib/time'
 export const metadata: Metadata = { title: 'Ne zaman · Keşfet' };
 
 /**
- * "Ne zaman" kesif ekrani (PROJECT_SPEC 7.5 / 17.7).
- *
- * Kritik kural: her varlik kendi zaman alanini kullanir ve bunlar birbirine
- * karistirilmaz. Gonderiler `created_at`, etkinlikler `starts_at`/`ends_at`,
- * son basvurular `deadline_at`, proje kilometre taslari `milestone_date`.
- * "Gelecek 30 gun" gelecekte paylasilacak gonderi TAHMIN ETMEZ; gelecekte
- * gerceklesecek etkinlikleri ve son tarihleri gosterir.
+ * Keeps each entity on its own time field: posts use creation time, events use
+ * their interval, applications use deadlines, and milestones use milestone time.
  */
 export default async function TimePage({
   searchParams,
@@ -29,7 +24,7 @@ export default async function TimePage({
 }) {
   const params = await searchParams;
   const raw = parseFilters(params);
-  // Zaman ekraninin anlamli varsayilani "gelecek 30 gun".
+  // Future activity is the useful default when the URL has no time preset.
   const filters = { ...raw, time: params.time ? raw.time : ('next-30' as const) };
 
   const viewer = await getViewer();
@@ -50,7 +45,7 @@ export default async function TimePage({
     viewerId: viewer?.id ?? null,
   });
 
-  // Son basvuru tarihleri ayri bir eksendir: etkinlik tarihiyle karistirilmaz.
+  // Application deadlines are independent from event start and end times.
   const deadlines = store
     .listEvents({ topicId: topic?.id ?? null, query: filters.query, mode: filters.mode })
     .filter((view) => view.event.deadlineAt && isWithin(range, view.event.deadlineAt))
@@ -58,7 +53,7 @@ export default async function TimePage({
       (a, b) => new Date(a.event.deadlineAt!).getTime() - new Date(b.event.deadlineAt!).getTime(),
     );
 
-  // Proje kilometre taslari yalnizca gecmis araliklarda anlamlidir.
+  // Project milestones are historical records, not predicted future posts.
   const milestones = store
     .listProjects({ topicId: topic?.id ?? null, query: filters.query })
     .flatMap((project) => {
@@ -70,7 +65,7 @@ export default async function TimePage({
     })
     .sort((a, b) => new Date(b.update.createdAt).getTime() - new Date(a.update.createdAt).getTime());
 
-  // Gonderiler yalnizca gecmis/su an araliginda anlamlidir.
+  // Posts use their real creation timestamps and are never projected forward.
   const posts = store
     .discover({
       provinceCode: filters.province,

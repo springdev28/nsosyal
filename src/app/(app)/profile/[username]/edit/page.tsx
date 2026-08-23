@@ -1,4 +1,4 @@
-/** Profil duzenlemeyi yalnizca hesap sahibine acar ve mevcut form degerlerini yukler. */
+/** Restricts profile editing to the owner and loads the current form values. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

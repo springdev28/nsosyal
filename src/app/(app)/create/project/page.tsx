@@ -1,4 +1,4 @@
-/** Proje formunun konu, topluluk ve oturum baglamini sunucuda hazirlar. */
+/** Loads session, topic, and community data before rendering ProjectForm. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

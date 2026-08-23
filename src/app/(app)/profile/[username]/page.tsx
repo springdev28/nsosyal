@@ -1,6 +1,6 @@
 /**
- * Profil kimligini banner, avatar, baglantilar, sosyal sayaclar ve icerik
- * sekmeleriyle kurar. Sahiplik durumuna gore Duzenle veya Takip eylemi sunar.
+ * Composes identity, links, social counts, and content tabs from one profile
+ * view model, then chooses owner-edit or viewer-follow actions.
  */
 import type { Metadata } from 'next';
 import Image from 'next/image';

@@ -1,6 +1,6 @@
 /**
- * Yasayan proje kaydinin temel alanlari ve pitch dosyasi icin istemci formudur.
- * Medya sinirlari projects action'inda tekrar kontrol edilir.
+ * Client form for project fields and an optional pitch video. Browser checks
+ * give quick feedback; `actions/projects` repeats every media check before saving.
  */
 'use client';
 
@@ -19,7 +19,6 @@ const STATUSES = [
   { value: 'yayinda', label: 'Yayında' },
 ];
 
-/** Proje olusturma formu ve pitch videosu yukleme (PROJECT_SPEC 6.5 - Akis D). */
 export function ProjectForm({
   topics,
   communities,
@@ -44,7 +43,7 @@ export function ProjectForm({
     setFileName(null);
     if (!file) return;
 
-    // Sunucu tarafinda tekrar dogrulanir; bu yalnizca hizli geri bildirim.
+    // This is quick feedback only; the Server Action validates the file again.
     if (!(ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type)) {
       setFileError('Yalnızca MP4 veya WebM kabul ediliyor.');
       event.target.value = '';
@@ -60,12 +59,12 @@ export function ProjectForm({
     const objectUrl = URL.createObjectURL(file);
     const video = document.createElement('video');
     video.preload = 'metadata';
-    // Bu kontrol hizli geri bildirimdir; ayni sure sunucuda kapsayicidan tekrar
-    // okunur. Tarayici sonucunun form guvenlik siniri olmasina izin verilmez.
+    // The server reads duration from the container again, so browser metadata is
+    // never the security boundary.
     video.onloadedmetadata = () => {
       URL.revokeObjectURL(objectUrl);
-      // Kullanici hizla yeni dosya secerse eski metadata cevabi yeni secimi
-      // temizlememeli; yalnizca son baslatilan denetim arayuzu gunceller.
+      // Ignore a stale callback when the user chooses another file while this
+      // metadata request is still running.
       if (inspectionId !== fileInspectionId.current) return;
       if (!Number.isFinite(video.duration) || video.duration <= 0) {
         setFileError('Video süresi okunamadı. Başka bir MP4 veya WebM dosyası seç.');

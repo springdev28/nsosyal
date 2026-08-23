@@ -6,10 +6,7 @@ import { useCallback } from 'react';
 
 import type { DistrictMetric, ProvinceMetric } from '@/components/map/TurkeyMap';
 
-/**
- * Harita, MapLibre'i yalnizca tarayicida yukler. SSR sirasinda `window`
- * erisimi olmadigi icin bilesen client-only sinirda tutulur (PROJECT_SPEC 17.6).
- */
+/** Loads MapLibre only in the browser because the library requires `window`. */
 const TurkeyMap = dynamic(() => import('@/components/map/TurkeyMap').then((mod) => mod.TurkeyMap), {
   ssr: false,
   loading: () => (

@@ -1,7 +1,7 @@
 /**
- * Oturum, onboarding ve kalici tercih yazilarinin sunucu siniridir. Cookie ve
- * profil mutasyonlari tarayici bilesenlerinde yapilmaz; basarili degisimlerden
- * sonra ilgili Server Component rotalari yeniden dogrulanir.
+ * Server-side entry point for sessions, onboarding, and lasting preferences.
+ * Client forms call these actions; the actions update cookies or DemoStore and
+ * then refresh the Server Component routes that read those values.
  */
 'use server';
 
@@ -27,15 +27,6 @@ import type {
   PhotoTaggingPermission,
 } from '@/types/domain';
 
-/**
- * Oturum ve profil eylemleri.
- *
- * Not: prototip DEMO_MODE ile calisir, bu yuzden "giris" yalnizca bir demo
- * hesabini secmektir. Parola dogrulamasi Supabase Auth'a birakilmistir; boylece
- * repoya sahte parola hash'i veya gercek gibi gorunen bir kimlik katmani
- * eklemek zorunda kalmiyoruz (PROJECT_SPEC 11.3).
- */
-
 const YEAR = 60 * 60 * 24 * 365;
 
 export async function signInAsDemoAccount(formData: FormData): Promise<void> {
@@ -51,14 +42,14 @@ export async function signInAsDemoAccount(formData: FormData): Promise<void> {
 
   getStore().track('demo_login', { username }, profile.id);
 
-  // Demo hesaplarinin profili zaten dolu; onboarding'i tekrar gostermiyoruz.
+  // Demo profiles are already complete, so direct sign-in skips onboarding.
   cookieStore.set(ONBOARDING_COOKIE, '1', { sameSite: 'lax', path: '/', maxAge: YEAR });
   redirect('/feed');
 }
 
 export async function startOnboarding(): Promise<void> {
   const cookieStore = await cookies();
-  // Onboarding turu her zaman gundelik kullanici hesabi uzerinden gosterilir.
+  // The guided onboarding tour always starts with the everyday-user account.
   cookieStore.set(SESSION_COOKIE, DEMO_ACCOUNTS[0].username, {
     httpOnly: true,
     sameSite: 'lax',
@@ -81,10 +72,7 @@ export interface OnboardingState {
   error?: string;
 }
 
-/**
- * Onboarding kaydi (PROJECT_SPEC 17.4).
- * Konum tamamen istege baglidir ve varsayilani "paylasmiyorum"dur.
- */
+/** Saves the onboarding draft; location stays optional and hidden by default. */
 export async function completeOnboarding(
   _prev: OnboardingState,
   formData: FormData,
@@ -118,12 +106,10 @@ export async function completeOnboarding(
     return { error: 'İlçe düzeyinde paylaşmayı seçtin ama ilçe seçmedin.' };
   }
 
-  // Anlik niyet opsiyoneldir; bos birakilirsa kullanici mod secmemis sayilir
-  // ve akis yalnizca kalici amaclardan turer (spec 7.10).
+  // A blank transient intent leaves ranking to the user's lasting goals.
   const rawIntent = String(formData.get('intentMode') ?? '');
   const intentMode = rawIntent ? (rawIntent as IntentMode) : null;
-  // Kalici platform amaclari - P0 (teknik rapor 3.3.2): onboarding birden
-  // fazlasini toplar, kullanici sonradan Ayarlar'dan hepsini degistirebilir.
+  // Onboarding only seeds these lasting goals; Settings can change them later.
   const goalKeys = parseGoalKeys(formData.getAll('goalKeys').map(String));
   const bio = String(formData.get('bio') ?? '').slice(0, 240);
   const publicationMessages = String(formData.get('publicationMessages') ?? 'everyone');
@@ -226,7 +212,7 @@ export async function updateSettings(_prev: SettingsState, formData: FormData): 
     cookieStore.delete(REDUCED_MOTION_COOKIE);
   }
 
-  // Gazetenin bir sonraki oturumda tekrar acilmasini isteyen kullanicilar icin.
+  // Clearing this marker lets the latest newspaper open again next session.
   if (formData.get('newspaperAutoOpen') === 'on') {
     cookieStore.delete(NEWSPAPER_SEEN_COOKIE);
   }

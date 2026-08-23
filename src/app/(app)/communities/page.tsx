@@ -1,4 +1,4 @@
-/** Topluluk katalogunu konu ve kapsam filtreleriyle sunucu tarafinda listeler. */
+/** Loads and filters the community catalog on the server before rendering cards. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -16,7 +16,6 @@ const SCOPES = [
   { key: 'cevrimici', label: 'Çevrim içi' },
 ] as const;
 
-/** Topluluk listesi (PROJECT_SPEC 7.3). */
 export default async function CommunitiesPage({
   searchParams,
 }: {

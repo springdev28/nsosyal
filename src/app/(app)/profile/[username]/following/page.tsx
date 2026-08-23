@@ -1,4 +1,4 @@
-/** Profilin takip ettigi hesaplari ortak baglanti listesiyle sunar. */
+/** Lists accounts followed by the profile through the shared connections view. */
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 

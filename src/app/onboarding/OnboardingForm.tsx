@@ -8,13 +8,8 @@ import { GOALS } from '@/lib/personalization/goals';
 import type { District, GoalKey, IntentMode, LocationVisibility, Province, Topic } from '@/types/domain';
 
 /**
- * Onboarding akisi (PROJECT_SPEC 17.4).
- *
- * Tasarim kararlari:
- * - Butun adimlar tek bir <form> icinde durur ve gizlenirken DOM'dan
- *   kaldirilmaz; boylece geri/ileri gezinme hicbir veriyi kaybetmez.
- * - Konum adimi hicbir zaman zorlayici gorunmez, faydasi acikca anlatilir.
- * - Her adim klavye ile tamamen kullanilabilir, hatalar alanlarla iliskilidir.
+ * Multi-step client form whose fields stay mounted so back/forward navigation
+ * preserves input. `completeOnboarding` validates and stores the final draft.
  */
 
 const STEPS = ['İlgi alanları', 'Amaçlar', 'Konum', 'Niyet', 'Profil'] as const;
@@ -87,9 +82,7 @@ export function OnboardingForm({
   const [state, formAction, pending] = useActionState<OnboardingState, FormData>(completeOnboarding, {});
   const [step, setStep] = useState(0);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  // Kalici platform amaclari (spec 7.10). Birden fazla secilebilir ve
-  // sonradan Ayarlar'dan degistirilebilir; onboarding yalnizca baslangic
-  // degerini toplar.
+  // Onboarding seeds multiple lasting goals; Settings can change them later.
   const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
   const [visibility, setVisibility] = useState<LocationVisibility>('hidden');
   const [provinceCode, setProvinceCode] = useState('');
@@ -187,8 +180,6 @@ export function OnboardingForm({
         </fieldset>
       </Card>
 
-      {/* --- 2. Konum --- */}
-      {/* --- 2. Kalici platform amaclari --- */}
       <Card className={`p-4 ${step === 1 ? '' : 'hidden'}`}>
         <fieldset>
           <legend className="text-lg font-semibold">Platformdan genel olarak ne bekliyorsun?</legend>
@@ -347,7 +338,6 @@ export function OnboardingForm({
         </fieldset>
       </Card>
 
-      {/* --- 4. Profil --- */}
       <Card className={`p-4 ${step === 4 ? '' : 'hidden'}`}>
         <h2 className="text-lg font-semibold">Seni nasıl tanıyalım?</h2>
 
@@ -411,7 +401,7 @@ export function OnboardingForm({
         )}
       </div>
 
-      {/* Devre disi birakilmis bir dugme sebebini soylemeli. */}
+      {/* Explain disabled progression next to the button that cannot be used. */}
       {!canContinue && step === 0 ? (
         <p className="text-center text-sm text-fg-subtle">Devam etmek için en az 3 ilgi alanı seç.</p>
       ) : null}

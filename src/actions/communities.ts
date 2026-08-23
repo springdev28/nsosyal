@@ -8,10 +8,9 @@ import { getStore } from '@/lib/data/store';
 import type { ModerationStatus, Scope } from '@/types/domain';
 
 /**
- * Topluluk basvurusu ve moderator karari (PROJECT_SPEC 7.3 / 17.8).
- *
- * Degismez urun kurali: topluluk dogrudan acilmaz. Basvuru moderasyon
- * kuyruguna duser; onaylandiginda topluluk olusur ve basvuran yonetici olur.
+ * Server-side boundary for community applications and moderation decisions.
+ * A submission enters DemoStore's moderation queue; only an approved decision
+ * creates the community, promotes the applicant, and writes the audit record.
  */
 
 export interface ApplicationState {
@@ -70,10 +69,7 @@ export async function submitCommunityApplication(
   return { message: 'Başvurun alındı ve moderasyon kuyruğuna eklendi.' };
 }
 
-/**
- * Moderator karari. Yetki kontrolu sunucuda yapilir; arayuzde dugmeyi gizlemek
- * tek basina yeterli bir koruma degildir (PROJECT_SPEC 11.3).
- */
+/** Rechecks moderator authority on the server before changing an application. */
 export async function reviewCommunityApplication(formData: FormData): Promise<void> {
   const viewer = await getViewer();
   if (!canModerate(viewer) || !viewer) redirect('/feed');

@@ -1,6 +1,6 @@
 /**
- * Nerede sorgusunu URL filtrelerinden kurar, yogunluk verisini Store'dan alir ve
- * ayni sonucu hem harita hem erisilebilir liste icin hazirlar.
+ * Builds the Where query from URL filters, then prepares the same DemoStore
+ * density result for both the visual map and its accessible text list.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -42,16 +42,6 @@ function selectMetric<T extends ProvinceSummary>(summary: T, metric: DiscoveryMe
   };
 }
 
-/**
- * "Nerede" kesif ekrani (PROJECT_SPEC 7.4 / 17.6).
- *
- * Erisilebilirlik: harita gorsel bir yardimcidir. Ayni sonuclar hem il listesi
- * hem de sonuc panelinde metin olarak sunulur, boylece klavye ve ekran okuyucu
- * kullanicilari hicbir sey kacirmaz (8.3).
- *
- * Mahremiyet: bireysel kullanicilar kesin koordinatla gosterilmez; yalnizca
- * konum gorunurlugune izin veren profiller listelenir (11.1).
- */
 export default async function MapPage({
   searchParams,
 }: {
@@ -76,7 +66,7 @@ export default async function MapPage({
     viewerId: viewer?.id ?? null,
   };
 
-  // Harita dolgusu icin: konum filtresi disindaki filtreler her il icin uygulanir.
+  // Province colors apply every active filter except the province itself.
   const summaries = store.getProvinceSummaries({
     topicId: topic?.id ?? null,
     range,
@@ -123,7 +113,7 @@ export default async function MapPage({
         districtDataProvinces={DISTRICT_DATA_PROVINCES}
       />
 
-      {/* Haritanin erisilebilir esdegeri: ayni veriyi gosteren il listesi. */}
+      {/* This list is the keyboard and screen-reader equivalent of the map. */}
       <section aria-labelledby="province-list-heading">
         <h2 id="province-list-heading" className="mb-2 text-sm font-semibold text-fg-muted">
           İl listesi{' '}

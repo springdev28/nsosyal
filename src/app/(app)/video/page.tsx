@@ -24,11 +24,8 @@ const KINDS: Array<{ value: NonNullable<Post['videoKind']> | 'all'; label: strin
 ];
 
 /**
- * Kisa video akisi (PROJECT_SPEC 7.2).
- *
- * Dikey format ve baglam kartlari: her videodan projeye, topluluğa veya
- * etkinlige gecilebilir. Otomatik oynatma yoktur; ses ve oynatma kullanicinin
- * kontrolundedir (erisilebilirlik).
+ * Renders the vertical short-video feed with links to related entities. Playback
+ * and sound remain user-controlled, and VideoPlayer provides the text equivalent.
  */
 export default async function VideoFeedPage({
   searchParams,

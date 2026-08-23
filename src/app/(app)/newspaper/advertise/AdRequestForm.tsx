@@ -1,6 +1,6 @@
 /**
- * Ilan talebinin kreatif, yerlesim ve yayin araligi girdilerini toplar. Fiyat ve
- * yetki son karari newspaper Server Action'inda yeniden hesaplanir.
+ * Client form for creative, placement, and issue-range choices. The newspaper
+ * Server Action repeats pricing and authorization before storing the request.
  */
 'use client';
 
@@ -18,10 +18,6 @@ import {
   type SubscriptionPlan,
 } from '@/lib/newspaper/inventory';
 
-/**
- * Ilan basvuru formu (PROJECT_SPEC 7.9 "Gelir modelinin prototipte gosterimi").
- * Prototipte gercek odeme entegrasyonu YAPILMAZ; basvuru "incelemede" bekler.
- */
 export function AdRequestForm({
   issueDates,
   defaultEmail,
@@ -31,9 +27,8 @@ export function AdRequestForm({
 }) {
   const [state, formAction, pending] = useActionState<AdRequestState, FormData>(submitAdRequest, {});
 
-  // Fiyat, secim degistikce aninda yeniden hesaplanir. Amac bir odeme ekrani
-  // degil, hesabin ACIKLANABILIR olmasi (PROJECT_SPEC 7.9): reklamveren hangi
-  // katsayinin fiyati nasil degistirdigini tek bakista gorur.
+  // Mirror the server formula for immediate feedback; the action remains the
+  // authority and stores an immutable quote with the request.
   const [placementCode, setPlacementCode] = useState(AD_PLACEMENTS[3].code);
   const [plan, setPlan] = useState<SubscriptionPlan>('tek-sayi');
 

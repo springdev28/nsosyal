@@ -1,4 +1,4 @@
-/** Tek gonderiyi yorumlariyla yukler; bulunmayan veya gorunmeyen kaydi 404 yapar. */
+/** Loads one visible post with comments and returns 404 for missing records. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

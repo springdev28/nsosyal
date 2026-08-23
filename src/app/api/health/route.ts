@@ -3,19 +3,9 @@ import { NextResponse } from 'next/server';
 import { getStore } from '@/lib/data/store';
 
 /**
- * Dagitim sonrasi hizli kontrol noktasi (PROJECT_SPEC 17.16).
- * Playwright webServer'i da bu adresi bekler.
- *
- * `commit` alani dagitim hattinin can damaridir. "Dagitildi" demek "ayakta"
- * demek degildir; ayakta olan ESKI surum de olabilir. Bu proje tam olarak bu
- * yuzden defalarca "hicbir sey degismemis" gorundu: sunucu 200 donuyordu ama
- * uzerinde haftalar oncesinin derlemesi vardi. CI push'ladigi SHA'yi burada
- * gormeden dagitimi basarili saymaz.
- *
- * Degeri `next.config.ts` derleme aninda gomer. Orada once platformlarin
- * degiskenleri denenir, hicbiri yoksa depoya `git rev-parse HEAD` ile sorulur -
- * cunku Hostinger'in GitHub entegrasyonu hicbir surum degiskeni vermiyor ve
- * burasi `unknown` bildiriyordu.
+ * Deployment identity endpoint used by Playwright and CI. `next.config.ts`
+ * embeds the build commit, allowing the release job to distinguish the new
+ * deployment from an older process that also returns HTTP 200.
  */
 const COMMIT = process.env.NSOSYAL_COMMIT_SHA ?? 'unknown';
 
@@ -31,8 +21,7 @@ export function GET() {
       communities: store.listCommunities().length,
     },
     {
-      // Saglik kontrolu asla onbellekten okunmamali; yoksa eski surumu
-      // "guncel" diye onaylayabiliriz.
+      // A cached response could make an old deployment look current.
       headers: { 'cache-control': 'no-store, max-age=0' },
     },
   );

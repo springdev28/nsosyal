@@ -1,4 +1,4 @@
-/** Nasil kaynaklarini seviye, tur ve topluluk baglaminda filtreleyip listeler. */
+/** Filters How resources by level, type, and community context. */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -25,10 +25,6 @@ const TYPES: Array<{ value: Resource['type'] | 'all'; label: string }> = [
   { value: 'baglanti', label: 'Bağlantı' },
 ];
 
-/**
- * "Nasil" kaynaklari (PROJECT_SPEC 7.7 / 17.10).
- * Kurs platformu degil: her kayit kisa, sosyal baglami olan bir karttir.
- */
 export default async function HowPage({
   searchParams,
 }: {

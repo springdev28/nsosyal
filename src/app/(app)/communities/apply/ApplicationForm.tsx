@@ -6,10 +6,7 @@ import { submitCommunityApplication, type ApplicationState } from '@/actions/com
 import { Button, Card, ErrorNote, InfoNote } from '@/components/ui';
 import type { District, Province, Scope, Topic } from '@/types/domain';
 
-/**
- * Topluluk basvuru formu (PROJECT_SPEC 7.3).
- * Alanlar moderatorun karar verebilmesi icin gerekli olan minimumdur.
- */
+/** Collects the minimum application details needed by the moderation screen. */
 export function ApplicationForm({
   topics,
   provinces,
@@ -34,7 +31,7 @@ export function ApplicationForm({
     [districts, provinceCode],
   );
 
-  // Basvuru sirasinda benzer topluluk uyarisi (PROJECT_SPEC 11.2 "Tekrarlanan topluluk").
+  // Warn early about likely duplicates; the moderator still makes the decision.
   const similar = useMemo(() => {
     const normalized = name.toLocaleLowerCase('tr-TR').trim();
     if (normalized.length < 4) return [];

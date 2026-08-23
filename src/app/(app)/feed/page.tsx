@@ -1,6 +1,6 @@
 /**
- * Ana akis ViewModel'lerini kalici tercihler ve gecici niyetle sunucuda siralar.
- * Composer ve PostCard'lar hazir veriyi render eder; sponsorluk bu yola girmez.
+ * Loads feed view models ranked by lasting goals plus the optional transient
+ * intent. Composer and PostCard render that data; sponsorship never enters it.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -19,12 +19,6 @@ export const metadata: Metadata = { title: 'Ana Sayfa' };
 
 const INTENT_MODES: IntentMode[] = ['sosyallesme', 'kesfet', 'ogren', 'uret'];
 
-/**
- * Ana akis (PROJECT_SPEC 7.1 / 17.5).
- *
- * Kritik urun kurali: bu akista ciddi proje icerigi ile gundelik sohbet, mizah,
- * soru ve kisa video birlikte yasar. Sponsorlu icerik BURAYA GIRMEZ.
- */
 export default async function FeedPage({
   searchParams,
 }: {
@@ -35,9 +29,8 @@ export default async function FeedPage({
   if (!viewer) return null;
 
   const store = getStore();
-  // Mod secmek zorunlu degil (spec 7.10). URL'de gecerli bir mod varsa o,
-  // yoksa profilin varsayilani; o da yoksa mod YOK ve akis kalici platform
-  // amaclarindan turer.
+  // URL intent overrides the profile default; a deliberate `yok` leaves only
+  // lasting goals. No transient mode is required.
   const intentMode: IntentMode | null = INTENT_MODES.includes(params.mod as IntentMode)
     ? (params.mod as IntentMode)
     : params.mod === 'yok'
@@ -84,7 +77,7 @@ export default async function FeedPage({
           Bugün buraya ne için geldin?
         </h2>
         <ChipRow label="Akış niyet modu">
-          {/* Mod secmemek de gecerli bir secim: amaclarina gore kisisellestirilmis akis. */}
+          {/* A feed based only on lasting goals is a complete, valid state. */}
           <FilterChip
             href={buildHref(null, newVoicesOnly ? 'yeni-sesler' : undefined)}
             active={intentMode === null}
