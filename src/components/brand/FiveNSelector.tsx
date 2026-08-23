@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { FiveNMark } from '@/components/brand/FiveNMark';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { useReducedMotion } from '@/lib/browser-preferences';
 
 /**
  * 5N boyut secici (PROJECT_SPEC 4.4 / 17.18-4).
@@ -123,7 +124,7 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
   /** Kac adim dondugumuz. Aktif oge her zaman 0 derecede (secim noktasi). */
   const [activeIndex, setActiveIndex] = useState(0);
   const [confirming, setConfirming] = useState<string | null>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useReducedMotion();
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -139,19 +140,8 @@ export function FiveNSelector({ className = '' }: { className?: string }) {
 
   const active = DIMENSIONS[activeIndex];
 
-  useEffect(() => {
-    const q = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const apply = () => setReducedMotion(q.matches);
-    apply();
-    q.addEventListener('change', apply);
-    return () => q.removeEventListener('change', apply);
-  }, []);
-
   useLayoutEffect(() => {
-    if (!open) {
-      setAnchor(null);
-      return;
-    }
+    if (!open) return;
     const measure = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;

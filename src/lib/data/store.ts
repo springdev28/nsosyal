@@ -789,6 +789,7 @@ export class DemoStore {
 
     return {
       event,
+      isPast: new Date(event.endsAt).getTime() < Date.now(),
       organizerName,
       organizerHref,
       community,

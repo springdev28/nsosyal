@@ -21,8 +21,7 @@ const MODE_LABEL: Record<string, string> = {
  * Gecmis etkinliklerde hatirlatma gosterilmez; bunun yerine sonuc baglantisi verilir.
  */
 export function EventCard({ view, revalidate }: { view: EventView; revalidate: string }) {
-  const { event } = view;
-  const isPast = new Date(event.endsAt).getTime() < Date.now();
+  const { event, isPast } = view;
   const place = [view.provinceName, view.districtName].filter(Boolean).join(' / ');
 
   return (

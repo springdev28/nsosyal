@@ -129,17 +129,22 @@ export function TurkeyMap({
   // Callback'ler her renderda degisebilir; harita olaylari icin sabit referans tutuyoruz.
   const selectProvinceRef = useRef(onSelectProvince);
   const selectDistrictRef = useRef(onSelectDistrict);
-  selectProvinceRef.current = onSelectProvince;
-  selectDistrictRef.current = onSelectDistrict;
   // Ipucu balonu harita olaylarindan okunur; olaylar bir kez baglandigi icin
   // guncel metrikleri bir ref uzerinden gorurler.
   const metricsRef = useRef(metrics);
-  metricsRef.current = metrics;
   const districtMetricsRef = useRef(districtMetrics);
-  districtMetricsRef.current = districtMetrics;
   const selectedProvinceRef = useRef(selectedProvince);
-  selectedProvinceRef.current = selectedProvince;
   const popupRef = useRef<maplibregl.Popup | null>(null);
+
+  useEffect(() => {
+    // MapLibre dinleyicileri bir kez baglanir; guncel React girdileri effectte
+    // ref'lere aktarilarak render saf tutulur.
+    selectProvinceRef.current = onSelectProvince;
+    selectDistrictRef.current = onSelectDistrict;
+    metricsRef.current = metrics;
+    districtMetricsRef.current = districtMetrics;
+    selectedProvinceRef.current = selectedProvince;
+  }, [districtMetrics, metrics, onSelectDistrict, onSelectProvince, selectedProvince]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -401,6 +406,9 @@ export function TurkeyMap({
       if (map.getLayer('district-line')) map.removeLayer('district-line');
       if (map.getLayer('district-fill')) map.removeLayer('district-fill');
       if (map.getSource('districts')) map.removeSource('districts');
+      // Harici MapLibre katmaninin yasam dongusunu React durumuna eslemek
+      // bu effectin asli gorevidir; burada ek bir render zinciri kurulmaz.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDistrictsLoaded(false);
       return;
     }

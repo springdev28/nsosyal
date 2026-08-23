@@ -150,6 +150,8 @@ export interface ProjectView {
 
 export interface EventView {
   event: AppEvent;
+  /** Zaman karari render sirasinda degil, ViewModel uretilirken dondurulur. */
+  isPast: boolean;
   organizerName: string;
   organizerHref: string;
   community: CommunitySummary | null;

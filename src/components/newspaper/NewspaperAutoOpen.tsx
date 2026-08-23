@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui';
+import { useHydrated, useReducedMotion } from '@/lib/browser-preferences';
 
 /**
  * Gunun ilk oturumunda acilan gazete kapagi (PROJECT_SPEC 6.6 / 7.9).
@@ -41,27 +42,22 @@ export function NewspaperAutoOpen({
    * Bu yuzden kilit ancak JavaScript'in calistigi DOGRULANDIKTAN sonra uygulanir.
    * Deneysel bekleme korunur; kacis yolu her kosulda acik kalir.
    */
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
-  const locked = hydrated && remaining > 0;
+  const hydrated = useHydrated();
+  const reducedMotion = useReducedMotion();
+  const visibleRemaining = reducedMotion ? 0 : remaining;
+  const locked = hydrated && visibleRemaining > 0;
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Sistem tercihi de beklemeyi kaldirir; ayar cerezi tek yol degil.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setRemaining(0);
-  }, []);
-
-  useEffect(() => {
-    if (remaining <= 0) return;
+    if (reducedMotion || remaining <= 0) return;
     const timer = window.setTimeout(() => setRemaining((value) => value - 1), 1000);
     return () => window.clearTimeout(timer);
-  }, [remaining]);
+  }, [reducedMotion, remaining]);
 
   useEffect(() => {
-    if (remaining === 0) closeRef.current?.focus();
-  }, [remaining]);
+    if (visibleRemaining === 0) closeRef.current?.focus();
+  }, [visibleRemaining]);
 
   function dismiss() {
     if (locked) return;
@@ -113,7 +109,7 @@ export function NewspaperAutoOpen({
     };
     // dismiss kimligi degisse de davranis ayni; bagimlilik listesini sade tutuyoruz.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, remaining]);
+  }, [open, visibleRemaining]);
 
   if (!open) return null;
 
@@ -151,11 +147,11 @@ export function NewspaperAutoOpen({
             className="inline-flex h-11 min-w-11 items-center justify-center rounded-full text-sm font-semibold ring-1 ring-[var(--border)] transition-colors hover:bg-bg-hover disabled:opacity-50"
           >
             {locked ? (
-              <span aria-hidden="true">{remaining}</span>
+              <span aria-hidden="true">{visibleRemaining}</span>
             ) : (
               <Icon name="close" size={18} aria-hidden="true" />
             )}
-            <span className="sr-only">{locked ? `${remaining} saniye sonra kapatılabilir` : 'Kapat'}</span>
+            <span className="sr-only">{locked ? `${visibleRemaining} saniye sonra kapatılabilir` : 'Kapat'}</span>
           </button>
         </div>
 
@@ -193,7 +189,7 @@ export function NewspaperAutoOpen({
 
         <p aria-live="polite" className="mt-2 text-center text-xs text-fg-subtle">
           {locked
-            ? `Kapatma ${remaining} saniye sonra aktif olacak.`
+            ? `Kapatma ${visibleRemaining} saniye sonra aktif olacak.`
             : 'Kapatabilirsin. Bu bekleme davranışı kullanılabilirlik testinde ölçülüyor.'}
         </p>
       </div>

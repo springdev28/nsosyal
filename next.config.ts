@@ -51,9 +51,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  eslint: {
-    dirs: ['src', 'tests'],
-  },
 };
 
 export default nextConfig;
