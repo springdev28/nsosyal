@@ -612,6 +612,40 @@ describe('takip', () => {
   });
 });
 
+describe('proje yükleme geri alma', () => {
+  it('yarım proje ve ilişkisiz medya kaydını birlikte temizler', () => {
+    const ownerId = profileId('baran.demo');
+    const project = store.createProject({
+      ownerId,
+      title: 'Geri alma deneyi',
+      summary: 'Yükleme başarısız olduğunda yarım kayıt bırakmayan deney.',
+      status: 'test',
+      topicIds: [store.getTopicBySlug('robotik')!.id],
+      provinceCode: null,
+      districtCode: null,
+      whyText: 'Tekrar denendiğinde aynı projenin kopyalanmasını engellemek için.',
+      howText: 'Yerel yükleme işlemi ve DemoStore geri alma adımı birlikte çalışır.',
+      needs: '',
+      communityIds: [],
+    });
+    const media = store.addMedia({
+      postId: null,
+      mediaType: 'video',
+      storagePath: '/uploads/rollback-test.webm',
+      caption: 'Test pitch',
+      altText: 'Geri alma davranışını anlatan kısa pitch',
+      durationSec: 12,
+      posterPath: null,
+    });
+    store.attachPitch(project.id, media.id);
+
+    store.rollbackProjectCreation(project.id, [media.id]);
+
+    expect(store.getProject(project.id)).toBeNull();
+    expect(store.getMedia(media.id)).toBeNull();
+  });
+});
+
 describe('kimlikler kararlıdır', () => {
   it('aynı anahtar için aynı kimlik üretilir', () => {
     expect(uid('project', 'ruzgar-olcer')).toBe(uid('project', 'ruzgar-olcer'));

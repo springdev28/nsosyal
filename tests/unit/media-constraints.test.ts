@@ -1,12 +1,13 @@
 /**
- * Yukleme siniri testleri, istemci formundan bagimsiz sunucu dogrulama
- * sozlesmesini sabitler. MIME/byte sinirina ek olarak MP4 ve WebM kapsayici
- * suresi de kayit acilmadan once sunucuda olculur.
+ * Verifies the byte-level upload boundary without relying on a browser form.
+ * These tests cover the exact bytes that Server Actions are allowed to persist.
  */
 import { describe, expect, it } from 'vitest';
 
 import {
+  inspectImageUpload,
   inspectVideoUpload,
+  MAX_IMAGE_BYTES,
   MAX_VIDEO_BYTES,
   validateVideoUpload,
 } from '@/lib/media/constraints';
@@ -19,7 +20,7 @@ function mp4Box(type: string, payload: Uint8Array): Uint8Array {
   return box;
 }
 
-/** Test videosu codec tasimaz; sure guvenlik sinirinin okudugu `mvhd` yeterlidir. */
+/** The fixture needs the `mvhd` duration read by the validator, not a video codec. */
 function makeMp4(durationSeconds: number): Uint8Array {
   const timescale = 1_000;
   const movieHeader = Buffer.alloc(20);
@@ -35,7 +36,7 @@ function ebmlElement(id: number[], payload: Uint8Array): Uint8Array {
   return Buffer.concat([Buffer.from(id), Buffer.from([0x80 | payload.byteLength]), Buffer.from(payload)]);
 }
 
-/** WebM Info bolumundeki Duration, TimecodeScale birimiyle ifade edilir. */
+/** WebM stores Duration in TimecodeScale units inside the Info element. */
 function makeWebm(durationSeconds: number): Uint8Array {
   const scale = ebmlElement([0x2a, 0xd7, 0xb1], Buffer.from([0x0f, 0x42, 0x40]));
   const duration = Buffer.alloc(8);
@@ -101,6 +102,35 @@ describe('validateVideoUpload', () => {
     expect(await inspectVideoUpload(upload(bytes, 'video/webm', bytes.byteLength + 1))).toEqual({
       ok: false,
       error: 'Video dosyasının boyutu doğrulanamadı.',
+    });
+  });
+});
+
+describe('inspectImageUpload', () => {
+  it('JPG, PNG ve WebP imzalarını bildirilen MIME türüyle kabul eder', async () => {
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const webp = Buffer.from('RIFF\x04\x00\x00\x00WEBP', 'binary');
+
+    await expect(inspectImageUpload(upload(jpeg, 'image/jpeg'))).resolves.toMatchObject({ ok: true });
+    await expect(inspectImageUpload(upload(png, 'image/png'))).resolves.toMatchObject({ ok: true });
+    await expect(inspectImageUpload(upload(webp, 'image/webp'))).resolves.toMatchObject({ ok: true });
+  });
+
+  it('sahte MIME, değişen byte sayısı ve boyut aşımını yazmadan reddeder', async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+    await expect(inspectImageUpload(upload(png, 'image/jpeg'))).resolves.toEqual({
+      ok: false,
+      error: 'Görsel içeriği seçilen dosya türüyle uyuşmuyor.',
+    });
+    await expect(inspectImageUpload(upload(png, 'image/png', png.byteLength + 1))).resolves.toEqual({
+      ok: false,
+      error: 'Görsel dosyasının boyutu doğrulanamadı.',
+    });
+    await expect(inspectImageUpload(upload(png, 'image/png', MAX_IMAGE_BYTES + 1))).resolves.toEqual({
+      ok: false,
+      error: 'Görsel dosyası 12 MB sınırını aşıyor.',
     });
   });
 });

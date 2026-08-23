@@ -152,13 +152,26 @@ mutasyonu içinde oluşur.
 ```text
 ProjectForm
   -> createProject
-  -> MIME + byte + MP4/WebM süre doğrulaması
-  -> DemoStore.createProject
+  -> inspectVideoUpload (MIME + byte + MP4/WebM süre doğrulaması)
+  -> commitLocalUploadBatch (doğrulanmış dosyayı yazar)
+  -> DemoStore.createProject + addMedia + attachPitch
+  -> /uploads/[filename] route (build sonrasında yazılan dosyayı sunar)
+  -> VideoPlayer
   -> proje detay view modeli
 ```
 
-Dosya doğrulaması proje kaydından önce yapılır; bozuk yükleme yarım proje
-bırakmaz. Production'da yerel dosya yazımı Storage/worker hattıyla değişmelidir.
+`src/lib/media/constraints.ts` tarayıcının bildirdiği dosya türüne tek başına
+güvenmez; video kapsayıcısını, görsel imzasını ve gerçek byte sayısını sunucuda
+yeniden denetler. `src/lib/media/local-upload.ts` doğrulanmış dosyaları tek bir
+grup olarak yazar. Sonraki dosya veya `DemoStore` adımı başarısız olursa action,
+hem bu dosyaları hem de oluşmuş proje/medya kayıtlarını geri alır. Böylece yeniden
+deneme kopya proje veya sahipsiz dosya bırakmaz.
+
+Next.js normal `public` dosyalarını derleme sırasında indeksler. Kullanıcı
+yüklemesi derlemeden sonra oluştuğu için `src/app/uploads/[filename]/route.ts`
+dosyayı güvenli ad kontrolünden sonra çalışma zamanında sunar. Production'da
+`local-upload.ts` ile bu rota birlikte Storage/CDN adapteriyle değiştirilmelidir;
+action ve `DemoStore` geri alma sözleşmesi aynı kalabilir.
 
 ### Sosyal eylem ve Kaydedilenler
 

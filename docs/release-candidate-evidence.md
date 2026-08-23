@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-En son doğrulanan ve dağıtılan baseline SHA: `39f36934eeeacd5a6fd49d891de035953ef4d525`
+En son doğrulanan ve dağıtılan baseline SHA: `8c56a51eeb9ba57607b52634e7292e552734d3b0`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -39,7 +39,7 @@ Durum sözlüğü:
 | Etkinlik → hatırlatma → bildirim | `/events/[slug]`, `/notifications` | Server Action → `DemoStore` hatırlatma kaydı | `competition-flows` 3 iki viewportta geçti | Etkinlik ve bildirim rotalarında desktop/mobile axe temiz | Otomatik doğrulandı |
 | Topluluğa katılma → kaynak; başvuru → moderatör kararı → denetim kaydı | `/communities/[slug]`, `/communities/apply`, `/admin/moderation`, `/admin` | Server Actions → `DemoStore`; rol denetimi sunucuda | `competition-flows` 4 ve 7; store birim testleri | İlgili kullanıcı yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
 | Neden hikâyesi → bağlı yaşayan proje | `/explore/why`, `/explore/why/[id]`, `/projects/[slug]` | `DemoStore` view modelleri; oluşturma Server Action üzerinden | `competition-flows` 5 iki viewportta geçti | Neden ve proje yüzeylerinde desktop/mobile axe temiz | Otomatik doğrulandı |
-| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]` | Server Action MIME, byte ve kapsayıcı süresini doğrulayıp yazar; proje bundan sonra oluşturulur | 7 medya sınırı birim testi; tüm E2E paketi; proje formu axe | Geçersiz tür/boyut/süre yarım veya kopya proje açmaz | Demo doğrulandı |
+| Proje oluşturma → isteğe bağlı pitch | `/create/project`, `/projects/[slug]`, `/uploads/[filename]` | Server Action bütün byte'ları önce doğrular; yerel dosya grubu, proje, medya ve pitch bağlantısı birlikte tamamlanır veya birlikte geri alınır | 9 medya sınırı, 2 dosya grubu ve 1 store geri alma birim testi; gerçek pitch yükleyen `project-create` E2E iki viewportta; proje formu axe | Geçersiz tür/boyut/süre yarım kayıt bırakmaz; çalışma zamanında yüklenen video masaüstü/mobilde oynatıcıya ve metin karşılığına bağlanır; 320 px reflow temiz | Demo doğrulandı |
 | nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking ve 06.00/gün değişimi store testleri | İlk oturum modalı, odak tuzağı ve axe masaüstü/mobil; koyu kâğıt, kolonlar ve 320×800 reflow ayrıca incelendi | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe ve 320×800 reflow temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
@@ -51,7 +51,7 @@ Durum sözlüğü:
 | Kimlik doğrulama | Sentetik hesap seçimi ve demo oturum çerezi | Supabase Auth ve gerçek hesap yaşam döngüsü |
 | Uygulama verisi | Süreç belleğindeki deterministik `DemoStore` | Supabase Postgres adapteri; mevcut migration ve RLS sözleşmelerini kullanan runtime yol |
 | Kalıcılık | Aynı çalışan sunucu süreci boyunca; reset veya yeniden dağıtım veriyi sıfırlar | Kalıcı veritabanı, yedekleme ve gözlemlenebilirlik |
-| Medya | Pitch ve gazete kreatifi Node sunucusunun yerel dosya sistemine yazılır | Supabase Storage, codec doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
+| Medya | Pitch ve gönderi medyası byte düzeyinde doğrulanır, atomik yerel gruba yazılır ve derleme sonrasında dinamik upload rotasından sunulur; gazete kreatifi de yerel dosya sistemini kullanır | Supabase Storage, codec doğrulama, virüs/moderasyon hattı, kalıcı CDN URL'si |
 | Video süresi | İstemci metadata ile hızlı geri bildirim verir; sunucu MP4 `mvhd` veya WebM `Info/Duration` alanından süreyi tekrar ölçer ve 90 saniye/50 MB sınırını uygular | Worker/transcoder tarafında codec çözme, yeniden kodlama ve kötü amaçlı dosya taraması |
 | nGazete ödeme | Çakışma denetimi ve fiyat sonucu üreten demo işlemi | Gerçek ödeme sağlayıcısı, idempotency key, webhook ve muhasebe kaydı |
 | Yayın Atölyesi üyeliği | 200₺/ay yetkilerini gösteren demo profil bayrağı | Faturalandırma ile bağlı entitlement ve yenileme/iptal durumu |
@@ -63,19 +63,20 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Baseline SHA `39f36934eeeacd5a6fd49d891de035953ef4d525` için:
+Baseline SHA `8c56a51eeb9ba57607b52634e7292e552734d3b0` ve ardından hazırlanan güncel kaynak ağacı için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm ci` | Geçti: nihai kilit dosyasından 554 paket kuruldu, 555 paket denetlendi; npm 0 açık bildirdi |
-| `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 131/131 birim testi |
-| Güncel kaynak ağacı `npm run verify` | Geçti: yeni arama mahremiyeti ve filtre anlamı testleriyle TypeScript, ESLint ve 6 dosyada 133/133 birim testi |
-| `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve yeni `/saved` rotası çıktı listesinde yer aldı |
+| Baseline `npm run verify` | Geçti: TypeScript, ESLint 9.39.2 ve Vitest 3.2.6 ile 6 dosyada 133/133 birim testi |
+| Güncel kaynak ağacı `npm run verify` | Geçti: byte imzası, atomik dosya grubu ve store geri alma testleriyle TypeScript, ESLint ve 7 dosyada 138/138 birim testi |
+| Güncel kaynak ağacı `npm run build` | Geçti: Next.js 16.3.2 Webpack üretim derlemesi; 32 statik sayfa üretim adımı tamamlandı ve `/uploads/[filename]` dinamik rotası çıktı listesinde yer aldı |
 | `npm audit --omit=dev --json` | Kritik 0, yüksek 0, orta 0, düşük 0; toplam 0. Next 15'in dahili `postcss` ve `sharp` kayıtları Next 16.3.2 geçişiyle kapandı. |
-| Tam `npm run test:e2e` | GitHub Actions'ta tek koşuda 172/172 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, varlık türüne göre harita/ilçe yoğunluğu, story, gazete, Yayın Atölyesi ve beğeni/yorum/kaydet/takip akışları dahildir. Atlanan veya zaman aşımına uğrayan senaryo yoktur. |
-| Genişletilmiş 320 piksel reflow kontrolü | Baseline içinde Harita, Nasıl, Neden, gönderi oluşturucu, nGazete, Yayın Atölyesi ve Profil masaüstü/mobil Chromium'da sayfa genişliğini aşmadı. Bu belge güncellenirken arama sonuç durumu için eklenen iki reflow kontrolü de 2/2 geçti. |
+| Baseline tam `npm run test:e2e` | GitHub Actions'ta tek koşuda 180/180 geçti. Axe, 320 piksel reflow, klavye, reduced-motion, global arama, varlık türüne göre harita/ilçe yoğunluğu, story, gazete, Yayın Atölyesi ve sosyal akışlar dahildir. |
+| Genişletilmiş 320 piksel reflow kontrolü | Baseline içinde Harita, Nasıl, Neden, gönderi oluşturucu, nGazete, Yayın Atölyesi, Profil ve arama sonuçları sayfa genişliğini aşmadı. Güncel ağaçta proje oluşturma formuna eklenen kontrol iki browser profilinde 2/2 geçti. |
 | Hedefli global arama kontrolü | Bu belge güncellenirken kişi, kurum ve gönderi sonuçları; Axe ve 320 piksel reflow ile birlikte masaüstü/mobil Chromium'da 8/8 geçti. Güncel test envanteri 7 dosyada 180 E2E senaryosudur. |
-| Yerel görsel kontrol | Next 16 üretim derlemesinde masaüstü ana akış, nGazete, Yayın Atölyesi, profil kısayolu, Kaydedilenler ve global arama kişi/gönderi sonuçları; Pixel 7 görünümünde aynı kritik yüzeyler, Türkiye haritası ve açık yarım yay 5N seçici incelendi. Kırpılma, yatay sayfa taşması veya bozuk yerleşim görülmedi. Normal harekette animasyonlar aktif; reduced-motion E2E kontrolleri masaüstü ve mobilde geçti. |
+| Hedefli yükleme bütünlüğü kontrolü | Güncel ağaçta gerçek WebM pitch yükleyen proje oluşturma akışı masaüstü ve mobilde 2/2; proje formu axe + 320 px reflow seçkisi 4/4 geçti. Tam envanter 8 dosyada 184 E2E senaryosuna çıktı; tamamı push sonrasındaki CI yayın kapısında yeniden çalıştırılır. |
+| Yerel görsel kontrol | Next 16 üretim derlemesinde baseline yüzeylerine ek olarak yeni pitch yüklenmiş proje sayfası 1280×720 masaüstü ve Pixel 7 görünümünde incelendi. Video oynatıcı, transkript, proje sekmeleri ve kartlar görünür; sayfa yatay taşmıyor. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 `npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
@@ -90,10 +91,10 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Uygulama baseline commit'i `39f36934eeeacd5a6fd49d891de035953ef4d525`,
+Uygulama baseline commit'i `8c56a51eeb9ba57607b52634e7292e552734d3b0`,
 23 Ağustos 2026'da GitHub `main`, Hostinger ve Render `/api/health` yanıtlarında
-birebir görüldü. GitHub Actions koşusu `32645269975` içindeki Verify işi `npm ci`,
-verify ve 172 E2E testini geçti; `Confirm live` işi de iki ortamın tam SHA
+birebir görüldü. GitHub Actions koşusu `32648304189` içindeki Verify işi `npm ci`,
+verify ve 180 E2E testini geçti; `Confirm live` işi de iki ortamın tam SHA
 eşitliğini doğruladı. İki ortamın `/login` rotası gerçek `nSosyal` ile
 `Demo hesabıyla gir` metinlerini içerdi. Yayın kanıtı her yeni commit için aynı
 iki sinyali birlikte arar: temiz CI ve iki canlı `/api/health` yanıtında tam SHA.

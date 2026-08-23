@@ -1,11 +1,10 @@
 /**
- * Gonderi, yorum, takip, begeni, kaydetme ve hatirlatma mutasyonlarini toplar.
- * Kullanici girdisi burada dogrulanir ve her yazma DemoStore uzerinden gider.
+ * Server-side boundary for posts, comments, follows, saves and reminders.
+ * It verifies the signed-in viewer and routes every data change through DemoStore.
  */
 'use server';
 
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { revalidatePath } from 'next/cache';
@@ -18,16 +17,13 @@ import {
   MAX_IMAGE_BYTES,
   MAX_POST_MEDIA,
   MAX_VIDEO_BYTES,
+  inspectImageUpload,
   inspectVideoUpload,
 } from '@/lib/media/constraints';
+import { commitLocalUploadBatch } from '@/lib/media/local-upload';
 import type { PostType } from '@/types/domain';
 
-/**
- * Sosyal etkilesim eylemleri.
- *
- * Hepsi sunucu tarafinda oturumu yeniden dogrular; istemciden gelen bir
- * kullanici kimligine asla guvenilmez (PROJECT_SPEC 11.3).
- */
+/** Every action resolves the viewer from the server session instead of form data. */
 
 export async function toggleLike(formData: FormData): Promise<void> {
   const viewer = await getViewer();
@@ -88,12 +84,17 @@ export interface ComposerState {
   message?: string;
 }
 
-async function storePostMedia(
+interface PreparedPostMedia {
+  absolutePath: string;
+  publicPath: string;
+  bytes: Uint8Array;
+  mediaType: 'image' | 'video';
+  durationSec: number | null;
+}
+
+async function preparePostMedia(
   file: File,
-): Promise<
-  { path: string; mediaType: 'image' | 'video'; durationSec: number | null }
-  | { error: string }
-> {
+): Promise<PreparedPostMedia | { error: string }> {
   const isImage = (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type);
   const isVideo = (ACCEPTED_VIDEO_TYPES as readonly string[]).includes(file.type);
   if (!isImage && !isVideo) return { error: 'Yalnızca JPG, PNG, WebP, MP4 veya WebM yükleyebilirsin.' };
@@ -113,19 +114,17 @@ async function storePostMedia(
   };
   const directory = join(process.cwd(), 'public', 'uploads');
   const name = `${randomUUID()}.${extensionByType[file.type]}`;
-  // Video byte'lari sure denetimi sirasinda zaten okunur; ayni dosyayi ikinci
-  // kez bellege almak yerine dogrulanan dizi dogrudan diske yazilir.
-  const inspection = isVideo ? await inspectVideoUpload(file) : null;
-  if (inspection && !inspection.ok) return { error: inspection.error };
-  const bytes = inspection?.ok
-    ? inspection.bytes
-    : new Uint8Array(await file.arrayBuffer());
-  await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, name), bytes);
+  const inspection = isVideo ? await inspectVideoUpload(file) : await inspectImageUpload(file);
+  if (!inspection.ok) return { error: inspection.error };
+
   return {
-    path: `/uploads/${name}`,
+    absolutePath: join(directory, name),
+    publicPath: `/uploads/${name}`,
+    bytes: inspection.bytes,
     mediaType: isVideo ? 'video' : 'image',
-    durationSec: inspection?.ok ? inspection.durationSec : null,
+    durationSec: isVideo && 'durationSec' in inspection && typeof inspection.durationSec === 'number'
+      ? inspection.durationSec
+      : null,
   };
 }
 
@@ -152,36 +151,54 @@ export async function createPost(_prev: ComposerState, formData: FormData): Prom
   if (visibility === 'community' && !communityId) return { error: 'Gönderinin görüneceği topluluğu seç.' };
 
   const store = getStore();
-  const mediaIds: string[] = [];
-  for (const [index, file] of mediaFiles.entries()) {
-    const result = await storePostMedia(file);
+  const preparedMedia: PreparedPostMedia[] = [];
+  for (const file of mediaFiles) {
+    const result = await preparePostMedia(file);
     if ('error' in result) return { error: result.error };
-    const media = store.addMedia({
-      postId: null,
-      mediaType: result.mediaType,
-      storagePath: result.path,
-      caption: body.slice(0, 120) || file.name,
-      altText: mediaFiles.length > 1 ? `${mediaAlt} (${index + 1}/${mediaFiles.length})` : mediaAlt,
-      durationSec: result.durationSec,
-      posterPath: null,
-    });
-    mediaIds.push(media.id);
+    preparedMedia.push(result);
   }
 
-  store.createPost({
-    authorId: viewer.id,
-    type,
-    body,
-    visibility,
-    communityId,
-    topicIds: topicIds.length ? topicIds : viewer.topicIds.slice(0, 1),
-    // Konum yalnizca kullanici bu gonderi icin acikca isterse eklenir.
-    provinceCode: shareLocation ? viewer.provinceCode : null,
-    districtCode: shareLocation ? viewer.districtCode : null,
-    mediaIds,
-    isShortVideo: mediaFiles.some((file) => file.type.startsWith('video/')),
-    videoKind: mediaFiles.some((file) => file.type.startsWith('video/')) ? 'gundelik' : null,
-  });
+  let uploadCommit;
+  try {
+    uploadCommit = await commitLocalUploadBatch(preparedMedia);
+  } catch {
+    return { error: 'Medya dosyaları kaydedilemedi. Dosyaları yeniden seçip tekrar dene.' };
+  }
+
+  const mediaIds: string[] = [];
+  try {
+    for (const [index, mediaFile] of preparedMedia.entries()) {
+      const media = store.addMedia({
+        postId: null,
+        mediaType: mediaFile.mediaType,
+        storagePath: mediaFile.publicPath,
+        caption: body.slice(0, 120) || mediaFiles[index].name,
+        altText: mediaFiles.length > 1 ? `${mediaAlt} (${index + 1}/${mediaFiles.length})` : mediaAlt,
+        durationSec: mediaFile.durationSec,
+        posterPath: null,
+      });
+      mediaIds.push(media.id);
+    }
+
+    store.createPost({
+      authorId: viewer.id,
+      type,
+      body,
+      visibility,
+      communityId,
+      topicIds: topicIds.length ? topicIds : viewer.topicIds.slice(0, 1),
+      // A post receives location only after this explicit per-post choice.
+      provinceCode: shareLocation ? viewer.provinceCode : null,
+      districtCode: shareLocation ? viewer.districtCode : null,
+      mediaIds,
+      isShortVideo: preparedMedia.some((media) => media.mediaType === 'video'),
+      videoKind: preparedMedia.some((media) => media.mediaType === 'video') ? 'gundelik' : null,
+    });
+  } catch {
+    store.removeMedia(mediaIds);
+    await uploadCommit.rollback();
+    return { error: 'Gönderi kaydedilemedi. Hiçbir medya dosyası tutulmadı; tekrar deneyebilirsin.' };
+  }
 
   store.track(
     'post_created',
