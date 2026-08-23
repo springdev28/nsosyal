@@ -85,7 +85,18 @@ anındaki kopyadan gelir. Gelecek sayıya doğrudan tarih URL'siyle erişim 06.0
 öncesinde kapalıdır. Uzun süre açık kalan sunucu yeni İstanbul gününün sayısını
 ilk okumada oluşturur; kullanıcı mutasyonlarını ve önceki günün sponsorlu
 yerleşimlerini taşımaz. İlk oturumda 06.00'a kadar son yayımlanmış sayı gösterilir.
-Nihai canlı SHA, push sonrası iki ortamın `/api/health` yanıtıyla ayrıca doğrulanır.
+Kod ve ilk kanıt commit'ini içeren `a12e752b013fc2a384f5cbc26295e3a6c6f29e74`
+SHA'sı, 23 Ağustos 2026'da hem Hostinger hem Render `/api/health` yanıtında
+görüldü. İki ortamın `/login` rotası da HTTP 200 döndü ve gerçek `nSosyal` ile
+`Demo hesabıyla gir` metinlerini içerdi. Hostinger dağıtımı
+`01a02d7c-d24c-726f-bfa4-e019900e1dfe` kimliğiyle `completed` durumuna ulaştı.
+
+Hostinger'ın dağıtım sonrası tarayıcısı iki yüksek kayıt göstermeye devam etti:
+`brace-expansion@1.1.18` yalnızca ESLint/minimatch geliştirme zincirinde;
+`esbuild@0.25.12` ise Vite test aracında bulunuyor ve eşleşen duyuru geri çekilmiş
+bir `deno-esbuild` duyurusudur. `npm ls brace-expansion esbuild --omit=dev --all`
+üretim ağacında iki paketin de bulunmadığını (`empty`) doğruladı. Bu nedenle
+runtime açığı iddia edilmiyor; ancak Hostinger tarayıcısı temizmiş gibi de raporlanmıyor.
 
 ## Açık riskler ve yayın kararı
 
