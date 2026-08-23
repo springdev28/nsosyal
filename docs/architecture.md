@@ -113,6 +113,24 @@ haline gelmemelidir.
 **Değişmez:** ücretli görünürlük bu modülde yoktur. Feed ranking sponsorluk,
 ilan, kampanya veya nGazete fiyatı bilmez.
 
+### 4.1 Sosyal eylemler ve kişisel koleksiyon
+
+Beğeni, kaydetme, yorum ve takip yazmaları `src/actions/social.ts` üzerinden
+oturumu yeniden doğrular ve `DemoStore` mutasyonlarına gider. Ana akış ile kısa
+video sayfası aynı beğeni ve kaydetme sözleşmesini kullanır. `/saved` sunucu
+rotası oturum sahibini `getViewer()` ile çözer, `listSavedPosts(viewer.id)` ile
+yalnızca o kullanıcının kayıtlarını `PostView` biçiminde alır ve aynı `PostCard`
+bileşeniyle gösterir. Böylece koleksiyon için ikinci bir kart veya veri modeli
+oluşmaz.
+
+Masaüstü gezinme `/saved` rotasını ayrı bir etkin öğe olarak gösterir. Mobil alt
+gezinmede rota profil kümesinin parçası sayılır ve görünür giriş kullanıcının kendi
+profilindeki `Kaydedilenler` bağlantısıdır. Kaydetme formu `/saved` üzerinde
+çalıştığında `revalidate="/saved"` gönderdiği için kaldırılan kart sunucu yeniden
+çiziminde koleksiyondan kaybolur. DemoStore bellek içi olduğu için bu kişisel
+koleksiyon sunucu yeniden başladığında sıfırlanır; üretim kalıcılığı Supabase
+adaptörünün sorumluluğudur.
+
 Karar kayıtları:
 [0002](decisions/0002-aciklanabilir-siralama.md) ve
 [0004](decisions/0004-ucretli-gorunurluk-yalnizca-ngazetede.md).
@@ -435,10 +453,18 @@ Tam E2E paketi şu kritik senaryoları masaüstü ve mobil projelerde korur:
 - community approval;
 - Why -> project;
 - project create + pitch validation + no duplicate/partial record;
+- like/save/comment/follow action chains and the private `/saved` collection;
+- short-video like/save controls using the shared social-action contract;
 - nGazete real layout + spatial sponsored placement;
 - advertiser request + pricing snapshot + admin approval;
 - location/privacy;
 - reduced motion ve keyboard flows.
+
+`tests/e2e/social-actions.spec.ts` bu dört sosyal eylemi arayüz, Server Action ve
+yeniden çizim zinciri boyunca sınar. `tests/e2e/accessibility.spec.ts` içindeki axe
+sayfa envanteri `/saved` ve `/video` rotalarını da kapsar. Bu eklenen senaryoların
+varlığı testlerin bu commit için çalıştırıldığı anlamına gelmez; sonuç yalnızca
+gerçek komut çıktısı varsa başarı olarak kaydedilir.
 
 ## 14. Bilinen production farkları
 
