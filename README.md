@@ -221,5 +221,7 @@ dağıtır. Ayrıntılar: [docs/deployment.md](docs/deployment.md).
 - [docs/architecture.md](docs/architecture.md) - sistem mimarisi ve güncel hedef model
 - [docs/code-reading-guide.md](docs/code-reading-guide.md) - kodu izleme sırası ve uçtan uca veri akışları
 - [docs/demo.md](docs/demo.md) - demo hesapları ve sunum akışı
+- [docs/usability-test-guide.md](docs/usability-test-guide.md) - gerçek katılımcı görevleri, ölçüm ve yeniden test kaydı
+- [docs/release-candidate-evidence.md](docs/release-candidate-evidence.md) - P0 yolculukları, test ve dağıtım kanıtı
 - [docs/decisions/](docs/decisions/) - karar kayıtları
 - [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) - coding agent kuralları
