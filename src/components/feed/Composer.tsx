@@ -298,7 +298,9 @@ export function Composer({
             {state.error ? <p role="alert" className="mb-2 text-sm text-danger">{state.error}</p> : null}
             {state.message ? <p role="status" className="mb-2 text-sm font-medium text-success">{state.message}</p> : null}
 
-            <div className="flex items-center gap-2 border-t border-line pt-2">
+            {/* Sayac ve taslak etiketi, dar reflow kolonunda gonder eylemini
+                disari itmek yerine eylemle birlikte yeni satira gecebilir. */}
+            <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2">
               <span id="composer-count" className="text-xs text-fg-subtle">{body.length}/2000</span>
               {body ? <span className="text-xs text-fg-subtle">Taslak kaydedildi</span> : null}
               <button

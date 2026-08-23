@@ -110,6 +110,22 @@ test.describe('axe taraması', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(whyViewportWidth);
   });
 
+  test('gönderi oluşturucu 320 piksel reflow görünümünde eylemi kırpmaz', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await loginAs(page, 'user');
+
+    // Taslak etiketi ancak metin varken gorundugu icin regresyonu gercek
+    // sikisik durumla siniyoruz; bos form yanlis bir yesil sonuc verirdi.
+    await page.getByLabel('Gönderi metni').fill('Yeni sensör kartının ilk denemesi.');
+    const submit = page.getByRole('button', { name: 'Gönder', exact: true });
+    const submitBox = await submit.boundingBox();
+    const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+
+    expect(submitBox).not.toBeNull();
+    expect(submitBox!.x + submitBox!.width).toBeLessThanOrEqual(viewportWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewportWidth);
+  });
+
   test('giriş ekranı erişilebilir', async ({ page }) => {
     await page.goto('/login');
     const results = await scan(page);
@@ -151,6 +167,40 @@ test.describe('karanlık tema', () => {
       expect(summary, `${path} karanlık tema ihlalleri`).toEqual([]);
     });
   }
+});
+
+test.describe('hareketi azaltma', () => {
+  test('marka ve nGazete sürekli hareketlerini tamamen durdurur', async ({ page }) => {
+    // Medya tercihini sayfa uzerinde acikca kurmak, iki proje cihaz profilinde
+    // de ayni sozlesmeyi deterministik olarak sinamamizi saglar.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await loginAs(page, 'user');
+    await page.goto('/feed');
+
+    const motionState = await page.evaluate(() => {
+      const newspaper = document.querySelector<HTMLElement>('.nav-newspaper');
+      const mobileNewspaper = document.querySelector<HTMLElement>('.mobile-newspaper-icon');
+      const markLayer = document.querySelector<SVGElement>('.ns-mark-motion-layer');
+
+      return {
+        preferenceApplied: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        newspaperGlint: newspaper ? getComputedStyle(newspaper, '::before').animationName : null,
+        newspaperAura: newspaper ? getComputedStyle(newspaper, '::after').animationName : null,
+        mobileNewspaper: mobileNewspaper ? getComputedStyle(mobileNewspaper).animationName : null,
+        markLayerDisplay: markLayer ? getComputedStyle(markLayer).display : null,
+      };
+    });
+
+    // Animasyon suresini neredeyse sifira indirmek yeterli degil: son kare
+    // stilinin yuzeyde kalmamasi ve SMIL katmaninin da boyanmamasi gerekir.
+    expect(motionState).toEqual({
+      preferenceApplied: true,
+      newspaperGlint: 'none',
+      newspaperAura: 'none',
+      mobileNewspaper: 'none',
+      markLayerDisplay: 'none',
+    });
+  });
 });
 
 test.describe('klavye ile kullanım', () => {
