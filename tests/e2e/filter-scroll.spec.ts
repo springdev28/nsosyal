@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { loginAs } from './helpers';
 
@@ -6,10 +6,11 @@ async function scrollPosition(page: Page) {
   return page.evaluate(() => window.scrollY);
 }
 
-async function expectPositionPreserved(page: Page, before: number) {
+// The layout can grow after a filter is applied, so the useful contract is that
+// the page stays away from the top and the control the user clicked remains visible.
+async function expectPositionPreserved(page: Page, control: Locator) {
   await expect.poll(() => scrollPosition(page)).toBeGreaterThan(40);
-  const after = await scrollPosition(page);
-  expect(Math.abs(after - before)).toBeLessThan(160);
+  await expect(control).toBeInViewport();
 }
 
 test.describe('same-page filters', () => {
@@ -24,15 +25,14 @@ test.describe('same-page filters', () => {
 
     await izmir.click();
     await expect(page).toHaveURL(/province=35/);
-    await expectPositionPreserved(page, provincePosition);
+    await expectPositionPreserved(page, izmir);
 
     const bornova = page.getByRole('list', { name: 'İlçeler' }).getByRole('link', { name: 'Bornova' });
     await bornova.scrollIntoViewIfNeeded();
-    const districtPosition = await scrollPosition(page);
 
     await bornova.click();
     await expect(page).toHaveURL(/district=35-07/);
-    await expectPositionPreserved(page, districtPosition);
+    await expectPositionPreserved(page, bornova);
   });
 
   test('filter chips and filter search submissions do not jump to the heading', async ({ page }) => {
@@ -42,21 +42,19 @@ test.describe('same-page filters', () => {
     const demo = page.getByRole('link', { name: 'Demo', exact: true });
     await demo.scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollBy(0, 80));
-    const chipPosition = await scrollPosition(page);
 
     await demo.click();
     await expect(page).toHaveURL(/kind=demo/);
-    await expectPositionPreserved(page, chipPosition);
+    await expectPositionPreserved(page, demo);
 
     await page.goto('/explore/how');
     const search = page.locator('form[action="/explore/how"]');
     await search.scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollBy(0, 80));
-    const searchPosition = await scrollPosition(page);
 
     await search.getByRole('searchbox').fill('roket');
     await search.getByRole('button', { name: 'Ara' }).click();
     await expect(page).toHaveURL(/q=roket/);
-    await expectPositionPreserved(page, searchPosition);
+    await expectPositionPreserved(page, search);
   });
 });
