@@ -1,7 +1,7 @@
 # Yayın adayı kanıt matrisi
 
 Tarih: 23 Ağustos 2026
-Doğrulanan kaynak SHA: `7d9cfcb3e9682963c70211175a8959695bf7c599`
+Doğrulanan kaynak SHA: `ad397f23a2dcf25427fe144347d3dc3999c8e2d1`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
 Bu belge bir özellik listesi değildir. Güncel ürün denetimindeki "özellik
@@ -61,14 +61,16 @@ action'ların bugün Supabase üzerinden çalıştığı iddiası için yeterli 
 
 ## Doğrulama kaydı
 
-Kaynak SHA `7d9cfcb3e9682963c70211175a8959695bf7c599` için:
+Kaynak SHA `ad397f23a2dcf25427fe144347d3dc3999c8e2d1` için:
 
 | Kontrol | Sonuç |
 | --- | --- |
 | `npm run verify` | Geçti: typecheck, lint, 6 dosyada 130/130 birim testi |
 | `npm run build` | Geçti: production derlemesi, 32 sayfa çıktısı |
-| `npm run test:e2e` | Geçti: masaüstü ve mobilde 144/144 Playwright senaryosu, 11,0 dakika; başarısız veya atlanan test yok |
-| Canlı görsel kontrol | Hostinger üzerinde 1440×1000 ve 390×844: giriş, akış, 5N açık yay, harita/ilçe sonuçları, nGazete ve Yayın Atölyesi yüzeyleri; yatay taşma gözlenmedi |
+| `npm run test:e2e -- tests/e2e/accessibility.spec.ts` | Geçti: masaüstü ve mobilde 66/66 Playwright senaryosu, 8,4 dakika; başarısız veya atlanan test yok |
+| `npm run test:e2e -- tests/e2e/competition-flows.spec.ts --grep "Harita, konu ve zaman"` | Geçti: masaüstü ve mobilde 6/6 harita davranış senaryosu, 1,2 dakika; başarısız veya atlanan test yok |
+| Tam `npm run test:e2e` | Bu kaynak SHA'da çalıştırılmadı. Önceki temiz kaynak `c398be223a163065dc72f0fa2037a10d947d38a1` için 144/144 geçti. |
+| Canlı görsel kontrol | Yerelde 1440×1000 ve 320×800: akış, profil, nGazete, Yayın Atölyesi ve harita incelendi. Harita araması 320 CSS piksel reflow görünümünde 324 piksel taşarken düzeltmeden sonra 305 piksel görünür genişliğe sığdı; Ara düğmesinin sağ kenarı 293 pikselde kaldı. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
 Okuyucuya taşınan kreatif; düzenleme ızgarası ve seçim çerçevesi olmadan, dosya
