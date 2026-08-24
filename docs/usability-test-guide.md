@@ -1,15 +1,36 @@
 # Gerçek kullanıcı kullanılabilirlik testi
 
-Bu belge nSosyal yarışma adayını gerçek katılımcılarla aynı yöntemle sınamak,
-başarısızlıkları karşılaştırmak ve yapılan düzeltmenin gerçekten işe yarayıp
-yaramadığını yeniden test etmek için kullanılır. Otomatik test sonucu veya ekip
-içi deneme, bu çalışmanın yerine geçmez.
+Bu belge iki ayrı amacı taşır: 24 Ağustos 2026 tarihinde tamamlanan görev temelli
+kullanılabilirlik çalışmasının anonim toplu kaydını korur ve gelecek test turları
+için tekrar kullanılabilir bir protokol sunar. Tamamlanan çalışmanın yöntemi ile
+gelecek turların standart yöntemi aşağıda ayrı başlıklarda açıklanır. Otomatik test
+sonucu veya ekip içi deneme, gerçek katılımcı çalışmasının yerine geçmez.
 
-## 24 Ağustos 2026 uygulama kaydı
+## 24 Ağustos 2026 tamamlanan çalışma
 
-Bu protokol, 24 Ağustos 2026 tarihinde çalışan Hostinger prototipinde on anonim
-hedef kullanıcıyla uygulandı. Her katılımcı farklı bir kritik akışı tamamladı.
-Ad, iletişim bilgisi, okul veya kurum adı kaydedilmedi.
+Çalışma 24 Ağustos 2026 tarihinde, Hostinger üzerindeki canlı nSosyal prototipinde
+moderatör eşliğinde yürütüldü. Test başlangıcında canlı ortamın doğrulanan uygulama
+sürümü `52c4044906836ede953ea9aa2f3a899e2ed51965` idi. On anonim hedef
+kullanıcının her birine farklı bir kritik görev atandı. Böylece toplam on görev
+denemesi ölçüldü. Bu tasarım, akışların tamamını her katılımcıyla tekrar eden bir
+karşılaştırma testi değildir.
+
+Katılımcı adları, iletişim bilgileri, okul veya kurum adları kaydedilmedi. Oturum
+biçimi, cihaz ve tarayıcı bilgileri toplu kayıt formuna eklenmedi. Bu nedenle
+sonuçlar bu alanlarda bir dağılım iddiası içermez.
+
+| Katılımcı ve atanan görev | Ölçülen sonuç | Gözlem ve ürün karşılığı |
+| --- | --- | --- |
+| K1, 17 yaşında lise öğrencisi. İlk kurulum ve ilgi alanı seçimi | Başarılı, 01:18, 0 yanlış tıklama, 1 kısa tereddüt, yardım yok | Kalıcı tercihler Ayarlar'da tutuldu; Sosyalleş, Keşfet, Öğren ve Üret geçici akış modu olarak ayrıştırıldı. |
+| K2, 19 yaşında üniversite öğrencisi. 5N ve Nerede ile ilindeki etkinliği bulma | Başarılı, 02:06, 1 yanlış tıklama, 1 tereddüt | Etkin konu, zaman ve il filtreleri görünür tutuldu; yoğunluk ve erişilebilir il listesi aynı veriye bağlandı. |
+| K3, 15 yaşında proje geliştiren öğrenci. Kısa demo videosu paylaşma | Başarılı, 01:47, 0 yanlış tıklama, yardım yok | Yükleme alanına Gündelik, Pitch, Demo, İlerleme, Nasıl, Neden ve Soru türleri eklendi. |
+| K4, 18 yaşında genç üretici. Yatay videoyu kısa video akışında kontrol etme | Başarılı, 00:52, 0 yanlış tıklama, 1 görsel kontrol | Video 9:16 çerçevede kırpılmadan ortalandı; boş kenarlar siyah bırakıldı. |
+| K5, 21 yaşında topluluk yöneticisi. Topluluk adına gönderi oluşturma | Başarılı, 01:39, 1 yanlış tıklama, yardım yok | Hedef seçimi gönderim alanında tutuldu ve seçili topluluk belirginleştirildi. |
+| K6, 18 yaşında içerik üreticisi. Neden hikâyesinden bağlı projeye geçme | Başarılı, 00:41, 0 yanlış tıklama, 1 tereddüt | Proje geçişi içerik metninden ayrılarak görünür bağlantı hâline getirildi. |
+| K7, 34 yaşında öğretmen ve mentör. Editoryal ve sponsorlu içeriği ayırma | Başarılı, 00:49, 0 yanlış tıklama, sponsorlu alanı doğru tanıdı | Sponsorlu etiketi gazete düzeni içinde korundu. |
+| K8, 27 yaşında kurum iletişim sorumlusu. Yayın Atölyesi'nde alan ve dosya seçme | Başarılı, 02:31, 1 yanlış tıklama, 1 yardım isteği | Düzenleme kontrolleri önizlemeden çıkarıldı; taşma ve çakışma uyarısı gönderim öncesine taşındı. |
+| K9, 20 yaşında klavye kullanan öğrenci. Fare olmadan video türü seçip gönderme | Başarılı, 01:22, 0 yanlış tıklama, yardım yok | Türler klavye ile çalışan gerçek bir radyo grubu olarak tanımlandı. |
+| K10, 41 yaşında görme desteği kullanan bilim iletişimcisi. Videoyu açmadan içeriği anlama | Başarılı, 01:04, 0 yanlış tıklama, 1 tereddüt | Medya açıklaması zorunlu tutuldu ve kartta erişilebilir bir eylem olarak korundu. |
 
 | Gösterge | Ölçülen sonuç |
 | --- | --- |
@@ -20,16 +41,14 @@ Ad, iletişim bilgisi, okul veya kurum adı kaydedilmedi.
 | Tereddüt | 4 |
 | Yardım isteği | 1 |
 | Görsel kontrol | 1 |
-| Sponsorlu yerleşimi ayırt etme | 1 / 1 başarılı |
-| Klavye ve erişilebilirlik görevleri | 2 / 2 başarılı |
 
 Medyan süre, on süre sıralandığında ortadaki 01:18 ve 01:22 değerlerinin
-ortalamasıdır. Ayrıntılı anonim katılımcı satırları, gözlemler ve yapılan arayüz
-değişiklikleri [teknik raporun 3.3.5 bölümünde](https://docs.google.com/document/d/1mZMjH6gxb4-UHDv3bRB5ItY4HcqF2P8R7cMCO9L_0Yw/edit)
-yer alır. Test edilen canlı uygulama için son doğrulanmış dağıtım kaydı
-`52c4044906836ede953ea9aa2f3a899e2ed51965` commit'idir. Bu kayıt, aşağıdaki
-boş tabloların gelecek test ve yeniden test turlarında tekrar kullanılmasına engel
-değildir.
+ortalamasıdır. Ayrıntılı açıklama [teknik raporun 3.3.5 bölümünde](https://docs.google.com/document/d/1mZMjH6gxb4-UHDv3bRB5ItY4HcqF2P8R7cMCO9L_0Yw/edit)
+yer alır. Tablodaki ürün karşılıkları gözlemlere verilen arayüz yanıtlarını
+özetler. Her satır için ayrı commit ve aynı katılımcıyla yeniden test kaydı
+toplanmadığından bu çalışma değişiklik öncesi ve sonrası karşılaştırması olarak
+sunulmaz.
+
 ## Bu çalışma neyi kanıtlar?
 
 Test şu sorulara ölçülebilir yanıt üretir:
@@ -97,10 +116,12 @@ aynıysa başlatılır. Hostinger ve Render farklı commit bildiriyorsa test ert
 > Görev sırasında nasıl yapacağını anlatmayacağım. İstediğin anda testi
 > durdurabilirsin.
 
-## Ortak görevler
+## Gelecek test turları için ortak görev havuzu
 
-Tüm katılımcılara görevler aynı sırayla ve aynı metinle verilir. Moderatör
-parantez içindeki başarı ölçütlerini katılımcıya okumaz.
+Aşağıdaki sekiz görev, gelecek karşılaştırmalı test turlarında tüm katılımcılara
+aynı sırayla ve aynı metinle verilir. Moderatör parantez içindeki başarı ölçütlerini
+katılımcıya okumaz. Bu standart görev havuzu, 24 Ağustos 2026 çalışmasının yöntemi
+değildir; o çalışmada her katılımcıya bir farklı görev atanmıştır.
 
 ### Görev 1 : Giriş ve ilk anlam
 
@@ -241,8 +262,9 @@ gerçeği değildir; ilk tur verisi görüldükten sonra gerekçesiyle güncelle
 
 ## Değişiklik ve yeniden test kaydı
 
-Bir sorun yalnızca düzeltilmiş görünmesiyle kapanmaz. Aşağıdaki zincirin tamamı
-kaydedilir:
+Gelecek turlarda bir sorun yalnızca düzeltilmiş görünmesiyle kapanmaz. Aşağıdaki
+zincirin tamamı kaydedilir. 24 Ağustos 2026 çalışmasında bu zincir her bulgu için
+toplanmadığından ürün karşılıkları yeniden test edilmiş sonuç olarak sunulmaz:
 
 | Bulgu | İlk tur kanıtı | Değişen dosya/commit | Beklenen etki | Yeniden test sonucu | Durum |
 | --- | --- | --- | --- | --- | --- |
@@ -259,8 +281,8 @@ Teknik rapora yalnızca gerçekten ölçülen değerler yazılır:
 - test edilen tam release SHA;
 - görev bazında başarı oranı ve ortanca süre;
 - en sık görülen kırılma;
-- bu kırılma için yapılan değişikliğin commit'i;
-- aynı görevin yeniden test sonucu;
+- kaydedildiyse bu kırılma için yapılan değişikliğin commit'i;
+- yapıldıysa aynı görevin yeniden test sonucu;
 - kalan sınırlamalar.
 
 Ham kayıtlar kişisel veri içermeden ekip alanında tutulur. Repo yalnızca anonim
