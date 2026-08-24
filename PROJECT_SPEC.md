@@ -122,8 +122,13 @@ Gereksinimler:
 - yoğunluk tek nSosyal blue/cyan skalasında düşükten yükseğe okunur;
 - legend görünürdür;
 - hover/tıklama bölgesel değeri/sayıyı gösterir;
-- filtreler: topic, entity/metric, time range, participation/online-hybrid gibi gerekli bağlamlar;
-- seçilebilir metrikler en az communities, events, projects, institutions ve uygun olduğunda people/posts/resources/opportunities;
+- çalışan prototipte `metric` URL filtresi `all`, `communities`, `events`,
+  `projects`, `organizations`, `people` ve `posts` değerlerini kabul eder;
+- yenileme, geri gitme, metin araması ve paylaşılan bağlantı seçili metriği korur;
+- bilinmeyen bir `metric` değeri güvenli biçimde `all` görünümüne döner;
+- seçilen metrik harita rengini, legend metnini, il ve ilçe sayılarını, bölge
+  sıralamasını ve gösterilen sonuç kategorilerini birlikte değiştirir;
+- diğer filtreler topic, time range ve participation/online-hybrid bağlamlarını taşır;
 - il seçilince bölge detay paneli açılır;
 - ilçe verisi olan bölgelerde aynı mimari ilçe düzeyine iner;
 - kullanıcı kendi konumunu paylaşmadan haritayı keşfedebilir;
@@ -131,6 +136,10 @@ Gereksinimler:
 - haritadaki sonuçların erişilebilir liste eşdeğeri vardır.
 
 Yoğunluk nüfus değildir. Seçili platform varlıklarının sayısı veya normalize edilmiş skoru üzerinden hesaplanır. Renk tek başına state taşımamalıdır.
+
+MapLibre bilgi kutusuna aktarılan bölge adı ve dinamik varlık adı HTML olarak
+kaçırılır. Harita, açıklama metni ve erişilebilir liste aynı DemoStore anlık
+görüntüsünden türetilir.
 
 ## 6. Ana ürün kapsamı
 
@@ -149,12 +158,13 @@ Yoğunluk nüfus değildir. Seçili platform varlıklarının sayısı veya norm
 - Nasıl resources
 - yaşayan project pages
 - nGazete gerçek editorial layout + ad inventory
-- notifications, search/saved, profile/settings
+- URL tabanlı global arama + private saved collection
+- notifications, profile/settings
 - moderation/admin
 
 ### P1
 
-- gelişmiş arama
+- semantik ve typo-tolerant gelişmiş arama
 - badges/progress
 - gelişmiş analytics
 - richer recommendation tuning
@@ -174,6 +184,59 @@ Feed karışık sosyal ürün gibi davranır: text, image, short video, question
 Explainable ranking başlangıç sinyalleri: topic match, followed source, community match, long-term profile preference match, transient intent match, recency, optional location match, exploration bonus.
 
 Mevcut sabit ağırlıklar yalnızca demo başlangıç değeridir. Kalıcı ürün gerçeği değildir.
+
+Mevcut prototipte oluşturucu metin taslağını tarayıcıda korur; gönderi türü, konu,
+herkese açık veya topluluk görünürlüğü ve isteğe bağlı profil konumu seçilebilir.
+Sayaç, taslak etiketi ve Gönder eylemi dar reflow görünümünde birlikte satır
+atlayabildiği için 320 CSS pikselde eylem kırpılmaz ve yatay taşma oluşmaz.
+Bir gönderiye en fazla dört JPG/PNG/WebP görsel veya MP4/WebM video eklenir.
+Görseller 12 MB; videolar 50 MB ve 90 saniye ile sınırlıdır. Sunucu görsellerde
+dosya imzasını, bildirilen MIME değerini ve gerçek byte sayısını; videolarda
+bunlara ek olarak MP4/WebM kapsayıcısını ve kapsayıcıdan okunan süreyi doğrular.
+Tüm medya dosyaları yazma başlamadan hazırlanır ve tek bir grup olarak
+`public/uploads` dizinine alınır. Dosya yazma veya sonraki veri mutasyonu
+başarısız olursa o isteğin oluşturduğu dosyalar ile medya kayıtları geri alınır.
+`/uploads/[filename]` Route Handler'ı güvenli üretilmiş adları doğru içerik türü
+ve değişmez önbellek başlığıyla sunar. Medya açıklaması zorunludur. Akıştaki
+medyalı gönderilerin ilk 12'si tam ekran hikâye izleyicisinde açılır. Görsel
+hikâyeler altı saniyede ilerler; duraklatma, klavye gezinmesi, odak geri dönüşü ve
+`prefers-reduced-motion` davranışı uygulanmıştır. Yerel disk yolu prototip
+kapsamındadır; kalıcı Supabase Storage/CDN yolu planlanandır.
+
+Video seçildiğinde kullanıcı Gündelik, Pitch, Demo, İlerleme, Nasıl, Neden veya
+Soru türlerinden birini seçer. Bu seçenekler gerçek bir radyo grubu olduğu için
+klavyeyle kullanılabilir. Oluşturucu, Server Action ve `/video` filtreleri tek
+bir ortak tür listesini kullanır. Sunucu eksik veya tanımsız türü kabul etmez.
+Video önizlemesi ve kısa video akışı 9:16 siyah bir çerçeve kullanır. Kaynak
+görüntü çerçevenin içine tamamı görünecek biçimde yerleştirilir; yatay ya da kare
+videolar dikey çerçeveye sığdırılırken kırpılmaz.
+
+Beğeni, kaydetme, yorum ve takip eylemleri mevcut prototipte gerçek Server Action
+ve `DemoStore` mutasyonlarıdır. Kaydedilen gönderiler `/saved` rotasında yalnızca
+oturum sahibine ait kişisel koleksiyon olarak listelenir. Koleksiyona masaüstünde
+ana gezinmeden, mobilde kullanıcının kendi profilindeki `Kaydedilenler`
+kısayolundan ulaşılır. Kısa video kartları da beğeni, yorum ve kaydetme
+eylemlerini aynı sosyal veri sözleşmesiyle kullanır.
+
+## 7.1.1 Global arama
+
+Mevcut prototipte uygulama kabuğundaki arama kutusu ve `/explore` formu sorguyu
+`/explore?q=...` URL'sine taşır. Kullanıcı kişi, kurum, paylaşım, topluluk, proje
+ve etkinlik arayabilir. Sonuçlar türlerine göre başlıklı bölümlerde gösterilir;
+paylaşımlar ana akıştaki gerçek `PostCard` bileşenini kullanır. Arama etkinleşince
+keşif ana sayfasındaki öneri alanları gizlenir ve sonuç toplamına kişi ile kurumlar
+da dahil edilir. Sonuç yoksa filtre temizleme eylemi olan açık bir boş durum
+gösterilir.
+
+Genel ad, kullanıcı adı veya biyografi araması için konum paylaşımı gerekmez. İl
+filtresinde yalnız il ya da ilçe düzeyinde paylaşımı açık profiller, ilçe
+filtresinde yalnız ilçe düzeyinde paylaşımı açık profiller gösterilir. Kesin veya
+canlı konum UI'a aktarılmaz. Yalnız zaman veya katılım biçimi filtresi, profil
+kayıtlarında karşılığı olmadığı için kişi ya da kurum sonucu üretmez.
+
+Bu kapsam basit alt dize aramasıyla uygulanmıştır. Typo toleransı, eş anlamlılar,
+semantik sorgu çözümleme, ayrı arama indeksi ve production ölçekli sıralama P1/P2
+çalışmasıdır.
 
 > **Değişmez:** sponsorship feed scoring'e girmez. Paid visibility sadece nGazete'de yaşar.
 
@@ -195,7 +258,14 @@ Project page statik CV/portfolio değildir. Yaşayan üretim sayfasıdır.
 
 Sekmeler: Genel, Neden, Nasıl, İlerleme, Medya, Ekip, Topluluklar, Etkinlikler.
 
-Pitch video max 90 saniye olacaksa bu sınır client ve server tarafında gerçek olarak uygulanmalıdır. Upload validation başarısızsa yarım project kaydı bırakmama ve retry'da duplicate project üretmeme davranışı ayrıca test edilmelidir.
+Mevcut demo yolunda pitch video en fazla 90 saniye ve 50 MB olabilir. İstemci
+metadata ile hızlı geri bildirim verir; sunucu MIME, gerçek byte sayısı ve
+MP4/WebM kapsayıcı süresini dosya yazılmadan önce yeniden doğrular. Geçerli dosya
+çakışmaya kapalı biçimde yazılır, ardından proje ve medya kaydı oluşturulur.
+Sonraki adımlardan biri başarısız olursa oluşturulan proje, kurucu ilişkisi, medya
+kaydı ve dosya geri alınır. Tekrar deneme yarım veya yinelenen proje bırakmaz.
+Production Storage/CDN, codec dönüştürme ve kötü amaçlı dosya taraması
+planlanandır.
 
 ## 11. nGazete
 
@@ -215,16 +285,31 @@ nGazete generic card grid değildir. Gerçek dijital gazete kompozisyonudur:
 `/publish` ana uygulama kabuğundan ayrılmış, yeni sekmede açılan bağımsız yayın
 çalışma alanıdır. Uygulanan kapsam:
 
-- 30×40 A4 grid üzerinde sürükleme ve klavye oklarıyla blok yerleşimi;
-- başlık, paragraf, liste, alıntı, kod, bağlantı ve temel tablo Markdown desteği;
-- içerik, düzen ve stil sekmeleri;
-- tekrar kullanılabilir doku/kaynaklar ve blok kopyalama/silme;
-- tipografi, hizalama, boşluk, kenarlık, gölge, görsel filtreleri ve dönüşümler;
-- blok ayarlarının güvenli sınırlar içinde temizlenmesi ve taslakta saklanması.
+- nGazete okuyucusu ve Yayın Atölyesi boyunca korunan ortak koyu gazete kâğıdı
+  yüzeyinde 30×40 sayı, sayfa ve alan seçimi; pointer/klavye ile yerleşim ve
+  yeniden boyutlandırma;
+- tek PNG/JPG/WebP kreatif yükleme, 8 MB sunucu sınırı ve zorunlu alt metin;
+- kreatif ile seçili alan içinde CTA butonları; düzenleme ızgarası ve alan seçim
+  çerçevesi olmadan temiz önizleme; taslak kaydetme, rezervasyon ve demo ödeme;
+- standart hesapta bir CTA ve yalnızca nSosyal içi bağlantılar;
+- 200 TL/ay olarak gösterilen demo Yayınevi aboneliğinde üç CTA, dış `https`
+  bağlantıları, gradyan/hareket seçenekleri ve yüzde 5 alan indirimi;
+- ödeme simülasyonu sonrası moderasyon kuyruğu; moderator/admin için onay,
+  reddetme veya düzenleme isteme, audit kaydı ve kullanıcı bildirimi;
+- onay anındaki kreatif, alt metin ve CTA görünümünün değişmez okuyucu kaydına
+  alınması; gelecek tarihli sayının İstanbul saatiyle 06.00'dan önce doğrudan
+  tarih bağlantısıyla da açılmaması ve eşik sonrasındaki ilk okumada yayımlanması;
+- uzun süre çalışan demo sunucusunda yeni İstanbul gününün ilk okumada, mevcut
+  kullanıcı mutasyonları sıfırlanmadan oluşturulması;
+- yeni sayıya son yayımlanmış sayının yalnızca sponsorlu olmayan editoryal
+  omurgasının kopyalanması; önceki günün sponsorlu yerleşimlerinin taşınmaması ve
+  ücretli yerleşimin tek başına gazete oluşturmaması;
+- ilk oturum kapağının 06.00'dan önce son yayımlanmış sayıyı, eşikten sonra yeni
+  sayıyı göstermesi ve görülme kaydının takvim günü yerine sunulan sayı tarihine
+  bağlanması.
 
-Yeni blok alanları mevcut taslakların okunabilmesi için opsiyoneldir. Bu bölüm
-uygulanmış prototip davranışını anlatır; Supabase-backed kalıcı üretim yolu hâlâ
-planlanan mimaridir.
+Gerçek ödeme, faturalandırma ve Supabase Storage/RLS kalıcılığı uygulanmış değildir.
+Abonelik etkinleştirme ve ödeme yalnızca yarışma prototipi akışını gösterir.
 
 Sponsorlu alanlar ayrı `Ücretli alanlar` listesinin altında toplanmaz. Gazetenin grid'inde tanımlı spatial inventory satın alır ve açık `Sponsorlu` etiketi taşır.
 
@@ -260,7 +345,8 @@ Migration gerektiğinde yeni migration ekle, geçmiş migration'ı değiştirme.
 - keyboard operation + visible focus;
 - accessible names and labelled errors;
 - no colour-only state;
-- reduced motion;
+- reduced-motion tercihinde marka SMIL katmanının gizlenmesi ve nGazete ile Yayın
+  Atölyesi sürekli dekoratif CSS animasyonlarının tamamen durması;
 - video text/caption equivalent;
 - map list equivalent;
 - mobile touch targets and overflow verified.
@@ -281,6 +367,7 @@ Critical E2E hedefleri:
 - community join/resources + moderator approval
 - Why → project
 - project create + validated pitch upload
+- like/save/comment/follow Server Action journeys + private `/saved` collection
 - nGazete reader + spatial sponsored placement + advertiser request/admin approval
 - location/privacy + accessibility states
 

@@ -25,6 +25,27 @@ Ayrı bir genel REST API katmanı yoktur. Sayfalar sunucuda veriyi okur, kullan�
 mutasyonları Server Actions üzerinden gider. Teknik uç noktalar `/api/health` ve
 demo testlerini sıfırlamak için `/api/demo/reset`tir.
 
+## 1.1. Güncel çalışma zamanı ve tarayıcı sınırı
+
+Uygulanan sürüm **Node.js 22**, **Next.js 16.3.2 App Router**, **React
+19.2.8** ve TypeScript üzerinde çalışır. `package.json`, `.nvmrc`, `.npmrc` ve CI
+aynı Node ana sürümünü zorunlu tutar. Üretim komutu `next build --webpack`tir.
+Bu seçim Next 16'dan geri dönüş değildir; çalışma ortamında Turbopack PostCSS
+işçisinin yerel port açma girişimi `EPERM` ile engellendiği için yerel,
+Hostinger ve Render çıktılarının aynı desteklenen ve tekrarlanabilir paketleyici
+yolunu kullanmasını sağlar.
+
+Tarayıcı hydration durumu ve `prefers-reduced-motion` tercihi
+`src/lib/browser-preferences.ts` içindeki `useSyncExternalStore` tabanlı ortak
+katmandan okunur. Sunucu snapshot'ı güvenli biçimde `false`tur; açık arayüzler
+işletim sistemi tercihi değiştiğinde güncellenir. Bu katman 5N seçici, hikâye
+izleyicisi ve nGazete açılış modalının ayrı `mounted`/`matchMedia` effect
+zincirleri kurmasını önler.
+
+Karar kaydı:
+[0015](decisions/0015-next-16-ve-tekrarlanabilir-uretim-derlemesi.md).
+
+
 ## 2. Demo ve Supabase yolu
 
 `DEMO_MODE=true` yarışma demosu için ağsız, deterministik sentetik veri yoludur.
@@ -92,9 +113,51 @@ haline gelmemelidir.
 **Değişmez:** ücretli görünürlük bu modülde yoktur. Feed ranking sponsorluk,
 ilan, kampanya veya nGazete fiyatı bilmez.
 
+### 4.1 Sosyal eylemler ve kişisel koleksiyon
+
+Beğeni, kaydetme, yorum ve takip yazmaları `src/actions/social.ts` üzerinden
+oturumu yeniden doğrular ve `DemoStore` mutasyonlarına gider. Ana akış ile kısa
+video sayfası aynı beğeni ve kaydetme sözleşmesini kullanır. `/saved` sunucu
+rotası oturum sahibini `getViewer()` ile çözer, `listSavedPosts(viewer.id)` ile
+yalnızca o kullanıcının kayıtlarını `PostView` biçiminde alır ve aynı `PostCard`
+bileşeniyle gösterir. Böylece koleksiyon için ikinci bir kart veya veri modeli
+oluşmaz.
+
+Masaüstü gezinme `/saved` rotasını ayrı bir etkin öğe olarak gösterir. Mobil alt
+gezinmede rota profil kümesinin parçası sayılır ve görünür giriş kullanıcının kendi
+profilindeki `Kaydedilenler` bağlantısıdır. Kaydetme formu `/saved` üzerinde
+çalıştığında `revalidate="/saved"` gönderdiği için kaldırılan kart sunucu yeniden
+çiziminde koleksiyondan kaybolur. DemoStore bellek içi olduğu için bu kişisel
+koleksiyon sunucu yeniden başladığında sıfırlanır; üretim kalıcılığı Supabase
+adaptörünün sorumluluğudur.
+
 Karar kayıtları:
 [0002](decisions/0002-aciklanabilir-siralama.md) ve
 [0004](decisions/0004-ucretli-gorunurluk-yalnizca-ngazetede.md).
+
+### 4.2 Global arama
+
+Masaüstü uygulama kabuğundaki arama kutusu ile `/explore` formu sonucu istemcide
+tutmaz. Her ikisi de sorguyu ve etkin filtreleri `/explore?q=...` URL'sine yazar.
+Bu sözleşme yenileme, geri gitme ve paylaşılan bağlantılarda aynı arama durumunu
+korur. `/explore/page.tsx` güvenilmeyen URL değerlerini `parseFilters` ile
+doğrular, oturum sahibini çözer ve tek bir `DemoStore.discover` çağrısıyla kişi,
+kurum, paylaşım, topluluk, proje ve etkinlik sonuçlarını alır.
+
+Sonuçlar yeni ve ayrı veri modellerine çevrilmez. Kişiler ile kurumlar
+`ProfileSummary`, paylaşımlar `PostView`, diğer türler de mevcut ortak view
+modelleri üzerinden gösterilir. Paylaşım sonuçları akıştaki `PostCard` bileşenini
+kullandığı için beğenme, kaydetme ve yorum sözleşmesi aramada da korunur. Arama
+etkinken kök topluluklar, yaklaşan etkinlikler ve öne çıkan Neden hikâyeleri
+gizlenir. Böylece sonuç listesi ile keşif ana sayfasının öneri alanları birbirine
+karışmaz.
+
+Konum paylaşmayan bir kişi, il veya ilçe filtresi yokken adı, kullanıcı adı ya da
+biyografisiyle bulunabilir. İl filtresi yalnız il veya ilçe düzeyinde paylaşımı
+açık profilleri içerir. İlçe filtresi yalnız ilçe düzeyinde paylaşımı açık
+profilleri içerir. UI kesin konum, ham profil kaydı veya canlı koordinat almaz.
+Yalnız zaman ya da katılım biçimi filtresi kişi ve kurum sonucu üretmez, çünkü bu
+iki filtre profil kayıtları için anlamlı değildir.
 
 ## 5. Marka işareti ve 5N selector mimarisi
 
@@ -169,27 +232,37 @@ ilçe düzeyinde **density/choropleth** üretir.
 Sayfa sorgusu şu ürün kavramlarını taşır:
 
 ```text
-MapDiscoveryQuery
-  topicIds[]
-  metric: community | event | project | institution | person | post | resource | opportunity
+Map URL state
+  topic?
+  metric: all | communities | events | projects | organizations | people | posts
   timeRange?
   participationMode?
   onlinePolicy?
 ```
+
+`parseFilters` bilinmeyen metrikleri `all` değerine indirger. `buildFilterHref`
+varsayılan `all` değerini URL'ye yazmaz, diğer metrikleri arama ve filtre
+geçişlerinde korur.
 
 Store sonucu şu biçime dönüştürülür:
 
 ```text
 RegionDensity
   provinceCode
-  rawCount
-  normalizedScore
-  breakdown
-  topEntities[]
+  total
+  communities
+  events
+  projects
+  organizations
+  people
+  posts
 ```
 
-Normalization seçili metric ve aktif filtre seti içinde yapılmalıdır. Harita
-**nüfus verisi göstermez** ve kullanıcı density'yi nüfus sanmamalıdır.
+Sunucu sayfasındaki `selectMetric`, Store kırılımını kopyalar ve yalnız `total`
+alanını seçilen varlık sayısıyla değiştirir. Province ve district feature-state
+normalizasyonu bu seçili toplamların kendi maksimumuna göre yapılır. Aynı metrik
+legend metnini, popup sayısını, il ve ilçe listesini, sıralamayı ve sonuç
+kategorilerini değiştirir. Harita **nüfus verisi göstermez**.
 
 Renk scale bir single-hue nSosyal blue/cyan family kullanır. Rainbow red/yellow/
 green heatmap kullanılmaz. Legend düşük-yüksek ilişkisini açıkça gösterir.
@@ -198,6 +271,10 @@ Renk tek başına bilgi taşımaz; hover/click value, legend ve liste sonucu var
 İl seçimi aynı haritada ilçe katmanına iner; ilçe seçimi ilgili sonuçları açar.
 URL parametreleri seçimi korur. Renk tek başına bilgi taşımaz: hover/click değeri,
 legend ve klavyeyle erişilebilen eşdeğer sonuç listesi birlikte sunulur.
+
+MapLibre popup içeriği `setHTML` ile yerleştirildiği için bölge adı ve dinamik
+varlık adı önce HTML olarak kaçırılır. Popup tam tür kırılımını korur, üst toplam
+ise seçili metriğin Türkçe adını kullanır.
 
 Kullanıcının kendi location paylaşımı haritayı kullanmak için zorunlu değildir.
 Personal location yalnızca kişinin yerel kişi sonuçlarında görünürlük ve öneri
@@ -209,17 +286,49 @@ kararı [0009](decisions/0009-turkiye-geneli-yogunluk-ve-ilce-genislemesi.md).
 
 ## 7. Medya ve proje pitch'i
 
-Demo videoları repoda yerel/sentetik dosyalardır. `VideoPlayer` reduced-motion
-durumunu gözetmeli ve videonun metin/caption eşdeğerini sağlamalıdır.
+Demo medyası yerel veya sentetik dosyalarla çalışır. `VideoPlayer`
+`prefers-reduced-motion` tercihini gözetir ve videonun metin/caption eşdeğerini
+sunar.
 
-Proje pitch'i 90 saniye ve 50 MB ile sınırlıdır. İstemci hızlı metadata geri
-bildirimi verir; sunucu dosya yazılmadan önce MIME, byte sayısı ve MP4/WebM
-kapsayıcı süresini yeniden doğrular. Süresi okunamayan veya MIME ile kapsayıcısı
-uyuşmayan dosya güvenli tarafta kalmak için reddedilir.
+Sunucu, JPG/PNG/WebP görsellerde dosya imzasını, bildirilen MIME değerini ve gerçek
+byte sayısını doğrular. MP4/WebM videolarda aynı kontrollere kapsayıcı biçimi ile
+kapsayıcıdan okunan süre eklenir. Görseller 12 MB, videolar 50 MB ve 90 saniye ile
+sınırlıdır. Okunamayan, sahte tür bildiren veya sınırı aşan dosya yazma başlamadan
+reddedilir.
 
-Project create + upload akışında validation başarısızlığı yarım project kaydı
-bırakmamalı ve retry duplicate project üretmemelidir. Bu davranış transaction,
-pre-validation veya idempotent create yöntemiyle çözülmelidir.
+Yükleme akışı dört aşamalıdır:
+
+1. Bütün dosyalar doğrulanır ve güvenli rastgele adlarla bellekte hazırlanır.
+2. `commitLocalUploadBatch`, dosyaları `wx` kipiyle grup olarak yazar; var olan
+   bir dosyanın üzerine yazmaz.
+3. `DemoStore` medya, gönderi veya proje kayıtlarını oluşturur.
+4. `/uploads/[filename]` Route Handler'ı yalnızca izinli ad ve uzantıları doğru
+   içerik türüyle sunar.
+
+Dosya veya veri adımlarından biri başarısız olursa telafi akışı yalnızca o isteğin
+oluşturduğu dosyaları ve kayıtları geri alır. Proje oluşturma geri alımı proje,
+kurucu üyelik ve pitch medya kaydını birlikte temizler. Bu sıra, yarım proje,
+yetim medya ve yinelenen tekrar denemeleri engeller. Route Handler'ın katı dosya
+adı kontrolü dizin geçişi denemelerini reddeder.
+
+Yerel `public/uploads` diski prototip kolaylığıdır. Yeniden dağıtım, birden fazla
+örnek ve kalıcı saklama için production ortamında Supabase Storage veya eşdeğer
+nesne depolama, CDN, codec dönüştürme ve kötü amaçlı dosya taraması gerekir.
+
+### 7.1 Kısa video türü ve kadraj sözleşmesi
+
+`src/lib/video/kinds.ts`, gönderi oluşturucu, `createPost` Server Action'ı ve
+`/video` filtresi için tek tür listesini tanımlar. Liste Gündelik, Pitch, Demo,
+İlerleme, Nasıl, Neden ve Soru değerlerini taşır. İstemci radyo grubuyla seçim
+yapar; Server Action değeri yeniden doğrular ve video içeren gönderide geçersiz
+veya eksik türü reddeder. Kaydedilen değer gönderiye yazılır, analiz olayına
+eklenir ve `/video` rotası yeniden doğrulanır.
+
+Oluşturucu önizlemesi ile `VideoPlayer` aynı görsel sözleşmeyi uygular: siyah
+zeminli 9:16 sahne ve kaynağın tamamını gösteren `object-contain`. Bu davranış
+yatay veya kare videonun kenarlarını kesmez. `tests/unit/video-kinds.test.ts`
+listeyi ve sunucu korumasını, `tests/e2e/short-video.spec.ts` ise klavye seçimini,
+yayınlamayı, kategori filtresini ve iki video sahnesinin oranını doğrular.
 
 ## 8. Oturum, roller ve güvenlik
 
@@ -414,10 +523,26 @@ Tam E2E paketi şu kritik senaryoları masaüstü ve mobil projelerde korur:
 - community approval;
 - Why -> project;
 - project create + pitch validation + no duplicate/partial record;
+- like/save/comment/follow action chains and the private `/saved` collection;
+- short-video like/save controls using the shared social-action contract;
+- short-video category selection, server validation, category filtering and full-frame 9:16 stages;
+- global search across people, organizations, posts, communities, projects, and events;
 - nGazete real layout + spatial sponsored placement;
 - advertiser request + pricing snapshot + admin approval;
 - location/privacy;
 - reduced motion ve keyboard flows.
+
+`tests/e2e/social-actions.spec.ts` bu dört sosyal eylemi arayüz, Server Action ve
+yeniden çizim zinciri boyunca sınar. `tests/e2e/accessibility.spec.ts` içindeki axe
+sayfa envanteri `/saved` ve `/video` rotalarını da kapsar. Bu eklenen senaryoların
+varlığı testlerin bu commit için çalıştırıldığı anlamına gelmez; sonuç yalnızca
+gerçek komut çıktısı varsa başarı olarak kaydedilir.
+
+`tests/e2e/search.spec.ts` arama formundan URL'ye, `DemoStore.discover` sonucundan
+ortak kartlara kadar kişi, kurum ve paylaşım yolculuklarını iki viewportta sınar.
+Store birim testleri genel aramada konumunu gizleyen profilin bulunabildiğini,
+yerel filtrelerde ise paylaşım düzeyine uyulduğunu korur. Erişilebilirlik paketi
+arama sonuç durumunu axe ve 320 CSS piksel reflow denetimine dahil eder.
 
 ## 14. Bilinen production farkları
 

@@ -43,6 +43,7 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | --- | --- | --- |
 | 0:30 | Problem + ürün cümlesi | nSosyal'ın neden bağlamsal keşfe ihtiyaç duyduğunu kur |
 | 0:45 | Feed + casual post + short video | ürünün yalnız kariyer/proje sitesi olmadığını göster |
+| 0:35 | Global arama -> kişi/kurum/paylaşım sonucu | aramanın farklı platform varlıklarını ortak keşif sözleşmesinde birleştirdiğini göster |
 | 1:15 | N mark -> half-fade selector -> Nerede | özgün 5N interaction'ı göster |
 | 1:15 | Türkiye density map -> metric/topic/time filter -> province | "nerede yoğun?" sorusunu gerçek harita ile cevapla |
 | 0:45 | Event detail -> reminder | Nerede + Ne zaman bağını göster |
@@ -52,6 +53,77 @@ sunucu yeniden başlasa da stabil kalmasını sağlar.
 | 1:15 | nGazete reader -> sponsored spatial slot -> advertiser request | gerçek newspaper layout ve feed'den bağımsız gelir modelini göster |
 | 0:40 | Admin approval | community/ad moderation ve audit mantığını göster |
 | 0:30 | Settings | long-term goals, privacy ve transient intent ayrımını göster |
+
+## Ana akış ve hikâye demo akışı
+
+1. Oluşturucu açılır; metin taslağının sayfa yenilemesinden sonra korunduğu
+   gösterilir. 320 CSS piksel reflow görünümünde taslak etiketi açıkken Gönder
+   düğmesinin kırpılmadığı ve yatay taşma oluşmadığı doğrulanır.
+2. Gönderi türü, konu ve `Herkes`/`Topluluk` hedefi seçilir. Topluluk hedefinde
+   topluluk seçiminin zorunlu olduğu gösterilir.
+3. Birden fazla görsel veya video eklenir, medya önizlemesi ve zorunlu açıklama
+   alanı gösterilir. Video seçildiğinde Gündelik, Pitch, Demo, İlerleme, Nasıl,
+   Neden ve Soru türlerinin bulunduğu seçim alanı açılır. `Demo` klavyeyle seçilir.
+   İstenirse konum yalnızca bu gönderi için açılır.
+4. Paylaşımdan sonra medyalı gönderi hikâye şeridinden tam ekran açılır. İleri,
+   geri, duraklat, `Esc` ile kapatma ve odağın açan düğmeye dönmesi gösterilir.
+5. Reduced-motion tercihinde görsel hikâyenin otomatik ilerlemediği, marka motion
+   katmanının gizlendiği ve nGazete/Yayın Atölyesi sürekli dekoratif
+   animasyonlarının tamamen durduğu gösterilir.
+
+## Global arama demo akışı
+
+1. `/explore` üzerindeki arama alanına `ece.uzay` yazılır. URL'de sorgunun
+   oluştuğu ve Kişiler bölümündeki profil kartının doğru profile açıldığı
+   gösterilir.
+2. Aynı profil il filtresiyle aranır. Profil konumunu paylaşmadığı için yerel
+   sonuçta görünmez. Bu davranışın genel aramayı kapatmadığı açıklanır.
+3. `egeteknopark.demo` kullanıcı adıyla Kurumlar sonucu açılır.
+4. Bir gönderide geçen `tek bir kırmızı LED` ifadesi aranır. Paylaşımın ortak
+   `PostCard` bileşeniyle ve gerçek sosyal eylemleriyle gösterildiği doğrulanır.
+5. Arama etkinleştiğinde keşif ana sayfasındaki kök topluluk, yaklaşan etkinlik ve
+   öne çıkan Neden önerilerinin sonuç listesine karışmadığı gösterilir.
+6. 320 CSS piksellik görünümde kişi kartının ve arama eyleminin yatay taşmadığı
+   kontrol edilir.
+
+## Sosyal eylemler ve Kaydedilenler demo akışı
+
+1. Elif hesabıyla ana akıştaki ilk gönderi beğenilir ve aynı düğmeyle eski duruma
+   döndürülür. Düğmenin basılı durumu `aria-pressed` ile de değişir.
+2. Aynı gönderi kaydedilir. Kullanıcının kendi profilindeki `Kaydedilenler`
+   bağlantısı `/saved` rotasını açar ve seçilen gönderiyi kişisel koleksiyonda
+   gösterir.
+3. Kaydedilen gönderi bu sayfadan kaldırılır. Demo hesabında başka kayıtlar
+   bulunabileceği için kanıt, seçilen gönderinin koleksiyondan çıkmasıdır.
+4. Bir gönderinin ayrıntısında yorum eklenir. Başarılı Server Action sonrasında
+   yorum görünür olur ve metin alanı temizlenir.
+5. Başka bir kullanıcının profilinde `Takip et` ve `Takiptesin` durumları iki
+   yönde değiştirilir.
+6. Kısa video sayfasında beğeni, yorum ve kaydetme kontrollerinin ana akışla aynı
+   sosyal eylem sözleşmesini kullandığı gösterilir.
+7. `/video?kind=demo` açılır. Yeni videonun Demo etiketiyle listelendiği, 9:16
+   siyah çerçevede tamamının göründüğü ve yatay kadrajın kırpılmadığı gösterilir.
+
+Kaydedilenler yalnızca oturum sahibine aittir. DemoStore bellek içi çalıştığı için
+sunucu yeniden başlatıldığında koleksiyon başlangıç verisine döner.
+
+## Proje pitch demo akışı
+
+1. Baran hesabıyla `/create/project` açılır ve isteğe bağlı gerçek bir MP4/WebM
+   pitch seçilir.
+2. Form dosya adını gösterirken tarayıcı metadata'sından süreyi denetler; 90
+   saniyeyi aşan veya süresi okunamayan seçim alanı temizlenir ve ilişkili hata
+   metni gösterilir.
+3. Geçerli dosya gönderildiğinde Server Action MIME, gerçek byte sayısı,
+   MP4/WebM kapsayıcısı ve kapsayıcıdan okunan süreyi dosya yazılmadan önce
+   yeniden doğrular.
+4. Hazırlanan pitch dosyası grup yazma yordamıyla `public/uploads` dizinine
+   alınır. Ardından proje, kurucu üyelik ve medya kaydı oluşturulur.
+5. Proje sayfasında pitch oynatılır; ölçülen süre ile erişilebilir metin eşdeğeri
+   gösterilir. Dosya `/uploads/[filename]` Route Handler'ı üzerinden okunur.
+6. Geçersiz dosyada veya sonraki veri adımını taklit eden bir hatada yarım proje,
+   yetim medya kaydı ve o isteğe ait dosya kalmadığı doğrulanır. Production
+   Storage/CDN, codec dönüştürme ve kötü amaçlı dosya taraması planlanandır.
 
 ## 5N demo akışı
 
@@ -86,12 +158,15 @@ olarak daha anlamlı gösteren province seçilir.
 Örnek:
 
 1. Topic: `Havacılık ve Uzay`.
-2. Metric: `Topluluk` veya `Etkinlik`.
+2. Varlık türü: `Etkinlik` seçilir. URL'de `metric=events` görünür.
 3. Time: `Gelecek 30 gün` gibi ilgili aralık.
-4. Türkiye map üzerinde province density'leri görünür.
-5. Hover ile sayısal value/count gösterilir.
-6. Bir province seçilir ve region detail açılır.
-7. İlgili event açılır, reminder kurulur.
+4. Türkiye haritasındaki province density'leri etkinlik sayısına göre değişir.
+5. Legend ve hover metni açıkça `Etkinlik yoğunluğu` ve etkinlik sayısını söyler.
+6. Bir province seçilir. Sonuç panelinde Etkinlikler görünür, ilgisiz Topluluklar
+   bölümü görünmez.
+7. Varlık türü Topluluk olarak değiştirilir. URL, legend, yoğunluk ve sonuç
+   kategorisinin birlikte değiştiği gösterilir.
+8. Etkinlik filtresine dönülür, ilgili event açılır ve reminder kurulur.
 
 Harita blue/cyan single-hue density scale kullanır. Red/yellow/green rainbow heatmap
 kullanılmaz. Density population değildir. Seçili platform entity'lerinin count veya
@@ -100,6 +175,9 @@ normalized score değeridir.
 Current repo district GeoJSON'u İzmir için mevcut olabilir. Demo isterse bunu
 extra drill-down örneği olarak kullanabilir, fakat sunumda **İzmir product pilot**
 gibi anlatılmaz.
+
+320 CSS piksellik yeniden akış kontrolünde harita, Nasıl, Neden, gönderi
+oluşturucu, nGazete, Yayın Atölyesi ve profil sayfaları yatay taşmamalıdır.
 
 ## nGazete demo akışı
 
@@ -118,15 +196,32 @@ Reader'a önce **gazete** gösterilir, reklam yönetim paneli değil.
 
 1. `Yayınla` veya `Yayın Atölyesi` bağlantısı yeni sekmede açılır; ana uygulama
    navigasyonu editör alanını daraltmaz.
-2. Kullanıcı gelecek yedi sayıdan ve en çok beş sayfadan birini seçer; 30×40
-   koyu gazete kâğıdı üzerinde boş bir dörtgen alan belirler.
-3. Canva veya başka bir tasarım aracından dışa aktarılmış PNG, JPG ya da WebP
-   kreatif yüklenir; alan içinde taşınır ve köşe tutamaçlarıyla boyutlandırılır.
-4. Normal üye için bir iç bağlantılı CTA eklenir. Yayınevi üyeliğinde üç CTA,
-   dış bağlantı, özel stil ve yüzde beş ilan indirimi gösterilebilir.
-5. Önizlemede yalnızca temiz gazete çıktısı görünür; seçim çerçevesi, ızgara ve
-   editör kontrolleri görünmez. Taslak kaydedilip yeniden açıldığında kreatif ve
-   CTA ayarlarının korunduğu doğrulanır.
+2. Sayı ve sayfa seçilir; 30×40 grid üzerinde satın alınacak alan çizilir ve
+   gerekirse yeniden boyutlandırılır. Alan seçici yüzeyinin nGazete okuyucusundaki
+   koyu gazete kâğıdıyla aynı olduğu doğrulanır.
+3. Canva veya başka bir araçtan dışa aktarılan PNG/JPG/WebP kreatif yüklenir ve
+   görsel açıklaması girilir.
+4. Standart hesapla bir nSosyal içi CTA eklenir; buton seçili alan içinde
+   sürüklenir ve yeniden boyutlandırılır.
+5. Demo Yayınevi aboneliği açılarak üç CTA, dış `https` linki, gradyan/hareket ve
+   yüzde 5 indirim farkı gösterilir. Ekrandaki 200 TL/ay ve ödeme gerçek tahsilat
+   değildir.
+6. Taslak önizlenir; önizlemede düzenleme ızgarasının ve alan seçim çerçevesinin
+   görünmediği, fakat koyu gazete kâğıdı yüzeyinin korunduğu doğrulanır. Ardından
+   taslak rezerve edilir ve demo ödeme tamamlanır.
+   Kreatif, alt metin ve bağlantıların `/admin/newspaper` moderasyon kuyruğuna
+   düştüğü gösterilir.
+7. Moderatör onay, ret veya düzenleme isteği verir; kararın kayıt ve kullanıcı
+   bildirimi oluşturduğu doğrulanır.
+8. Onaylanan ilan için kullanıcı bildirimleri açılır. Hedef sayı yayın eşiğini
+   geçtiyse nGazete'de yüklenen kreatifin düzenleme ızgarası olmadan, alt metni ve
+   onay anındaki CTA'sıyla göründüğü doğrulanır. Gelecek tarihli sayının İstanbul
+   saatiyle 06.00'dan önce doğrudan tarih bağlantısıyla açılamadığı ayrıca söylenir.
+   Yeni sayı yalnızca ilandan oluşmaz; son sayının sponsorlu olmayan editoryal
+   omurgası korunur ve önceki günün sponsorlu yerleşimleri taşınmaz. Uzun süre açık
+   kalan demo sunucusunda gün değişimi ilk okumada gerçekleşir, mevcut kullanıcı
+   mutasyonları korunur. İlk oturum kapağı 06.00'dan önce son yayımlanmış sayıyı,
+   eşikten sonra yeni sayıyı gösterir.
 
 Okuyucu sayfasında `Gelir modeli nasıl çalışıyor?` veya `Ne satılıyor?` gibi uzun
 öğretici kartlar gösterilmez. O anlatı advertiser/admin veya sözlü sunumda yapılır.
@@ -169,12 +264,14 @@ Sunumdan önce elle kontrol:
 - N yeniden selector açıyor mu;
 - map density renkleri blue/cyan family içinde mi;
 - legend ve hover/click value okunuyor mu;
-- mobile filter/chip/button clipping var mı;
+- mobile filter/chip/button clipping var mı; oluşturucu taslak etiketi açıkken
+  320 CSS pikselde Gönder eylemi görünür ve belge taşmasız mı;
 - nGazete gerçek newspaper composition gibi mi;
 - sponsored slot grid'in içinde ve açık etiketli mi;
 - advertiser size/placement/price ilişkisi görülebiliyor mu;
 - Settings long-term goals ile transient intent'i ayırıyor mu;
-- map list equivalent, keyboard, focus ve reduced-motion çalışıyor mu.
+- map list equivalent, keyboard ve focus çalışıyor mu; reduced-motion durumunda
+  CSS animasyon adları `none`, marka SMIL katmanı `display:none` oluyor mu.
 
 ## Test raporlama kuralı
 

@@ -22,7 +22,7 @@ science, technology and innovation communities. It combines casual social conten
 communities, projects, learning, events, location/time discovery and a separate
 nGazete monetization surface.
 
-Next.js 15 App Router + React 19 + TypeScript + Tailwind 4. Supabase Postgres with
+Node.js 22 + Next.js 16.3.2 App Router + React 19.2.8 + TypeScript + Tailwind 4. Supabase Postgres with
 RLS is the production path. `DEMO_MODE=true` uses an in-memory synthetic dataset
 with no network access.
 

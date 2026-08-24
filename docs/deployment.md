@@ -1,5 +1,32 @@
 # Dağıtım
 
+## Çalışma zamanı ve üretim derlemesi
+
+Dağıtım ortamları **Node.js 22** kullanmalıdır. Yerelde `.nvmrc` bu ana sürümü
+seçer, `package.json` `node >=22` ister ve `.npmrc` içindeki
+`engine-strict=true` desteklenmeyen sürümde kurulumu durdurur. CI da
+`actions/setup-node` ile Node 22 kullanır.
+
+`npm run build`, Next.js 16.3.2 üzerinde açıkça `next build --webpack`
+çalıştırır. Bu bir Next 15'e dönüş değildir. Çalışma ortamında Turbopack'in
+PostCSS işçisi yerel port açarken `EPERM` aldığı için desteklenen Webpack yolu
+yerel, Hostinger ve Render derlemelerini tekrarlanabilir tutar.
+
+23 Ağustos 2026 tarihli GitHub Actions koşusu 32664361631, son tam doğrulanan
+baseline olan `52c4044906836ede953ea9aa2f3a899e2ed51965` kaynağında Node.js
+22 ile kurulum, typecheck, lint, 138/138 birim testi ve 184/184 Playwright
+senaryosunu tek koşuda tamamladı. Hostinger ve Render aynı tam SHA'yı sağlık
+yanıtlarında bildirdi.
+
+Ana dal daha sonra `7eee95012e74adea43963fb9e8b27d191164782d` commit'ine
+ilerledi. Bu sürüm kısa video türlerini ve tam kadraj 9:16 oynatmayı ekler.
+Hostinger sağlık yanıtı bu tam SHA'yı bildirir. Ancak bu commit için GitHub Actions
+koşusu veya commit durumu bulunmadığından typecheck, lint, yeni birim testleri ve
+tam Playwright paketi geçmiş gibi sunulmaz. Render ile tam SHA eşitliği de bu
+kayıtta doğrulanmış değildir.
+Bir canlı adresin yalnızca HTTP 200 döndürmesi dağıtım kanıtı sayılmaz. Yanıttaki
+commit alanı, push edilen tam SHA ile eşleşmelidir.
+
 ## Bu depo hiçbir yere dosya göndermez
 
 İki hedef de `main`'e push'u kendisi görür, kendisi klonlar, kendisi derler.
@@ -11,7 +38,7 @@ Depoda dosya gönderen bir adım **yoktur ve olmamalıdır**.
 | Render | `nsosyal-5n1k.onrender.com` | Web Service, depoya bağlı | birkaç dakika (ücretsiz katman uykudaysa daha uzun) |
 
 İkisi de aynı kaynaktan derlenir ama **ayrı derlemelerdir**; aynı commit'te bile
-chunk hash'leri farklıdır. Biri güncelken diğeri eski kalabilir — bu yüzden
+chunk hash'leri farklıdır. Biri güncelken diğeri eski kalabilir. Bu yüzden
 `/api/health` çalıştığı commit'i söyler ve CI bunu doğrular.
 
 ### Hostinger tarafı
@@ -20,7 +47,7 @@ hPanel'de **Websites → Node.js web app**, GitHub entegrasyonuyla bu depoya
 bağlı. Her push'ta Hostinger kendisi çeker, `npm run build` koşar ve uygulamayı
 yeniden başlatır. Bağlantı hPanel'den yönetilir; bu depoda karşılığı yoktur.
 
-Not: hPanel'in **Advanced → GIT** ekranı bu kuruluma **ait değildir** — o,
+Not: hPanel'in **Advanced → GIT** ekranı bu kuruluma **ait değildir**. Bu ekran,
 Node.js olmayan siteler için ayrı bir özellik. Node.js web app'in dağıtımı
 uygulamanın kendi ekranından yönetilir.
 
@@ -36,16 +63,25 @@ yeterli.
 nSosyal bir **sunucu uygulamasıdır**. `npm run build` çıktısında her rota `ƒ`
 (sunucuda render edilir) olarak işaretlenir ve tüm yazma yolları Server
 Action'lardan geçer. Bu yüzden paylaşımlı/PHP planlar bu uygulamayı çalıştıramaz
-ve statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar
-ve sunucu tarafındaki demo deposu statik çıktıda yaşayamaz.
+ve statik export (`output: 'export'`) da bir seçenek değildir: Server Action'lar,
+sunucu tarafındaki demo deposu ve `/uploads/[filename]` Route Handler'ı statik
+çıktıda yaşayamaz.
+
+Demo yüklemeleri Node.js sürecinin yazabildiği `public/uploads` dizinine alınır.
+Rastgele dosya adları ve üzerine yazmayı reddeden yazma kipi, bir yıllık
+`immutable` önbellek başlığını güvenli kılar. Dağıtım ortamı demo boyunca çalışma
+zamanı yazmalarını korumalıdır. Yerel disk yeniden dağıtımda silinebilir ve birden
+fazla uygulama örneği arasında paylaşılmaz; production için kalıcı nesne depolama
+ve CDN gerekir.
 
 ## CI ne yapıyor
 
 `.github/workflows/ci.yml`:
 
-1. **Verify** — `npm run verify` (typecheck + lint + birim testleri) ve E2E.
-2. **Confirm live** — `main`'e push'ta, iki canlı adresin `/api/health`
-   çıktısının **push edilen SHA'yı** bildirmesini bekler.
+1. **Verify**, kilit dosyasına göre `npm ci` çalıştırır; typecheck, lint ve birim
+   testlerini tamamlar; Chromium'u kurar ve tam Playwright paketini yürütür.
+2. **Confirm live**, yalnızca `main` push'undan ve Verify başarısından sonra iki
+   canlı adresin `/api/health` çıktısında **push edilen tam SHA'yı** arar.
 
 İkinci adım hattın asıl işi. "200 dönüyor" bir şey kanıtlamaz: eski derleme de
 200 döner. Bu proje tam olarak bu yüzden birkaç kez "hiçbir şey değişmemiş"
@@ -54,6 +90,21 @@ göründü.
 Adresler secret değil, iş akışında düz yazılıdır: ikisi de herkese açık.
 Secret'a bağlamak, doğrulamayı "kimse secret tanımlamadığı için sessizce
 atlanan" bir adıma çevirirdi.
+
+### Canlı doğrulama istekleri
+
+Her platform en fazla 12 kez kontrol edilir. Doğrudan istek IPv4 kullanır,
+bağlantı ve toplam süreyi sınırlar, `nSosyal-release-check/<SHA>` User-Agent
+değerini gönderir ve sağlık adresine `?verify=<SHA>` sorgusu ekler. Bu sorgu,
+önbellekte kalmış eski bir sağlık yanıtının güncel sürüm gibi okunmasını önler.
+
+Hostinger bazen GitHub Actions'ın Azure runner IP'lerine boş yanıt verir.
+Doğrudan Hostinger yanıtı boşsa iş akışı, aynı herkese açık sağlık adresini
+okuyan `r.jina.ai` gözlemcisini dener. Gözlemci farklı bir veri kaynağı veya
+dağıtım hedefi değildir. Yalnızca herkese açık yanıtı başka bir ağ yolundan
+okur. Doğrudan yanıtta veri varsa gözlemci kullanılmaz. Render her zaman
+doğrudan kontrol edilir. Her iki Hostinger yolunda ve Render kontrolünde başarı
+için yanıttaki commit alanının push edilen tam SHA ile eşleşmesi gerekir.
 
 ### Sürüm kimliği nereden geliyor
 

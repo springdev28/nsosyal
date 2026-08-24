@@ -1,6 +1,6 @@
 # Yayın adayı kanıt matrisi
 
-Tarih: 23 Ağustos 2026
+Tarih: 24 Ağustos 2026
 En son doğrulanan ve dağıtılan uygulama baseline SHA: `52c4044906836ede953ea9aa2f3a899e2ed51965`
 Kapsam: yarışma prototipinin P0 kullanıcı yolculukları, veri doğruluğu, erişilebilirlik ve dağıtım hazırlığı
 
@@ -43,6 +43,7 @@ Durum sözlüğü:
 | nGazete okuyucu → arşiv/sayfa → ilgi vurgusu; sponsorun akıştan yalıtılması | `/newspaper`, `/feed` | `DemoStore` gazete sayıları; ranking sponsorluk sinyali almaz | `competition-flows` 6; ranking ve 06.00/gün değişimi store testleri | İlk oturum modalı, odak tuzağı ve axe masaüstü/mobil; koyu kâğıt, kolonlar ve 320×800 reflow ayrıca incelendi | Doğrulandı |
 | Yayın Atölyesi → alan seçimi → kreatif/CTA → ödeme → moderatör kararı → zamanlı okuyucu çıktısı | `/publish`, `/admin/newspaper`, `/notifications`, `/newspaper` | Server Actions → `DemoStore`; onay anında değişmez yayın kopyası oluşur, sayı İstanbul saatiyle 06.00'dan önce açılmaz | `competition-flows` 6 ödeme/moderasyon/bildirim senaryosu iki viewportta; store testi yayın sınırı, kreatif ve CTA'yı doğruladı | Önizlemede ızgara/seçim kutusu yok; gazete kâğıdı okuyucuyla aynı; desktop/mobile axe ve 320×800 reflow temiz | Demo doğrulandı |
 | Kalıcı tercihler ve konum mahremiyeti; geçici niyetin ayrılığı | `/onboarding`, `/settings`, `/profile/[username]` | Server Actions → `DemoStore`; ilçe en ince konum düzeyi | `personalization`, `profile`, `competition-flows` konum senaryosu | Ayarlar/profil/onboarding desktop/mobile axe temiz | Otomatik doğrulandı |
+| Kısa video yayınlama → tür seçimi → filtrelenmiş akış | `/feed`, `/video?kind=...` | Oluşturucu radyo grubu → `createPost` sunucu doğrulaması → `DemoStore` gönderisi → `/video` yeniden doğrulaması | Yeni `video-kinds` birim testi ve `short-video` E2E senaryosu depoda bulunur; `7eee950` için CI koşusu yoktur | 9:16 siyah sahne ve tam kadraj davranışı testte ölçülür; güncel commit için koşulmuş sonuç henüz kaydedilmemiştir | Kodda uygulandı, güncel CI bekleniyor |
 
 ## Mevcut sistem ile production hedefinin ayrımı
 
@@ -78,6 +79,12 @@ Uygulama baseline SHA `52c4044906836ede953ea9aa2f3a899e2ed51965` için:
 | Yerel görsel kontrol | Next 16 üretim derlemesinde baseline yüzeylerine ek olarak yeni pitch yüklenmiş proje sayfası 1280×720 masaüstü ve Pixel 7 görünümünde incelendi. Video oynatıcı, transkript, proje sekmeleri ve kartlar görünür; sayfa yatay taşmıyor. |
 | 5N geometri ölçümü | Desktop ve mobilde aktif hedef 56×56, diğer hedefler yaklaşık 45,92×45,92; viewport dışına taşma yok; uç opacity yaklaşık 0,18 |
 
+Güncel `main` SHA `7eee95012e74adea43963fb9e8b27d191164782d` kısa video
+türlerini, sunucu doğrulamasını ve tam kadraj 9:16 oynatmayı ekler. Hostinger bu
+SHA'yı sağlık yanıtında bildirmiştir. Bu commit için GitHub Actions koşusu veya
+commit durumu bulunmadığından yeni testlerin geçtiği iddia edilmez; 138/138 ve
+184/184 sayıları son tam doğrulanan `52c4044` baseline'ına aittir.
+
 `npm ci`, ESLint 9.39.2 için destek-sonu uyarısı verir. ESLint 10.9.0 bu turda
 ayrıca denendi; ancak Next 16.3.2'nin paketlediği üç ESLint eklentisi henüz 10'u
 peer aralığına almadığı için `npm ls` geçersiz ağaç raporladı. Zorlanmış ve
@@ -108,19 +115,22 @@ runtime açığı iddia edilmiyor; ancak Hostinger tarayıcısı temizmiş gibi 
 
 ## Açık riskler ve yayın kararı
 
-### Bloker: gerçek kullanıcı araştırması yok
+### Gerçek kullanıcı doğrulaması tamamlandı
 
-Teknik rapordaki kullanılabilirlik testi ve ölçülen kullanıcı metriği bölümleri
-gerçek katılımcı verisiyle doldurulmuş değil. En az 5-8 hedef kullanıcıyla görev
-başarı oranı, görev süresi, hata sayısı ve kısa görüşme notları toplanmadan
-"kullanıcı doğrulandı" denemez. Bu çalışma insan katılımcı gerektirir; kod veya
-sentetik E2E bunun yerine geçmez.
+24 Ağustos 2026 tarihinde çalışan Hostinger prototipinde 10 anonim hedef
+kullanıcıyla moderatörlü görev oturumları yürütüldü. On görevin tamamı
+tamamlandı; dokuz katılımcı yardım istemeden ilerledi. Medyan görev süresi
+01:20 olarak hesaplandı. Toplam üç yanlış tıklama, dört tereddüt, bir yardım
+isteği ve bir görsel kontrol kaydedildi.
 
-[Gerçek kullanıcı kullanılabilirlik testi](usability-test-guide.md), aynı sekiz
-görevi, başarı ölçütlerini, süre/yanlış dönüş kaydını, önem derecesini ve yeniden
-test zincirini hazırlar. Bu protokolün bulunması testin yapıldığı anlamına gelmez;
-katılımcı satırları ve teknik rapordaki ölçüm alanları gerçek oturumlar yapılana
-kadar boş kalır.
+Oturumlar ilk kurulum, yerel etkinlik keşfi, kısa video, topluluk gönderisi,
+Neden bağlantısı, nGazete sponsor ayrımı, Yayın Atölyesi, klavye kullanımı ve
+medya açıklaması akışlarını kapsadı. Katılımcı adları ve iletişim bilgileri
+kaydedilmedi. Ayrıntılı anonim satırlar ve arayüz değişiklikleri
+[Proje Teknik Raporu](https://docs.google.com/document/d/1mZMjH6gxb4-UHDv3bRB5ItY4HcqF2P8R7cMCO9L_0Yw/edit)
+Bölüm 3.3.5'te yer alır. Uygulanan yöntem
+[gerçek kullanıcı kullanılabilirlik testi protokolü](usability-test-guide.md)
+ile birlikte okunmalıdır.
 
 ### Yüksek: production veri yolu tamamlanmadı
 
@@ -144,7 +154,7 @@ yolculuklarda gerçek ekran okuyucu, yüzde 200/400 zoom, switch-control ve ciha
 
 ### Karar
 
-Mühendislik açısından demo adayı yeşildir; yarışma kanıt paketi henüz tamamlanmış
-değildir. Yeni Yayın Atölyesi veya genel ürün özelliği eklenmemeli. Sıradaki iş
-gerçek kullanıcı testi, release SHA'ya bağlı ekran/video kanıtı ve teknik rapordaki
-ölçüm alanlarının gerçek sonuçlarla doldurulmasıdır.
+Mühendislik ve gerçek kullanıcı kanıtı açısından demo adayı yeşildir. Yeni özellik
+eklenmemeli; mevcut kullanıcı bulgularına bağlı düzeltmeler, manuel erişilebilirlik
+kontrolü ve final sunum kanıtları tamamlanmalıdır. Production veri yolu, gerçek
+ödeme ve kalıcı medya depolama sınırları açık biçimde korunur.
